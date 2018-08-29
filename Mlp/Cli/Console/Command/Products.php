@@ -241,15 +241,22 @@ class Products extends Command
         $logger->addWriter($writer);
         print_r("Adding Sorefoz products"."\n");
 
-        $row = 1;
+        $row = 0;
         if (($handle = fopen("/var/www/html/app/code/Mlp/Cli/Console/Command/tot_jlcb_utf.csv", "r")) !== FALSE) {
-            while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+            print_r("abri ficheiro\n");
+            //print_r($handle);
+            while (($data = fgetcsv($handle,4000,";")) !== FALSE) {
                 $row++;
+                if ($row == 1 ){
+                    continue;
+                }
+                print_r($row.":".$data[2]."\n");
                 $num = count($data);
                 //EAN - 18
                 if (strcmp($data[5],"ACESSÓRIOS E BATERIAS")==0 || strcmp($data[7],"MAT. PROMOCIONAL / PUBLICIDADE")==0
                     || strcmp($data[7],"FERRAMENTAS")==0){
                     continue;
+                    print_r("data: ".$data."\n");
                 }
                 $sku = trim($data[18]);
                 if (strlen($sku) == 13) {
@@ -309,8 +316,8 @@ class Products extends Command
                 $product->setCustomAttribute('description',$data[26]);
                 $product->setCustomAttribute('meta_description',$data[25]);
                 $product->setWebsiteIds([1]);
-                $attributeSetId = $this->attributeManager->getAttributeSetId($familia,$subFamilia);
-                $product->setAttributeSetId($attributeSetId); // Attribute set id
+                //$attributeSetId = $this->attributeManager->getAttributeSetId($familia,$subFamilia);
+                $product->setAttributeSetId(4); // Attribute set id
                 $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
                 $product->setTaxClassId(0); // Tax class id
                 $product->setTypeId('simple'); // type of product (simple/virtual/downloadable/configurable)
@@ -326,6 +333,8 @@ class Products extends Command
                 print_r($sku."->".$row."->".microtime(true)."\n");
             }
             fclose($handle);
+        }else{
+            print_r("Não abriu o ficheiro");
         }
     }
     protected function addAufermaProducts_csv(){
@@ -682,9 +691,9 @@ class Products extends Command
 
     protected function getImages($product,$data){
         try {
-            $ch = curl_init(data[28]);
-            if(strcmp($ch, preg_match('http',$data[28]))){
-                $fp = fopen($this->config->getBaseMediaPath().$product->getSku().'_e', 'wb');
+            print_r($data[28]);
+            if(preg_match('/^http/',(string)$data[28]) == 1){
+                $fp = fopen("/var/www/html/pub/media/catalog/product/".$product->getSku().'_e', 'wb');
                 curl_setopt($ch, CURLOPT_FILE, $fp);
                 curl_setopt($ch, CURLOPT_HEADER, 0);
                 curl_exec($ch);
@@ -696,9 +705,9 @@ class Products extends Command
             print_r($ex);
         }
         try {
-            $ch = curl_init(data[24]);
-            if(strcmp($ch, preg_match('http',$data[24]))){
-                $fp = fopen($this->config->getBaseMediaPath().$product->getSku(), 'wb');
+            if(preg_match('/^http/',$data[24]) == 1){
+                $ch = curl_init($data[24]);
+                $fp = fopen("/var/www/html/pub/media/catalog/product/".$product->getSku(), 'wb');
                 curl_setopt($ch, CURLOPT_FILE, $fp);
                 curl_setopt($ch, CURLOPT_HEADER, 0);
                 curl_exec($ch);
