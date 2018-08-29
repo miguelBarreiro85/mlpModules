@@ -202,6 +202,38 @@ class Products extends Command
     }
 
     protected function addSorefozProducts_csv(){
+        /*
+        Referencia - 0
+        Descrição 1
+        CodMarca 2
+        NOME_MARCA 3
+        Cod.Gama 4
+        NOME_GAMA 5
+        Cod.Familia 6
+        NOME_FAMILIA 7
+        SUBFAMILIA 8
+        NOME_SUBFAMILIA 9
+        PVP_MARCA 10
+        PVP_CENTRAL 11
+        PR_LIQUIDO 12
+        EM_PROMOÇ+O 13
+        EXCLUSIVO 14
+        OFERTA 15
+        FORA_GAMA 16
+        PartNr 17
+        EAN 18
+        Peso(kg) 19
+        Volume(dm3) 20
+        Comprimento(mm) 21
+        Largura(mm) 22
+        Altura(mm) 23
+        LinkImagem 24
+        Caracteristicas_Resumo 25
+        Caracteristicas_Completa 26
+        Classe_energetica 27
+        Link_Classe_Energetica 28
+        Stock 29
+        */
         $categories = $this->getCategoriesArray();
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $writer = new \Zend\Log\Writer\Stream('/var/log/SorefozCSV.log');
@@ -230,6 +262,7 @@ class Products extends Command
                     } catch (NoSuchEntityException $exception) {
                         $product = $this->productFactory->create();
                         $product->setSku($sku);
+                        $this->getImages($product,$data);
                     }
                 } else {
                     continue;
@@ -251,7 +284,7 @@ class Products extends Command
                         $product->setStatus(Status::STATUS_ENABLED);
                 }
                 //STOCK
-                switch ($data[26]) {
+                switch ($data[29]) {
                     case 'Sim':
                         $product->setStockData(
                             array(
@@ -273,7 +306,7 @@ class Products extends Command
                         );
                         break;
                 }
-                $product->setCustomAttribute('description',$data[25]);
+                $product->setCustomAttribute('description',$data[26]);
                 $product->setCustomAttribute('meta_description',$data[25]);
                 $product->setWebsiteIds([1]);
                 $attributeSetId = $this->attributeManager->getAttributeSetId($familia,$subFamilia);
@@ -647,7 +680,36 @@ class Products extends Command
         }
     }
 
+    protected function getImages($product,$data){
+        try {
+            $ch = curl_init(data[28]);
+            if(strcmp($ch, preg_match('http',$data[28]))){
+                $fp = fopen($this->config->getBaseMediaPath().$product->getSku().'_e', 'wb');
+                curl_setopt($ch, CURLOPT_FILE, $fp);
+                curl_setopt($ch, CURLOPT_HEADER, 0);
+                curl_exec($ch);
+                curl_close($ch);
+                fclose($fp);
+            }
 
+        } catch (\Exception $ex){
+            print_r($ex);
+        }
+        try {
+            $ch = curl_init(data[24]);
+            if(strcmp($ch, preg_match('http',$data[24]))){
+                $fp = fopen($this->config->getBaseMediaPath().$product->getSku(), 'wb');
+                curl_setopt($ch, CURLOPT_FILE, $fp);
+                curl_setopt($ch, CURLOPT_HEADER, 0);
+                curl_exec($ch);
+                curl_close($ch);
+                fclose($fp);
+            }
+
+        } catch (\Exception $ex){
+            print_r($ex);
+        }
+    }
     protected function setImages($product,$logger,$ImgName){
         $baseMediaPath = $this->config->getBaseMediaPath();
         try {
