@@ -242,7 +242,7 @@ class Products extends Command
         print_r("Adding Sorefoz products"."\n");
 
         $row = 1;
-        if (($handle = fopen("/var/www/html/app/code/Mlp/Cli/Console/Command/tot_jlcb.csv", "r")) !== FALSE) {
+        if (($handle = fopen("/var/www/html/app/code/Mlp/Cli/Console/Command/tot_jlcb_utf.csv", "r")) !== FALSE) {
             while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
                 $row++;
                 $num = count($data);
