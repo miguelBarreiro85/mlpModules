@@ -4,7 +4,7 @@
  * See COPYING.txt for license details.
  */
 namespace Mlp\Cli\Console\Command;
-use Magento\Catalog\Api\CategoryLinkManagementInterface;
+
 use Magento\Catalog\Model\CategoryFactory;
 use Magento\Catalog\Model\CategoryRepository;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
@@ -29,7 +29,6 @@ use Magento\Framework\Exception\RuntimeException;
 
 use Magento\Eav\Model\Entity\Attribute\SetFactory as AttributeSetFactory;
 use Magento\Eav\Setup\EavSetupFactory;
-use Magento\Catalog\Setup\CategorySetupFactory;
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -70,7 +69,6 @@ class Products extends Command
 
     private $attributeSet;
 
-    private $categorySetupFactory;
 
     private $productFactory;
 
@@ -86,15 +84,13 @@ class Products extends Command
 
     private $categoryLinkManagement;
 
-    private $categoryFactory;
-
     private $dataAttributeOptions;
 
     private $attributeManager;
 
+    private $categoryManager;
     public function __construct(EavSetupFactory $eavSetupFactory,
                                 AttributeSetFactory $attributeSetFactory,
-                                CategorySetupFactory $categorySetupFactory,
                                 Attribute $entityAttribute,
                                 ProductRepository $productRepository,
                                 SearchCriteriaBuilder $searchCriteriaBuilder,
@@ -102,14 +98,12 @@ class Products extends Command
                                 Config $config,
                                 Filesystem $filesystem,
                                 State $state,
-                                CategoryLinkManagementInterface $categoryLinkManagement,
-                                CategoryFactory $categoryFactory,
                                 \Mlp\Cli\Helper\Data $dataAttributeOptions,
-                                \Mlp\Cli\Helper\Attribute $attributeManager)
+                                \Mlp\Cli\Helper\Attribute $attributeManager,
+                                \Mlp\Cli\Helper\Category $categoryManager)
     {
         $this->eavSetupFactory = $eavSetupFactory;
         $this->attributeSetFactory = $attributeSetFactory;
-        $this->categorySetupFactory = $categorySetupFactory;
         $this->entityAttribute = $entityAttribute;
         $this->productFactory = $productFactory;
         $this->state = $state;
@@ -117,10 +111,9 @@ class Products extends Command
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->config = $config;
         $this->filesystem = $filesystem;
-        $this->categoryLinkManagement = $categoryLinkManagement;
-        $this->categoryFactory = $categoryFactory;
         $this->dataAttributeOptions = $dataAttributeOptions;
         $this->attributeManager = $attributeManager;
+        $this->categoryManager = $categoryManager;
         parent::__construct();
     }
 
@@ -234,7 +227,7 @@ class Products extends Command
         Link_Classe_Energetica 28
         Stock 29
         */
-        $categories = $this->getCategoriesArray();
+        $categories = $this->categoryManager->getCategoriesArray();
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $writer = new \Zend\Log\Writer\Stream('/var/log/SorefozCSV.log');
         $logger = new \Zend\Log\Logger();
@@ -321,8 +314,17 @@ class Products extends Command
                 $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
                 $product->setTaxClassId(0); // Tax class id
                 $product->setTypeId('simple'); // type of product (simple/virtual/downloadable/configurable)
-                $product->setCategoryIds([$categories[$gama],$categories[$familia],$categories[$subFamilia]]);
+
+                try{
+                    $product->setCategoryIds([$categories[$gama],$categories[$familia],$categories[$subFamilia]]);
+                }catch (\Exception $ex){
+                    print_r($ex->getMessage());
+                    $this->categoryManager->createCategory($gama,  $familia, $subFamilia, $categories);
+                    $categories = $this->categoryManager->getCategoriesArray();
+                    $product->setCategoryIds([$categories[$gama],$categories[$familia],$categories[$subFamilia]]);
+                }
                 $this->setImages($product,$logger,$product->getSku().".jpeg");
+                $this->setImages($product,$logger,$product->getSku()."_e.jpeg");
                 try{
                     $product->save();
 
@@ -521,7 +523,7 @@ class Products extends Command
             } catch (\Exception $exception){
                 $logger->info($sku." Deu merda. Exception:  ".$exception->getMessage());
             }
-            $this->setTelefacCategories($subFamilia,$product->getSku(),$logger);
+            $this->categoryManager->setTelefacCategories($subFamilia,$product->getSku(),$logger);
 
         }
     }
@@ -685,7 +687,7 @@ class Products extends Command
             } catch (\Exception $exception){
                 $logger->info($sku." Deu merda. Exception:  ".$exception->getMessage());
             }
-            $this->setCategories($gama,$familia,$subFamilia,$product->getSku(),$logger);
+            $this->categoryManager->setCategories($gama,$familia,$subFamilia,$product->getSku(),$logger);
         }
     }
 
@@ -693,7 +695,8 @@ class Products extends Command
         try {
             print_r($data[28]);
             if(preg_match('/^http/',(string)$data[28]) == 1){
-                $fp = fopen("/var/www/html/pub/media/catalog/product/".$product->getSku().'_e', 'wb');
+                $ch = curl_init($data[24]);
+                $fp = fopen("/var/www/html/pub/media/catalog/product/".$product->getSku().'_e.jpeg', 'wb');
                 curl_setopt($ch, CURLOPT_FILE, $fp);
                 curl_setopt($ch, CURLOPT_HEADER, 0);
                 curl_exec($ch);
@@ -707,7 +710,7 @@ class Products extends Command
         try {
             if(preg_match('/^http/',$data[24]) == 1){
                 $ch = curl_init($data[24]);
-                $fp = fopen("/var/www/html/pub/media/catalog/product/".$product->getSku(), 'wb');
+                $fp = fopen("/var/www/html/pub/media/catalog/product/".$product->getSku().".jpeg", 'wb');
                 curl_setopt($ch, CURLOPT_FILE, $fp);
                 curl_setopt($ch, CURLOPT_HEADER, 0);
                 curl_exec($ch);
@@ -735,71 +738,6 @@ class Products extends Command
         }
     }
 
-    protected function getCategoriesArray(){
-        $categories = [];
-        $categoriesCollection = $this->categoryFactory->create()->getCollection();
-        $categoriesCollection->addFieldToSelect('*');
-        foreach ($categoriesCollection as $cat){
-            $categories[$cat->getName()] = $cat->getId();
-        }
-        return $categories;
-    }
-
-    protected function setCategoriesCsv($categories,$gama,$familia,$subFamilia,$sku,$logger){
-        $categoryId=[];
-        print_r($categories[$subFamilia]);
-        try{
-            //array_push($categoryId,$categories[$gama]);
-            //array_push($categoryId,$categories[$familia]);
-            array_push($categoryId,$categories[$subFamilia]);
-        }catch (\Exception $e){
-            print_r($e."\n".$gama."\n".$familia."\n".$subFamilia."\n");
-        }
-        try{
-            print_r("vou associar as categorias");
-            $this->categoryLinkManagement->assignProductToCategories($sku,$categoryId);
-            print_r("já associei as categporias");
-        }catch (\Exception $exception){
-            $logger->info("Category Exception: ".$sku);
-            print_r("Set Categories: ".$exception->getMessage());
-        }
-    }
-    protected  function setCategories($gama,$familia,$subFamilia,$sku,$logger){
-        $categoryId = [];
-        $subFamilia = $this->categoryFactory->create()->getCollection()->addAttributeToFilter('name',$subFamilia)->setPageSize(1);
-        /*$familia = $this->categoryFactory->create()->getCollection()->addAttributeToFilter('name',$familia)->setPageSize(1);
-        $gama = $this->categoryFactory->create()->getCollection()->addAttributeToFilter('name',$gama)->setPageSize(1);
-        $categoryId = [];
-        if ($gama->getSize()) {
-            array_push($categoryId,$gama->getFirstItem()->getId());
-        }
-        if ($familia->getSize()) {
-            array_push($categoryId,$familia->getFirstItem()->getId());
-        }*/
-        if ($subFamilia->getSize()) {
-            print_r($subFamilia->getFirstItem()->getId()."\n");
-            array_push($categoryId,$subFamilia->getFirstItem()->getId());
-        }
-        try{
-            $this->categoryLinkManagement->assignProductToCategories($sku,$categoryId);
-        }catch (\Exception $exception){
-            //$logger->info("Category Exception: ".$sku);
-            print_r("Set Categories: ".$exception->getMessage());
-        }
-    }
-
-    protected function setTelefacCategories($subFamilia,$sku,$logger){
-        $categoryId = [];
-        $subFamilia = $this->categoryFactory->create()->getCollection()->addAttributeToFilter('name',$subFamilia)->setPageSize(1);
-        if ($subFamilia->getSize()) {
-            array_push($categoryId,$subFamilia->getFirstItem()->getId());
-        }
-        try{
-            $this->categoryLinkManagement->assignProductToCategories($sku,$categoryId);
-        }catch (\Exception $exception){
-            $logger->info("Category Exception: ".$sku);
-        }
-    }
 
     protected function deleteAttributes(){
         $attributes = include ('attributes.php');
@@ -829,36 +767,6 @@ class Products extends Command
     }
 }
 /*
-REFERÊNCIA,0
-DESCRIÇÃO, 1
-MARCA,2
-NOME_MARCA,3
-GAMA,4
-NOME_GAMA,5
-FAMILIA,6
-NOME_FAMILIA,7
-SUBFAMILIA,8
-NOME_SUBFAMILIA,9
-PVP MARCA,10
-PVP CENTRAL,11
-PREÇO LIQUIDO,12
-PROMOÇÃO,13
-EXCLUSIVOS,14
-OFERTA,15
-FORA GAMA,16
-PartNr,17
-CODEAN,18
-Peso(kg),19
-Volume(dm3),20
-Comprimento(mm),21
-Largura(mm),22
-Altura(mm),23
-LinkImagem,24
-Caracteristicas_Resumo,25
-Stock, 26
-
-
-
 
 AUFERMA
 Codigo,0
