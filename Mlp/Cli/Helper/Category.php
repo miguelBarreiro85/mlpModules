@@ -50,11 +50,16 @@ class Category
             $familiaId = $this->categoryRepositoryInterface->save($newFamilia)->getId();
         }
         //Se deu erro é porque este tem de ser adicionado
-        $newSubFamilia = $this->categoryFactory->create();
-        $newSubFamilia->setName($subfamlia);
-        $newSubFamilia->setParentId($familiaId);
-        $newSubFamilia->setIsActive(true);
-        $familiaId = $this->categoryRepositoryInterface->save($newSubFamilia)->getId();
+        try{
+            $newSubFamilia = $this->categoryFactory->create();
+            $newSubFamilia->setName($subfamlia);
+            $newSubFamilia->setParentId($familiaId);
+            $newSubFamilia->setIsActive(true);
+            $subfamliaId = $this->categoryRepositoryInterface->save($newSubFamilia)->getId();
+        } catch (\Exception $ex){
+            print_r($ex->getMessage());
+        }
+
     }
 
     public function getCategoriesArray(){
@@ -114,5 +119,87 @@ class Category
             $logger->info("Category Exception: ".$sku);
         }
     }
+
+    public function setGamaSorefoz($gama){
+        switch ($gama){
+            case 'TELEFONES E TELEMÓVEIS':
+                return 'COMUNICAÇÕES';
+                break;
+            case 'SERVIÇOS TV/INTERNET/OUTROS':
+                return 'COMUNICAÇÕES';
+                break;
+            default:
+                return $gama;
+                break;
+        }
+    }
+
+    public function setFamiliaSorefoz($familia)
+    {
+        switch ($familia) {
+            case 'ENCASTRE - FORNOS':
+                return "ENCASTRE";
+            case 'ENCASTRE - MESAS':
+                return "ENCASTRE";
+            case 'ENCASTRE - EXAUSTOR/EXTRATORES':
+                return "ENCASTRE";
+            case 'ENCASTRE - FRIO':
+                return "ENCASTRE";
+            case 'ENCASTRE - MAQ.LOUÇA':
+                return "ENCASTRE";
+            case 'ENCASTRE - MAQ.L.ROUPA':
+                return "ENCASTRE";
+            case 'ENCASTRE - MICROONDAS':
+                return "ENCASTRE";
+            case 'ENCASTRE - OUTRAS':
+                return "ENCASTRE";
+            default:
+                return $familia;
+        }
+    }
+
+    public function setSubFamiliaSorefoz($subFamilia){
+            switch ($subFamilia){
+                case 'INDEPENDENTES - ELÉCTRICOS':
+                    return 'FORNOS';
+                case 'PIROLITICOS':
+                    return 'FORNOS';
+                case 'INDEPENDENTES C/GÁS':
+                    return 'FORNOS';
+                case 'POLIVALENTES':
+                    return 'FORNOS';
+
+                case 'CONVENCIONAIS C/GÁS':
+                    return 'PLACAS';
+                case 'DE INDUÇÃO':
+                    return 'PLACAS';
+                case 'VITROCERÂMICAS C/GÁS':
+                    return 'PLACAS';
+                case 'DOMINÓS C/GÁS':
+                    return 'PLACAS';
+                case 'VITROCERÂMICAS - ELÉCTRICAS':
+                    return 'PLACAS';
+                case 'DOMINÓS - ELÉCTRICOS':
+                    return 'PLACAS';
+                case 'CONVENCIONAIS - ELÉCTRICAS':
+                    return 'PLACAS';
+
+                case 'EXAUST.DE CHAMINÉ':
+                    return 'EXAUSTORES';
+                case 'EXAUST.TELESCÓPICOS':
+                    return 'EXAUSTORES';
+                case 'EXAUST.CONVENCIONAIS':
+                    return 'EXAUSTORES';
+                case 'EXTRACTORES':
+                    return 'EXAUSTORES';
+
+                case 'MAQ.LAVAR LOUÇA 60 Cm':
+                    return 'MÁQUINAS DE LOIÇA';
+                case 'MAQ.LAVAR LOUÇA 45 Cm':
+                    return 'MÁQUINAS DE LOIÇA';
+                default:
+                    return $subFamilia;
+            }
+        }
 
 }

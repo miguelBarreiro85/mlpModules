@@ -89,6 +89,8 @@ class Products extends Command
     private $attributeManager;
 
     private $categoryManager;
+
+    private $registry;
     public function __construct(EavSetupFactory $eavSetupFactory,
                                 AttributeSetFactory $attributeSetFactory,
                                 Attribute $entityAttribute,
@@ -100,7 +102,8 @@ class Products extends Command
                                 State $state,
                                 \Mlp\Cli\Helper\Data $dataAttributeOptions,
                                 \Mlp\Cli\Helper\Attribute $attributeManager,
-                                \Mlp\Cli\Helper\Category $categoryManager)
+                                \Mlp\Cli\Helper\Category $categoryManager,
+                                \Magento\Framework\Registry $registry)
     {
         $this->eavSetupFactory = $eavSetupFactory;
         $this->attributeSetFactory = $attributeSetFactory;
@@ -114,6 +117,8 @@ class Products extends Command
         $this->dataAttributeOptions = $dataAttributeOptions;
         $this->attributeManager = $attributeManager;
         $this->categoryManager = $categoryManager;
+        $this->registry = $registry;
+
         parent::__construct();
     }
 
@@ -171,7 +176,8 @@ class Products extends Command
         }
         $delete = $input->getOption(self::DEL_PRODUCTS);
         if ($delete){
-            $this->deleteAttributes();
+            print_r("Delete products");
+            $this->deleteProducts();
         }
         $addSorefozOption = $input->getOption(self::ADD_SOREFOZ_PRODUCTS);
         if ($addSorefozOption) {
@@ -238,64 +244,99 @@ class Products extends Command
         if (($handle = fopen("/var/www/html/app/code/Mlp/Cli/Console/Command/tot_jlcb_utf.csv", "r")) !== FALSE) {
             print_r("abri ficheiro\n");
             //print_r($handle);
-            while (($data = fgetcsv($handle,4000,";")) !== FALSE) {
-                $row++;
-                if ($row == 1 ){
-                    continue;
-                }
-                print_r($row.":".$data[2]."\n");
-                $num = count($data);
-                //EAN - 18
-                if (strcmp($data[5],"ACESSÓRIOS E BATERIAS")==0 || strcmp($data[7],"MAT. PROMOCIONAL / PUBLICIDADE")==0
-                    || strcmp($data[7],"FERRAMENTAS")==0){
-                    continue;
-                    print_r("data: ".$data."\n");
-                }
-                $sku = trim($data[18]);
-                if (strlen($sku) == 13) {
-                    try {
-                        $product = $this->productRepository->get($sku, true, null, true);
-                        if ($product->getStatus() == 2){
-                            print_r($sku."\n");
-                            continue;
-                        }
-                    } catch (NoSuchEntityException $exception) {
-                        $product = $this->productFactory->create();
-                        $product->setSku($sku);
-                        $this->getImages($product,$data);
+            while (!feof($handle)) {
+                if (($data = fgetcsv($handle, 4000, ";")) !== FALSE) {
+                    $row++;
+                    if ($row == 1) {
+                        continue;
                     }
-                } else {
-                    continue;
-                }
-                $product->setName(trim($data[1]));
-                $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', trim($data[3]));
-                $product->setCustomAttribute('manufacturer', $optionId);
-                $subFamilia = trim($data[9]);
-                $familia = trim($data[7]);
-                $gama = $this->setGamaSorefoz(trim($data[5]));
-                $preco = $data[12];
-                $product->setPrice($preco);
-                //GAMA
-                switch ($data[16]){
-                    case 'sim':
-                        $product->setStatus(Status::STATUS_DISABLED);
-                        break;
-                    default:
-                        $product->setStatus(Status::STATUS_ENABLED);
-                }
-                //STOCK
-                switch ($data[29]) {
-                    case 'Sim':
-                        $product->setStockData(
-                            array(
-                                'use_config_manage_stock' => 0,
-                                'manage_stock' => 1,
-                                'is_in_stock' => 1,
-                                'qty' => 999999999
-                            )
-                        );
-                        break;
-                    default:
+                    print_r($row . ":" . $data[2] . "\n");
+                    $num = count($data);
+                    //EAN - 18
+                    if (strcmp($data[5], "ACESSÓRIOS E BATERIAS") == 0 || strcmp($data[7], "MAT. PROMOCIONAL / PUBLICIDADE") == 0
+                        || strcmp($data[7], "FERRAMENTAS") == 0) {
+                        continue;
+                        print_r("data: " . $data . "\n");
+                    }
+                    $sku = trim($data[18]);
+                    if (strlen($sku) == 13) {
+                        try {
+                            $product = $this->productRepository->get($sku, true, null, true);
+                            if ($product->getStatus() == 2) {
+                                print_r($sku . "\n");
+                                continue;
+                            }
+                        } catch (NoSuchEntityException $exception) {
+                            //Produto NOVO
+                            $product = $this->productFactory->create();
+                            $product->setSku($sku);
+                            $this->getImages($product, $data);
+                            $product->setName(trim($data[1]));
+                            $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', trim($data[3]));
+                            $product->setCustomAttribute('manufacturer', $optionId);
+                            $subFamilia = $this->categoryManager->setSubFamiliaSorefoz(trim($data[9]));
+                            $familia = $this->categoryManager->setFamiliaSorefoz(trim($data[7]));
+                            $gama = $this->categoryManager->setGamaSorefoz(trim($data[5]));
+                            $product->setCustomAttribute('description', $data[26]);
+                            $product->setCustomAttribute('meta_description', $data[25]);
+                            $product->setWebsiteIds([1]);
+                            //$attributeSetId = $this->attributeManager->getAttributeSetId($familia,$subFamilia);
+                            $product->setAttributeSetId(4); // Attribute set id
+                            $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
+                            $product->setTaxClassId(0); // Tax class id
+                            $product->setTypeId('simple'); // type of product (simple/virtual/downloadable/configurable)
+
+                            try {
+                                $product->setCategoryIds([$categories[$gama], $categories[$familia], $categories[$subFamilia]]);
+                            } catch (\Exception $ex) {
+                                print_r($ex->getMessage());
+                                $this->categoryManager->createCategory($gama, $familia, $subFamilia, $categories);
+                                $categories = $this->categoryManager->getCategoriesArray();
+                                $product->setCategoryIds([$categories[$gama], $categories[$familia], $categories[$subFamilia]]);
+                            }
+                            $this->setImages($product, $logger, $product->getSku() . "_e.jpeg");
+                            $this->setImages($product, $logger, $product->getSku() . ".jpeg");
+                        }
+                    } else {
+                        continue;
+                    }
+
+                    $preco = $data[12];
+                    $product->setPrice($preco);
+                    //GAMA
+                    switch ($data[16]) {
+                        case 'sim':
+                            $product->setStatus(Status::STATUS_DISABLED);
+                            break;
+                        default:
+                            $product->setStatus(Status::STATUS_ENABLED);
+                    }
+                    //STOCK
+                    try {
+                        switch ($data[29]) {
+                            case 'Sim':
+                                $product->setStockData(
+                                    array(
+                                        'use_config_manage_stock' => 0,
+                                        'manage_stock' => 1,
+                                        'is_in_stock' => 1,
+                                        'qty' => 999999999
+                                    )
+                                );
+                                break;
+                            default:
+                                $product->setStockData(
+                                    array(
+                                        'use_config_manage_stock' => 0,
+                                        'manage_stock' => 1,
+                                        'is_in_stock' => 0,
+                                        'qty' => 0
+                                    )
+                                );
+                                break;
+                        }
+                    } catch (\Exception $ex) {
+                        print_r($ex->getMessage());
                         $product->setStockData(
                             array(
                                 'use_config_manage_stock' => 0,
@@ -304,41 +345,23 @@ class Products extends Command
                                 'qty' => 0
                             )
                         );
-                        break;
-                }
-                $product->setCustomAttribute('description',$data[26]);
-                $product->setCustomAttribute('meta_description',$data[25]);
-                $product->setWebsiteIds([1]);
-                //$attributeSetId = $this->attributeManager->getAttributeSetId($familia,$subFamilia);
-                $product->setAttributeSetId(4); // Attribute set id
-                $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
-                $product->setTaxClassId(0); // Tax class id
-                $product->setTypeId('simple'); // type of product (simple/virtual/downloadable/configurable)
+                    }
+                    try {
+                        $product->save();
 
-                try{
-                    $product->setCategoryIds([$categories[$gama],$categories[$familia],$categories[$subFamilia]]);
-                }catch (\Exception $ex){
-                    print_r($ex->getMessage());
-                    $this->categoryManager->createCategory($gama,  $familia, $subFamilia, $categories);
-                    $categories = $this->categoryManager->getCategoriesArray();
-                    $product->setCategoryIds([$categories[$gama],$categories[$familia],$categories[$subFamilia]]);
+                    } catch (\Exception $exception) {
+                        $logger->info($sku . " Deu merda. Exception:  " . $exception->getMessage());
+                        print_r($exception->getMessage());
+                    }
+                    print_r($sku . "->" . $row . "->" . microtime(true) . "\n");
                 }
-                $this->setImages($product,$logger,$product->getSku().".jpeg");
-                $this->setImages($product,$logger,$product->getSku()."_e.jpeg");
-                try{
-                    $product->save();
-
-                } catch (\Exception $exception){
-                    $logger->info($sku." Deu merda. Exception:  ".$exception->getMessage());
-                    print_r($exception->getMessage());
-                }
-                print_r($sku."->".$row."->".microtime(true)."\n");
             }
             fclose($handle);
         }else{
             print_r("Não abriu o ficheiro");
         }
     }
+
     protected function addAufermaProducts_csv(){
                 /*
 
@@ -377,14 +400,14 @@ class Products extends Command
                 } catch (NoSuchEntityException $exception) {
                     $product = $this->productFactory->create();
                     $product->setSku($sku);
+                    $product->setName(trim($data[1]));
+                    $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', trim($data[5]));
+                    $product->setCustomAttribute('manufacturer', $optionId);
+                    $product->setCustomAttribute('description',$data[7]);
+                    $subFamilia = trim($data[10]);
+                    $familia = trim($data[9]);
+                    $gama = $this->setGamaSorefoz(trim($data[8]));
                 }
-                $product->setName(trim($data[1]));
-                $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', trim($data[5]));
-                $product->setCustomAttribute('manufacturer', $optionId);
-                $product->setCustomAttribute('description',$data[7]);
-                $subFamilia = trim($data[10]);
-                $familia = trim($data[9]);
-                $gama = $this->setGamaSorefoz(trim($data[8]));
                 $preco = $data[3];
                 $product->setPrice($preco);
                 $product->setStatus(Status::STATUS_ENABLED);
@@ -413,12 +436,13 @@ class Products extends Command
                 $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
                 $product->setTaxClassId(0); // Tax class id
                 $product->setTypeId('simple'); // type of product (simple/virtual/downloadable/configurable)
+                /*
                 try{
                     $product->setCategoryIds([$categories[$gama],$categories[$familia],$categories[$subFamilia]]);
                 }catch (\Exception $exception){
                     print_r("Gama: ".$gama."\nFamilia: ".$familia."\nsubfamilia: ".$subFamilia."\n".$exception."\n");
                 }
-
+                */
                 $this->setImages($product,$logger,$data[2].".jpg");
                 try{
                     $product->save();
@@ -433,6 +457,7 @@ class Products extends Command
         }
 
     }
+
     protected function addTelefacProducts()
     {
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
@@ -527,6 +552,7 @@ class Products extends Command
 
         }
     }
+
     protected function addSorefozProducts()
     {
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
@@ -693,9 +719,8 @@ class Products extends Command
 
     protected function getImages($product,$data){
         try {
-            print_r($data[28]);
             if(preg_match('/^http/',(string)$data[28]) == 1){
-                $ch = curl_init($data[24]);
+                $ch = curl_init($data[28]);
                 $fp = fopen("/var/www/html/pub/media/catalog/product/".$product->getSku().'_e.jpeg', 'wb');
                 curl_setopt($ch, CURLOPT_FILE, $fp);
                 curl_setopt($ch, CURLOPT_HEADER, 0);
@@ -705,7 +730,7 @@ class Products extends Command
             }
 
         } catch (\Exception $ex){
-            print_r($ex);
+            print_r($ex->getMessage());
         }
         try {
             if(preg_match('/^http/',$data[24]) == 1){
@@ -722,6 +747,7 @@ class Products extends Command
             print_r($ex);
         }
     }
+
     protected function setImages($product,$logger,$ImgName){
         $baseMediaPath = $this->config->getBaseMediaPath();
         try {
@@ -738,9 +764,21 @@ class Products extends Command
         }
     }
 
-
+    protected function deleteProducts(){
+        $products = $this->productFactory->create()->getCollection();
+        $products->addFieldToSelect('*');
+        $products->load();
+        foreach ($products as $product){
+            try{
+                $this->productRepository->deleteById($product->getSku());
+            }catch (\Exception $ex){
+                print_r($ex->getMessage()."\n");
+            }
+        }
+    }
     protected function deleteAttributes(){
         $attributes = include ('attributes.php');
+
         foreach ($attributes as $attribute) {
             $eavSetup = $this->eavSetupFactory->create();
             $eavSetup->removeAttribute(4,$attribute['attribute_code']);
@@ -750,20 +788,6 @@ class Products extends Command
     protected function getAttribute($attCode){
         $attribute = $this->entityAttribute->loadByCode('catalog_product',$attCode);
         return $attribute->getData();
-    }
-
-    protected function setGamaSorefoz($gama){
-        switch ($gama){
-            case 'TELEFONES E TELEMÓVEIS':
-                return 'COMUNICAÇÕES';
-                break;
-            case 'SERVIÇOS TV/INTERNET/OUTROS':
-                return 'COMUNICAÇÕES';
-                break;
-            default:
-                return $gama;
-                break;
-        }
     }
 }
 /*
