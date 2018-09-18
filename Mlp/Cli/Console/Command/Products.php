@@ -91,6 +91,7 @@ class Products extends Command
     private $categoryManager;
 
     private $registry;
+
     public function __construct(EavSetupFactory $eavSetupFactory,
                                 AttributeSetFactory $attributeSetFactory,
                                 Attribute $entityAttribute,
@@ -160,22 +161,23 @@ class Products extends Command
             ]);
         parent::configure();
     }
+
     /**
      * {@inheritdoc}
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-       $this->state->setAreaCode(\Magento\Framework\App\Area::AREA_FRONTEND); // or \Magento\Framework\App\Area::AREA_ADMINHTML, depending on your needs
+        $this->state->setAreaCode(\Magento\Framework\App\Area::AREA_FRONTEND); // or \Magento\Framework\App\Area::AREA_ADMINHTML, depending on your needs
 
         $showAtt = $input->getOption(self::SHOW_PRODUCTS);
-        if ($showAtt){
-           $attCode = $input->getParameterOption('-s');
-           print_r($attCode."\n");
-           $attribute = $this->getAttribute($attCode);
-           print_r($attribute);
+        if ($showAtt) {
+            $attCode = $input->getParameterOption('-s');
+            print_r($attCode . "\n");
+            $attribute = $this->getAttribute($attCode);
+            print_r($attribute);
         }
         $delete = $input->getOption(self::DEL_PRODUCTS);
-        if ($delete){
+        if ($delete) {
             print_r("Delete products");
             $this->deleteProducts();
         }
@@ -189,18 +191,18 @@ class Products extends Command
             $this->addTelefacProducts();
             $output->writeln('<info>ACABEI DE ADICIONAR OS PRODUTOS TELEFAC!</info>');
         }
-        if($input->getOption(self::ADD_AUFERMA_PRODUCTS)){
+        if ($input->getOption(self::ADD_AUFERMA_PRODUCTS)) {
             $this->addAufermaProducts_csv();
             $output->writeln('<info>ACABEI DE ADICIONAR OS PRODUTOS Auferma!</info>');
-        }
-        else {
+        } else {
             throw new \InvalidArgumentException('Option ' . self::ADD_SOREFOZ_PRODUCTS .
-                'OR'. self::ADD_TELEFAC_PRODUCTS. ' is missing.');
+                'OR' . self::ADD_TELEFAC_PRODUCTS . ' is missing.');
         }
 
     }
 
-    protected function addSorefozProducts_csv(){
+    protected function addSorefozProducts_csv()
+    {
         /*
         Referencia - 0
         Descrição 1
@@ -235,10 +237,10 @@ class Products extends Command
         */
         $categories = $this->categoryManager->getCategoriesArray();
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $writer = new \Zend\Log\Writer\Stream('/var/log/SorefozCSV.log');
+        $writer = new \Zend\Log\Writer\Stream('/var/log/SorefozCSV' . date('d:m:y') . '.log');
         $logger = new \Zend\Log\Logger();
         $logger->addWriter($writer);
-        print_r("Adding Sorefoz products"."\n");
+        print_r("Adding Sorefoz products" . "\n");
 
         $row = 0;
         if (($handle = fopen("/var/www/html/app/code/Mlp/Cli/Console/Command/tot_jlcb_utf.csv", "r")) !== FALSE) {
@@ -256,7 +258,6 @@ class Products extends Command
                     if (strcmp($data[5], "ACESSÓRIOS E BATERIAS") == 0 || strcmp($data[7], "MAT. PROMOCIONAL / PUBLICIDADE") == 0
                         || strcmp($data[7], "FERRAMENTAS") == 0) {
                         continue;
-                        print_r("data: " . $data . "\n");
                     }
                     $sku = trim($data[18]);
                     if (strlen($sku) == 13) {
@@ -357,101 +358,107 @@ class Products extends Command
                 }
             }
             fclose($handle);
-        }else{
+        } else {
             print_r("Não abriu o ficheiro");
         }
     }
 
-    protected function addAufermaProducts_csv(){
-                /*
-
-        Codigo,0
-        Nome,1
-        CodCurto,2
-        PVPBase,3
-        PesoBrt,4
-        Marca,5
-        FamiliaAuferma,6
-        NomeXtra 7
-        Gama,8
-        Familia, 9
-        subfamilia 10
-        stock 11
-                */
-        $categories = $this->getCategoriesArray();
+    protected function addAufermaProducts_csv()
+    {
+        /*
+Codigo,0
+Nome,1
+CodCurto,2
+PVPBase,3
+PesoBrt,4
+Marca,5
+FamiliaAuferma,6
+NomeXtra 7
+Gama,8
+Familia, 9
+subfamilia 10
+stock 11
+        */
+        print_r("start\n");
+        $categories = $this->categoryManager->getCategoriesArray();
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $writer = new \Zend\Log\Writer\Stream('/var/log/Auferma.log');
+        $writer = new \Zend\Log\Writer\Stream('/var/log/Auferma' . date('d:m:y') . '.log');
         $logger = new \Zend\Log\Logger();
         $logger->addWriter($writer);
-        print_r("Adding Auferma products"."\n");
+        print_r("Adding Auferma products" . "\n");
 
         $row = 1;
-        if (($handle = fopen("/var/www/html/app/code/Mlp/Cli/Console/Command/aufermaCategories.csv", "r")) !== FALSE) {
-            while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-                $row++;
-                $num = count($data);
-                $sku = trim($data[0]);
-                try {
-                    $product = $this->productRepository->get($sku, true, null, true);
-                    /*if ($product->getStatus() == 2){
-                        print_r($sku."\n");
+        if (($handle = fopen("/var/www/html/app/code/Mlp/Cli/Console/Command/aufermaInterno.csv", "r")) !== FALSE) {
+            while (!feof($handle)) {
+                if (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                    if (strcmp($data[8], "ACESSÓRIOS E BATERIAS") == 0) {
                         continue;
-                    }*/
-                } catch (NoSuchEntityException $exception) {
-                    $product = $this->productFactory->create();
-                    $product->setSku($sku);
-                    $product->setName(trim($data[1]));
-                    $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', trim($data[5]));
-                    $product->setCustomAttribute('manufacturer', $optionId);
-                    $product->setCustomAttribute('description',$data[7]);
-                    $subFamilia = trim($data[10]);
-                    $familia = trim($data[9]);
-                    $gama = $this->setGamaSorefoz(trim($data[8]));
-                }
-                $preco = $data[3];
-                $product->setPrice($preco);
-                $product->setStatus(Status::STATUS_ENABLED);
-                if (strcmp('sim',$data[11]) == 0){
-                    $product->setStockData(
-                        array(
-                            'use_config_manage_stock' => 0,
-                            'manage_stock' => 1,
-                            'is_in_stock' => 1,
-                            'qty' => 5
-                        )
-                    );
-                }else {
-                    $product->setStockData(
-                        array(
-                            'use_config_manage_stock' => 0,
-                            'manage_stock' => 1,
-                            'is_in_stock' => 0,
-                            'qty' => 0
-                        )
-                    );
-                }
-                $product->setWebsiteIds([1]);
-                $attributeSetId = $this->attributeManager->getAttributeSetId($familia,$subFamilia);
-                $product->setAttributeSetId($attributeSetId); // Attribute set id
-                $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
-                $product->setTaxClassId(0); // Tax class id
-                $product->setTypeId('simple'); // type of product (simple/virtual/downloadable/configurable)
-                /*
-                try{
-                    $product->setCategoryIds([$categories[$gama],$categories[$familia],$categories[$subFamilia]]);
-                }catch (\Exception $exception){
-                    print_r("Gama: ".$gama."\nFamilia: ".$familia."\nsubfamilia: ".$subFamilia."\n".$exception."\n");
-                }
-                */
-                $this->setImages($product,$logger,$data[2].".jpg");
-                try{
-                    $product->save();
+                        print_r("data: " . $data . "\n");
+                    }
+                    $row++;
+                    $num = count($data);
+                    $sku = trim($data[0]);
+                    try {
+                        $product = $this->productRepository->get($sku, true, null, true);
+                        /*if ($product->getStatus() == 2){
+                            print_r($sku."\n");
+                            continue;
+                        }*/
+                    } catch (NoSuchEntityException $exception) {
+                        $product = $this->productFactory->create();
+                        $product->setSku($sku);
+                        $product->setName(trim($data[1]));
+                        $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', trim($data[5]));
+                        $product->setCustomAttribute('manufacturer', $optionId);
+                        $product->setCustomAttribute('description', $data[7]);
+                        $subFamilia = $this->categoryManager->setSubFamiliaSorefoz(trim($data[10]));
+                        $familia = $this->categoryManager->setFamiliaSorefoz(trim($data[9]));
+                        $gama = $this->categoryManager->setGamaSorefoz(trim($data[8]));
+                        try {
+                            $product->setCategoryIds([$categories[$gama], $categories[$familia], $categories[$subFamilia]]);
+                        } catch (\Exception $exception) {
+                            print_r("Gama: " . $gama . "\nFamilia: " . $familia . "\nsubfamilia: " . $subFamilia . "\n" . $exception . "\n");
+                        }
+                        $product->setWebsiteIds([1]);
+                        #$attributeSetId = $this->attributeManager->getAttributeSetId($familia, $subFamilia);
+                        #$product->setAttributeSetId($attributeSetId); // Attribute set id
+                        $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
+                        $product->setTaxClassId(0); // Tax class id
+                        $product->setTypeId('simple'); // type of product (simple/virtual/downloadable/configurable)
+                        $this->setImages($product, $logger, $data[2] . ".jpg");
+                    }
+                    $preco = $data[3];
+                    $product->setPrice($preco);
+                    $product->setStatus(Status::STATUS_ENABLED);
+                    if (strcmp('sim', $data[11]) == 0) {
+                        $product->setStockData(
+                            array(
+                                'use_config_manage_stock' => 0,
+                                'manage_stock' => 1,
+                                'is_in_stock' => 1,
+                                'qty' => 5
+                            )
+                        );
+                    } else {
+                        $product->setStockData(
+                            array(
+                                'use_config_manage_stock' => 0,
+                                'manage_stock' => 1,
+                                'is_in_stock' => 0,
+                                'qty' => 0
+                            )
+                        );
+                    }
 
-                } catch (\Exception $exception){
-                    $logger->info($sku." Deu merda. Exception:  ".$exception->getMessage());
-                    print_r($exception->getMessage());
+                    try {
+                        $product->save();
+
+                    } catch (\Exception $exception) {
+                        $logger->info($sku . " Deu merda. Exception:  " . $exception->getMessage());
+                        print_r($exception->getMessage());
+                    }
+                    print_r($sku . "->" . $row . "->" . microtime(true) . "\n");
                 }
-                print_r($sku."->".$row."->".microtime(true)."\n");
             }
             fclose($handle);
         }
@@ -530,8 +537,9 @@ class Products extends Command
                                 break;
                         }
                         break;
-                    case 'C':$product->setCustomAttribute('description',$aCell->getValue());
-                        $product->setCustomAttribute('meta_description',$aCell->getValue());
+                    case 'C':
+                        $product->setCustomAttribute('description', $aCell->getValue());
+                        $product->setCustomAttribute('meta_description', $aCell->getValue());
 
                         break;
                 }
@@ -542,16 +550,114 @@ class Products extends Command
             $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
             $product->setTaxClassId(0); // Tax class id
             $product->setTypeId('simple'); // type of product (simple/virtual/downloadable/configurable)
-            $this->setImages($product,$logger,$product->getSku());
-            try{
+            $this->setImages($product, $logger, $product->getSku());
+            try {
                 $product->save();
-            } catch (\Exception $exception){
-                $logger->info($sku." Deu merda. Exception:  ".$exception->getMessage());
+            } catch (\Exception $exception) {
+                $logger->info($sku . " Deu merda. Exception:  " . $exception->getMessage());
             }
-            $this->categoryManager->setTelefacCategories($subFamilia,$product->getSku(),$logger);
+            $this->categoryManager->setTelefacCategories($subFamilia, $product->getSku(), $logger);
 
         }
     }
+
+    protected function getImages($product, $data)
+    {
+        try {
+            if (preg_match('/^http/', (string)$data[28]) == 1) {
+                $ch = curl_init($data[28]);
+                $fp = fopen("/var/www/html/pub/media/catalog/product/" . $product->getSku() . '_e.jpeg', 'wb');
+                curl_setopt($ch, CURLOPT_FILE, $fp);
+                curl_setopt($ch, CURLOPT_HEADER, 0);
+                curl_exec($ch);
+                curl_close($ch);
+                fclose($fp);
+            }
+
+        } catch (\Exception $ex) {
+            print_r($ex->getMessage());
+        }
+        try {
+            if (preg_match('/^http/', $data[24]) == 1) {
+                $ch = curl_init($data[24]);
+                $fp = fopen("/var/www/html/pub/media/catalog/product/" . $product->getSku() . ".jpeg", 'wb');
+                curl_setopt($ch, CURLOPT_FILE, $fp);
+                curl_setopt($ch, CURLOPT_HEADER, 0);
+                curl_exec($ch);
+                curl_close($ch);
+                fclose($fp);
+            }
+
+        } catch (\Exception $ex) {
+            print_r($ex);
+        }
+    }
+
+    protected function setImages($product, $logger, $ImgName)
+    {
+        $baseMediaPath = $this->config->getBaseMediaPath();
+        try {
+            $images = $product->getMediaGalleryImages();
+            if (!$images || $images->getSize() == 0) {
+                $product->addImageToMediaGallery($baseMediaPath . "/" . $ImgName, ['image', 'small_image', 'thumbnail'], false, false);
+            }
+        } catch (RuntimeException $exception) {
+            print_r("run time exception");
+        } catch (LocalizedException $localizedException) {
+            $logger->info($product->getName() . "  Sem Imagem");
+            print_r($ImgName . "  Sem Imagem ");
+        }
+    }
+
+    protected function deleteProducts()
+    {
+        $products = $this->productFactory->create()->getCollection();
+        $products->addFieldToSelect('*');
+        $products->load();
+        foreach ($products as $product) {
+            try {
+                $this->productRepository->deleteById($product->getSku());
+            } catch (\Exception $ex) {
+                print_r($ex->getMessage() . "\n");
+            }
+        }
+    }
+
+    protected function deleteAttributes()
+    {
+        $attributes = include('attributes.php');
+
+        foreach ($attributes as $attribute) {
+            $eavSetup = $this->eavSetupFactory->create();
+            $eavSetup->removeAttribute(4, $attribute['attribute_code']);
+        }
+    }
+
+    protected function getAttribute($attCode)
+    {
+        $attribute = $this->entityAttribute->loadByCode('catalog_product', $attCode);
+        return $attribute->getData();
+    }
+
+    /*
+
+    AUFERMA
+    Codigo,0
+    Nome,1
+    CodCurto,2
+    PVPBase,3
+    PesoBrt,4
+    Marca,5
+    Familia Auf,6
+    NomeXtra 7
+    gama 8
+    familia 9
+    sub familia 10
+    stock 11
+
+
+
+    */
 
     protected function addSorefozProducts()
     {
@@ -576,15 +682,15 @@ class Products extends Command
             if (strcmp($aSheet->getCell('Q' . $aRow->getRowIndex()), 'MAT. PROMOCIONAL / PUBLICIDADE') == 0) {
                 continue;
             }
-            $sku = trim($aSheet->getCell('S'.$aRow->getRowIndex())->getValue());
-            if (strlen($sku)==13){
-                try{
+            $sku = trim($aSheet->getCell('S' . $aRow->getRowIndex())->getValue());
+            if (strlen($sku) == 13) {
+                try {
                     $product = $this->productRepository->get($sku, true, null, true);
-                }catch (NoSuchEntityException $exception){
+                } catch (NoSuchEntityException $exception) {
                     $product = $this->productFactory->create();
                     $product->setSku($sku);
                 }
-            }else {
+            } else {
                 continue;
             }
             //Declarar variáveis dentro do primeiro ciclo for.
@@ -592,7 +698,7 @@ class Products extends Command
             $familia = '';
             $subFamilia = '';
 
-            foreach ($aRow->getCellIterator() as $aCell){
+            foreach ($aRow->getCellIterator() as $aCell) {
                 //Regex para partir a coluna da linha para depois ser inserido na folha magento
                 $cord = $aCell->getCoordinate();
                 preg_match_all('~[A-Z]+|\d+~', $cord, $split);
@@ -602,8 +708,8 @@ class Products extends Command
                         break;
                     case 'D':
                         //Manufacter
-                        $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer',trim($aCell->getValue()));
-                        $product->setCustomAttribute('manufacturer',$optionId);
+                        $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', trim($aCell->getValue()));
+                        $product->setCustomAttribute('manufacturer', $optionId);
                         break;
                     case 'F':
                         $gama = $this->setGamaSorefoz(trim($aCell->getValue()));
@@ -616,12 +722,12 @@ class Products extends Command
                         break;
                     case 'M':
                         $preco = $aCell->getValue() * 1.05;
-                        $preco += + 7.5;
+                        $preco += +7.5;
                         $product->setPrice($preco);
                         break;
                     //Gama | Fora de Gama
                     case 'Q':
-                        switch ($aCell->getValue()){
+                        switch ($aCell->getValue()) {
                             case 'sim':
                                 $product->setStatus(Status::STATUS_DISABLED);
                                 break;
@@ -636,34 +742,34 @@ class Products extends Command
                         break;
                     //Volume
                     case 'U':
-                        $product->setCustomAttribute('volume',$aCell->getValue());
+                        $product->setCustomAttribute('volume', $aCell->getValue());
                         break;
                     case 'V':
-                        $product->setCustomAttribute('comprimento',$aCell->getValue());
+                        $product->setCustomAttribute('comprimento', $aCell->getValue());
                         //$produto->atributosAdicionais .= ',Comprimento='.$aCell->getValue();
                         break;
                     case 'W':
-                        $product->setCustomAttribute('largura',$aCell->getValue());
+                        $product->setCustomAttribute('largura', $aCell->getValue());
                         //$produto->atributosAdicionais .= ',Largura='.$aCell->getValue();
                         break;
                     case 'X':
-                        $product->setCustomAttribute('altura',$aCell->getValue());
+                        $product->setCustomAttribute('altura', $aCell->getValue());
                         //$produto->atributosAdicionais .= ',Altura='.$aCell->getValue();
                         break;
                     //Link imagem
                     case 'Y':
-                        $result = exec('jpeginfo -c /var/www/html/pub/media/catalog/product/'.$sku.".jpeg");
-                        if (preg_match('/ERROR/',$result)){
+                        $result = exec('jpeginfo -c /var/www/html/pub/media/catalog/product/' . $sku . ".jpeg");
+                        if (preg_match('/ERROR/', $result)) {
                             print_r($result);
-                            exec('rm /var/www/html/pub/media/catalog/product/'.$sku.".jpeg");
-                            $logger->info('Deleted image: '.$sku);
+                            exec('rm /var/www/html/pub/media/catalog/product/' . $sku . ".jpeg");
+                            $logger->info('Deleted image: ' . $sku);
                         }
                         break;
                     //Caracteristicas
                     case 'Z':
                         //$attributeValues = $this->attributeManager->addSorefozAttributes($aCell->getValue(),$familia,$subFamilia);
-                        $product->setCustomAttribute('description',$aCell->getValue());
-                        $product->setCustomAttribute('meta_description',$aCell->getValue());
+                        $product->setCustomAttribute('description', $aCell->getValue());
+                        $product->setCustomAttribute('meta_description', $aCell->getValue());
                         /*if(isset($attributeValues)){
                             foreach($attributeValues as $attributeValue){
                                 $product->setCustomAttribute($attributeValue['attribute_code'],$attributeValue['option_id']);
@@ -672,7 +778,7 @@ class Products extends Command
                         break;
                     //Stock
                     case 'AA':
-                        switch ($aCell->getValue()){
+                        switch ($aCell->getValue()) {
                             case 'sim':
                                 $product->setStockData(
                                     array(
@@ -700,112 +806,20 @@ class Products extends Command
                 }
             }
             $product->setWebsiteIds([1]);
-            $attributeSetId = $this->attributeManager->getAttributeSetId($familia,$subFamilia);
+            $attributeSetId = $this->attributeManager->getAttributeSetId($familia, $subFamilia);
             $product->setAttributeSetId($attributeSetId); // Attribute set id
             $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
             $product->setTaxClassId(0); // Tax class id
             $product->setTypeId('simple'); // type of product (simple/virtual/downloadable/configurable)
-            $this->setImages($product,$logger,$product->getSku());
-            try{
+            $this->setImages($product, $logger, $product->getSku());
+            try {
 
                 $product->save();
-                print_r($product->getSku()."\n");
-            } catch (\Exception $exception){
-                $logger->info($sku." Deu merda. Exception:  ".$exception->getMessage());
+                print_r($product->getSku() . "\n");
+            } catch (\Exception $exception) {
+                $logger->info($sku . " Deu merda. Exception:  " . $exception->getMessage());
             }
-            $this->categoryManager->setCategories($gama,$familia,$subFamilia,$product->getSku(),$logger);
+            $this->categoryManager->setCategories($gama, $familia, $subFamilia, $product->getSku(), $logger);
         }
-    }
-
-    protected function getImages($product,$data){
-        try {
-            if(preg_match('/^http/',(string)$data[28]) == 1){
-                $ch = curl_init($data[28]);
-                $fp = fopen("/var/www/html/pub/media/catalog/product/".$product->getSku().'_e.jpeg', 'wb');
-                curl_setopt($ch, CURLOPT_FILE, $fp);
-                curl_setopt($ch, CURLOPT_HEADER, 0);
-                curl_exec($ch);
-                curl_close($ch);
-                fclose($fp);
-            }
-
-        } catch (\Exception $ex){
-            print_r($ex->getMessage());
-        }
-        try {
-            if(preg_match('/^http/',$data[24]) == 1){
-                $ch = curl_init($data[24]);
-                $fp = fopen("/var/www/html/pub/media/catalog/product/".$product->getSku().".jpeg", 'wb');
-                curl_setopt($ch, CURLOPT_FILE, $fp);
-                curl_setopt($ch, CURLOPT_HEADER, 0);
-                curl_exec($ch);
-                curl_close($ch);
-                fclose($fp);
-            }
-
-        } catch (\Exception $ex){
-            print_r($ex);
-        }
-    }
-
-    protected function setImages($product,$logger,$ImgName){
-        $baseMediaPath = $this->config->getBaseMediaPath();
-        try {
-            $images = $product->getMediaGalleryImages();
-            if (!$images || $images->getSize() == 0){
-                print_r($product->getName()." SEM IMAGEM\n");
-                $product->addImageToMediaGallery($baseMediaPath."/".$ImgName, ['image', 'small_image', 'thumbnail'], false, false);
-            }
-        }catch (RuntimeException $exception){
-            print_r("run time exception");
-        }catch (LocalizedException $localizedException){
-            $logger->info($ImgName."  Sem Imagem");
-            print_r($ImgName."  Sem Imagem ");
-        }
-    }
-
-    protected function deleteProducts(){
-        $products = $this->productFactory->create()->getCollection();
-        $products->addFieldToSelect('*');
-        $products->load();
-        foreach ($products as $product){
-            try{
-                $this->productRepository->deleteById($product->getSku());
-            }catch (\Exception $ex){
-                print_r($ex->getMessage()."\n");
-            }
-        }
-    }
-    protected function deleteAttributes(){
-        $attributes = include ('attributes.php');
-
-        foreach ($attributes as $attribute) {
-            $eavSetup = $this->eavSetupFactory->create();
-            $eavSetup->removeAttribute(4,$attribute['attribute_code']);
-        }
-    }
-
-    protected function getAttribute($attCode){
-        $attribute = $this->entityAttribute->loadByCode('catalog_product',$attCode);
-        return $attribute->getData();
     }
 }
-/*
-
-AUFERMA
-Codigo,0
-Nome,1
-CodCurto,2
-PVPBase,3
-PesoBrt,4
-Marca,5
-Familia Auf,6
-NomeXtra 7
-gama 8
-familia 9
-sub familia 10
-stock 11
-
-
-
-*/
