@@ -237,7 +237,7 @@ class Products extends Command
         */
         $categories = $this->categoryManager->getCategoriesArray();
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $writer = new \Zend\Log\Writer\Stream('/var/log/SorefozCSV' . date('d:m:y') . '.log');
+        $writer = new \Zend\Log\Writer\Stream('/var/www/html/var/log/SorefozCSV' . date('d:m:y') . '.log');
         $logger = new \Zend\Log\Logger();
         $logger->addWriter($writer);
         print_r("Adding Sorefoz products" . "\n");
@@ -589,7 +589,7 @@ stock 11
             }
 
         } catch (\Exception $ex) {
-            print_r($ex);
+            print_r($ex->getMessage());
         }
     }
 
