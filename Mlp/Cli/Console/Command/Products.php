@@ -303,7 +303,13 @@ class Products extends Command
                         continue;
                     }
                     $product->setCustomAttribute('manufacturer', trim($data[3]));
-                    $preco = $data[12];
+                    $preco = $data[12] * 1.23;
+                    if ($preco < 400){
+                        $preco = $preco * 1.20;
+                    }else{
+                        $preco = $preco * 1.15;
+                    }
+
                     $product->setPrice($preco);
                     //GAMA
                     switch ($data[16]) {
