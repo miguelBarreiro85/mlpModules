@@ -306,7 +306,7 @@ class Products extends Command
                     $product->setCustomAttribute('manufacturer', $optionId);
                     $marca = $product->getCustomAttribute('manufacturer');
                     if ($marca){
-                        print_r("Marca: " . $marca);
+                        print_r("Marca: " . (string)$marca);
                     }else{
                         print_r("sem marca");
                     }
