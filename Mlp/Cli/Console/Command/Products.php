@@ -303,13 +303,6 @@ class Products extends Command
                         continue;
                     }
                     $product->setCustomAttribute('manufacturer', trim($data[3]));
-                    $marca = $product->getCustomAttribute('manufacturer');
-                    if ($marca){
-                        print_r("Marca: " . (string)$marca->getValue());
-                    }else{
-                        print_r("sem marca");
-                    }
-
                     $preco = $data[12];
                     $product->setPrice($preco);
                     //GAMA
