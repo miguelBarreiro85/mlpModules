@@ -308,7 +308,7 @@ class Products extends Command
                     $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', trim($data[3]));
                     $product->setCustomAttribute('manufacturer', $optionId);
                     $product->setCustomAttribute('ts_dimensions_height',(int)$data[23]);
-                    $product->setLength($data[21]);
+                    $product->setData('lenght',$data[21]);
                     $product->setWeight($data[19]);
                     //$product->setCustomAttribute('ts_dimensions_length',(int)$data[21]);
                     $product->setCustomAttribute('ts_dimensions_width',(int)$data[22]);
