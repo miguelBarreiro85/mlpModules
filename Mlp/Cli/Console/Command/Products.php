@@ -275,6 +275,7 @@ class Products extends Command
                             $product->setName(trim($data[1]));
                             $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', trim($data[3]));
                             $product->setCustomAttribute('manufacturer', $optionId);
+                            print_r($product->getCustomAttribute('manufacturer'));
                             $subFamilia = $this->categoryManager->setSubFamiliaSorefoz(trim($data[9]));
                             $familia = $this->categoryManager->setFamiliaSorefoz(trim($data[7]));
                             $gama = $this->categoryManager->setGamaSorefoz(trim($data[5]));
@@ -301,7 +302,9 @@ class Products extends Command
                     } else {
                         continue;
                     }
-
+                    $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', trim($data[3]));
+                    $product->setCustomAttribute('manufacturer', $optionId);
+                    print_r($product->getCustomAttribute('manufacturer'));
                     $preco = $data[12];
                     $product->setPrice($preco);
                     //GAMA
