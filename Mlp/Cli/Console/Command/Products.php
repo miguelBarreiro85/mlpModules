@@ -309,7 +309,9 @@ class Products extends Command
                     $product->setCustomAttribute('manufacturer', $optionId);
                     print_r("altura: " . (string)$data[23] . "prof: " . (string)$data[21]);
                     $product->setCustomAttribute('ts_dimensions_height',(int)$data[23]);
-                    $product->setCustomAttribute('ts_dimensions_length',(int)$data[21]);
+                    $product->setLength($data[21]);
+                    $product->setWeight($data[19]);
+                    //$product->setCustomAttribute('ts_dimensions_length',(int)$data[21]);
                     $product->setCustomAttribute('ts_dimensions_width',(int)$data[22]);
                     $preco = (int)$data[12] * 1.23;
                     if ($preco < 400){
