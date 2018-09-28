@@ -302,8 +302,7 @@ class Products extends Command
                     } else {
                         continue;
                     }
-                    $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', trim($data[3]));
-                    $product->setCustomAttribute('manufacturer', $optionId);
+                    $product->setCustomAttribute('manufacturer', trim($data[3]));
                     $marca = $product->getCustomAttribute('manufacturer');
                     if ($marca){
                         print_r("Marca: " . (string)$marca->getValue());
