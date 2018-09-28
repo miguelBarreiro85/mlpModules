@@ -304,7 +304,13 @@ class Products extends Command
                     }
                     $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', trim($data[3]));
                     $product->setCustomAttribute('manufacturer', $optionId);
-                    print_r("Marca: " . $product->getCustomAttribute('manufacturer'));
+                    $marca = $product->getCustomAttribute('manufacturer');
+                    if ($marca){
+                        print_r("Marca: " . $marca);
+                    }else{
+                        print_r("sem marca");
+                    }
+
                     $preco = $data[12];
                     $product->setPrice($preco);
                     //GAMA
