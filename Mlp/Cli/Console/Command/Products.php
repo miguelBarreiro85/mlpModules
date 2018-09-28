@@ -302,7 +302,8 @@ class Products extends Command
                     } else {
                         continue;
                     }
-                    $product->setCustomAttribute('manufacturer', trim($data[3]));
+                    $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', trim($data[3]));
+                    $product->setCustomAttribute('manufacturer', $optionId);
                     $preco = (int)$data[12] * 1.23;
                     if ($preco < 400){
                         $preco = $preco * 1.20;
