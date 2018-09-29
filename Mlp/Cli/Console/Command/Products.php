@@ -310,11 +310,11 @@ class Products extends Command
                     $product->setCustomAttribute('ts_dimensions_length',(int)$data[21]/10);
                     $product->setCustomAttribute('ts_dimensions_width',(int)$data[22]/10);
                     $product->setCustomAttribute('ts_dimensions_height',(int)$data[23]/10);
-                    $product->setCustomAttribute('tax_class_id',2);
+                    $product->setCustomAttribute('tax_class_id',2); //taxable goods id
                     $product->setWeight($data[19]);
                     $product->setLength(50);
                     $product->setCustomAttribute('width',(int)$data[22]);
-                    $preco = (int)$data[12] * 1.23;
+                    $preco = (int)$data[12];
                     if ($preco < 400){
                         $preco = $preco * 1.20;
                     }else{
