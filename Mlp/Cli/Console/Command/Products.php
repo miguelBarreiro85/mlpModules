@@ -310,6 +310,7 @@ class Products extends Command
                     $product->setCustomAttribute('height',(int)$data[23]);
                     $product->setData('lenght',$data[21]);
                     $product->setWeight($data[19]);
+                    $product->setLenght(50);
                     //$product->setCustomAttribute('ts_dimensions_length',(int)$data[21]);
                     $product->setCustomAttribute('width',(int)$data[22]);
                     $preco = (int)$data[12] * 1.23;
