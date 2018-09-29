@@ -306,15 +306,9 @@ class Products extends Command
                         continue;
                     }
                     $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', trim($data[3]));
-                    $product->setCustomAttribute('manufacturer', $optionId);
-                    $product->setCustomAttribute('height',(int)$data[23]);
-                    $product->setData(['length' => $data[21]]);
-                    $product->setData(['width' => $data[22]]);
-                    $product->setData(['height' => $data[23]]);
-                    $product->setWeight($data[19]);
-                    $product->setLength(50);
-                    //$product->setCustomAttribute('ts_dimensions_length',(int)$data[21]);
-                    $product->setCustomAttribute('width',(int)$data[22]);
+                    $data[21] != null ? $product->setData(['length' => $data[21]]): print_r("no lenght");
+                    $data[22] != null ? $product->setData(['width' => $data[22]]) : print_r("no width");
+                    $data[23]!= null ? $product->setData(['height' => $data[23]]) :print_r("height");
                     $preco = (int)$data[12] * 1.23;
                     if ($preco < 400){
                         $preco = $preco * 1.20;
