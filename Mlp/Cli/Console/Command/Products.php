@@ -308,9 +308,9 @@ class Products extends Command
                     $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', trim($data[3]));
                     $product->setCustomAttribute('manufacturer', $optionId);
                     $product->setCustomAttribute('height',(int)$data[23]);
-                    $product->setData('lenght',$data[21]);
+                    $product->setData('length',$data[21]);
                     $product->setWeight($data[19]);
-                    $product->setLenght(50);
+                    $product->setLength(50);
                     //$product->setCustomAttribute('ts_dimensions_length',(int)$data[21]);
                     $product->setCustomAttribute('width',(int)$data[22]);
                     $preco = (int)$data[12] * 1.23;
