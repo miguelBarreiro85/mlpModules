@@ -273,17 +273,18 @@ class Products extends Command
                             $product->setSku($sku);
                             $this->getImages($product, $data);
                             $product->setName(trim($data[1]));
-                            $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', trim($data[3]));
-                            $product->setCustomAttribute('manufacturer', $optionId);
-                            print_r($product->getCustomAttribute('manufacturer'));
                             $subFamilia = $this->categoryManager->setSubFamiliaSorefoz(trim($data[9]));
                             $familia = $this->categoryManager->setFamiliaSorefoz(trim($data[7]));
                             $gama = $this->categoryManager->setGamaSorefoz(trim($data[5]));
                             $product->setCustomAttribute('description', $data[26]);
                             $product->setCustomAttribute('meta_description', $data[25]);
-                            $product->setCustomAttribute('ts_dimensions_height',$data[23]);
-                            $product->setCustomAttribute('ts_dimensions_length',$data[21]);
-                            $product->setCustomAttribute('ts_dimensions_width',$data[22]);
+                            $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', trim($data[3]));
+                            $product->setCustomAttribute('manufacturer', $optionId);
+                            $product->setCustomAttribute('ts_dimensions_length',(int)$data[21]/10);
+                            $product->setCustomAttribute('ts_dimensions_width',(int)$data[22]/10);
+                            $product->setCustomAttribute('ts_dimensions_height',(int)$data[23]/10);
+                            $product->setCustomAttribute('tax_class_id',2); //taxable goods id
+                            $product->setWeight($data[19]);
                             $product->setWebsiteIds([1]);
                             //$attributeSetId = $this->attributeManager->getAttributeSetId($familia,$subFamilia);
                             $product->setAttributeSetId(4); // Attribute set id
@@ -305,13 +306,7 @@ class Products extends Command
                     } else {
                         continue;
                     }
-                    $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', trim($data[3]));
-                    $product->setCustomAttribute('manufacturer', $optionId);
-                    $product->setCustomAttribute('ts_dimensions_length',(int)$data[21]/10);
-                    $product->setCustomAttribute('ts_dimensions_width',(int)$data[22]/10);
-                    $product->setCustomAttribute('ts_dimensions_height',(int)$data[23]/10);
-                    $product->setCustomAttribute('tax_class_id',2); //taxable goods id
-                    $product->setWeight($data[19]);
+
                     $product->setLength(50);
                     $product->setCustomAttribute('width',(int)$data[22]);
                     $preco = (int)$data[12];
