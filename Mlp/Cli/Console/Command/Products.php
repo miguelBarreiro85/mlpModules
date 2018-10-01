@@ -430,7 +430,7 @@ stock 11
                         try {
                             $product->setCategoryIds([$categories[$gama], $categories[$familia], $categories[$subFamilia]]);
                         } catch (\Exception $exception) {
-                            print_r("Gama: " . $gama . "\nFamilia: " . $familia . "\nsubfamilia: " . $subFamilia . "\n" . $exception . "\n");
+                            print_r("Gama: " . $gama . "\nFamilia: " . $familia . "\nsubfamilia: " . $subFamilia . "\n" . $exception->getMessage() . "\n");
                         }
                         $product->setWebsiteIds([1]);
                         #$attributeSetId = $this->attributeManager->getAttributeSetId($familia, $subFamilia);
@@ -619,20 +619,6 @@ stock 11
         } catch (LocalizedException $localizedException) {
             $logger->info($product->getName() . "  Sem Imagem");
             print_r($ImgName . "  Sem Imagem ");
-        }
-    }
-
-    protected function deleteProducts()
-    {
-        $products = $this->productFactory->create()->getCollection();
-        $products->addFieldToSelect('*');
-        $products->load();
-        foreach ($products as $product) {
-            try {
-                $this->productRepository->deleteById($product->getSku());
-            } catch (\Exception $ex) {
-                print_r($ex->getMessage() . "\n");
-            }
         }
     }
 
