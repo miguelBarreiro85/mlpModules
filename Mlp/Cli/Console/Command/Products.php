@@ -309,7 +309,7 @@ class Products extends Command
 
                     $product->setLength(50);
                     $product->setCustomAttribute('width',(int)$data[22]);
-                    $preco = (int)$data[12];
+                    $preco = (int)str_replace(",","",$data[12]);
                     if ($preco < 400){
                         $preco = $preco * 1.20;
                     }else{
@@ -395,20 +395,21 @@ stock 11
         print_r("start\n");
         $categories = $this->categoryManager->getCategoriesArray();
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $writer = new \Zend\Log\Writer\Stream('/var/log/Auferma' . date('d:m:y') . '.log');
+        $writer = new \Zend\Log\Writer\Stream('/var/www/html/var/log/Auferma' . date('d:m:y') . '.log');
         $logger = new \Zend\Log\Logger();
         $logger->addWriter($writer);
         print_r("Adding Auferma products" . "\n");
 
-        $row = 1;
+        $row = 0;
         if (($handle = fopen("/var/www/html/app/code/Mlp/Cli/Console/Command/aufermaInterno.csv", "r")) !== FALSE) {
             while (!feof($handle)) {
+                $row++;
                 if (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-                    if (strcmp($data[8], "ACESSÓRIOS E BATERIAS") == 0) {
+                    if ( $row == 1 || strcmp($data[8], "ACESSÓRIOS E BATERIAS") == 0 ||
+                        strcmp($data[9], "AR CONDICIONADO") == 0) {
                         continue;
                         print_r("data: " . $data . "\n");
                     }
-                    $row++;
                     $num = count($data);
                     $sku = trim($data[0]);
                     try {
@@ -430,17 +431,26 @@ stock 11
                         try {
                             $product->setCategoryIds([$categories[$gama], $categories[$familia], $categories[$subFamilia]]);
                         } catch (\Exception $exception) {
-                            print_r("Gama: " . $gama . "\nFamilia: " . $familia . "\nsubfamilia: " . $subFamilia . "\n" . $exception->getMessage() . "\n");
+                            print_r($exception->getMessage()."\n");
+                            $this->categoryManager->createCategory($gama, $familia, $subFamilia, $categories);
+                            $categories = $this->categoryManager->getCategoriesArray();
+                            $product->setCategoryIds([$categories[$gama], $categories[$familia], $categories[$subFamilia]]);
                         }
                         $product->setWebsiteIds([1]);
                         #$attributeSetId = $this->attributeManager->getAttributeSetId($familia, $subFamilia);
-                        #$product->setAttributeSetId($attributeSetId); // Attribute set id
+                        $product->setAttributeSetId(4); // Attribute set id
                         $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
                         $product->setTaxClassId(0); // Tax class id
                         $product->setTypeId('simple'); // type of product (simple/virtual/downloadable/configurable)
                         $this->setImages($product, $logger, $data[2] . ".jpg");
                     }
-                    $preco = $data[3];
+
+                    $preco = (int)str_replace(".","",$data[3]);
+                    $preco = $preco/1.23;
+                    if ($preco < 5) {
+                        $logger->info("Preços inferior a 5€ " . $product->getName());
+                    }
+                    $preco = $preco/1.05;
                     $product->setPrice($preco);
                     $product->setStatus(Status::STATUS_ENABLED);
                     if (strcmp('sim', $data[11]) == 0) {
