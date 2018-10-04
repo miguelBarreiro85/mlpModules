@@ -450,7 +450,6 @@ stock 11
                         $logger->info("Preço igual a 0: " . $product->getName());
                     }
                     $preco = $preco/1.23;
-                    $preco = $preco/1.05;
                     $product->setPrice($preco);
                     $product->setStatus(Status::STATUS_ENABLED);
                     if (strcmp('sim', $data[11]) == 0) {
