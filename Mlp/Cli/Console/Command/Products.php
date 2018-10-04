@@ -364,7 +364,7 @@ class Products extends Command
                         $product->save();
 
                     } catch (\Exception $exception) {
-                        $logger->info($sku . " Deu merda. Exception:  " . $exception->getMessage());
+                        $logger->info($sku . " Deu merda a salvar: Exception:  " . $exception->getMessage());
                         print_r($exception->getMessage());
                     }
                     print_r($sku . "->" . $row . "->" . microtime(true) . "\n");
@@ -446,10 +446,10 @@ stock 11
                     }
 
                     $preco = (int)str_replace(".","",$data[3]);
-                    $preco = $preco/1.23;
-                    if ($preco < 5) {
-                        $logger->info("Preços inferior a 5€ " . $product->getName());
+                    if ($preco == 0) {
+                        $logger->info("Preço igual a 0: " . $product->getName());
                     }
+                    $preco = $preco/1.23;
                     $preco = $preco/1.05;
                     $product->setPrice($preco);
                     $product->setStatus(Status::STATUS_ENABLED);
@@ -477,7 +477,7 @@ stock 11
                         $product->save();
 
                     } catch (\Exception $exception) {
-                        $logger->info($sku . " Deu merda. Exception:  " . $exception->getMessage());
+                        $logger->info($sku . " Deu merda a gravar:  " . $exception->getMessage());
                         print_r($exception->getMessage());
                     }
                     print_r($sku . "->" . $row . "->" . microtime(true) . "\n");
