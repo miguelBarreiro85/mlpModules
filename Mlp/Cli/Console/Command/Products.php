@@ -309,7 +309,7 @@ class Products extends Command
 
                     $product->setLength(50);
                     $product->setCustomAttribute('width',(int)$data[22]);
-                    $preco = (int)str_replace(",","",$data[12]);
+                    $preco = (int)str_replace(".","",$data[12]);
                     if ($preco < 400){
                         $preco = $preco * 1.20;
                     }else{
