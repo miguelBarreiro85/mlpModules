@@ -289,7 +289,7 @@ class Products extends Command
                             //$attributeSetId = $this->attributeManager->getAttributeSetId($familia,$subFamilia);
                             $product->setAttributeSetId(4); // Attribute set id
                             $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
-                            $product->setTaxClassId(0); // Tax class id
+                            $product->setTaxClassId(1); // Tax class id
                             $product->setTypeId('simple'); // type of product (simple/virtual/downloadable/configurable)
 
                             try {
@@ -306,7 +306,7 @@ class Products extends Command
                     } else {
                         continue;
                     }
-
+                    $product->setTaxClassId(1); // Tax class id
                     $product->setLength(50);
                     $product->setCustomAttribute('width',(int)$data[22]);
                     $preco = (int)str_replace(".","",$data[12]);
@@ -440,11 +440,11 @@ stock 11
                         #$attributeSetId = $this->attributeManager->getAttributeSetId($familia, $subFamilia);
                         $product->setAttributeSetId(4); // Attribute set id
                         $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
-                        $product->setTaxClassId(0); // Tax class id
+                        $product->setTaxClassId(1); // Tax class id
                         $product->setTypeId('simple'); // type of product (simple/virtual/downloadable/configurable)
                         $this->setImages($product, $logger, $data[2] . ".jpg");
                     }
-
+                    $product->setTaxClassId(1); // Tax class id
                     $preco = (int)str_replace(".","",$data[3]);
                     if ($preco == 0) {
                         $logger->info("Preço igual a 0: " . $product->getName());
