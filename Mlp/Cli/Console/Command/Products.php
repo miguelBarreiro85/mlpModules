@@ -306,6 +306,8 @@ class Products extends Command
                     } else {
                         continue;
                     }
+                    $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', trim($data[3]));
+                    $product->setCustomAttribute('manufacturer', $optionId);
                     $product->setTaxClassId(2); // Tax class id
                     $product->setLength(50);
                     $product->setCustomAttribute('width',(int)$data[22]);
@@ -576,7 +578,7 @@ stock 11
             try {
                 $product->save();
             } catch (\Exception $exception) {
-                $logger->info($sku . " Deu merda. Exception:  " . $exception->getMessage());
+                $logger->info($sku . " Deu merda a salvar Exception:  " . $exception->getMessage());
             }
             $this->categoryManager->setTelefacCategories($subFamilia, $product->getSku(), $logger);
 
