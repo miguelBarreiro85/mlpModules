@@ -291,7 +291,8 @@ class Products extends Command
                             $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
                             $product->setTaxClassId(2); // Tax class id
                             $product->setTypeId('simple'); // type of product (simple/virtual/downloadable/configurable)
-
+                            $product->setCreatedAt(date("Y/m/d"));
+                            $product->setCustomAttribute('news_from_date',date("Y/m/d"));
                             try {
                                 $product->setCategoryIds([$categories[$gama], $categories[$familia], $categories[$subFamilia]]);
                             } catch (\Exception $ex) {
@@ -303,6 +304,7 @@ class Products extends Command
                             $this->setImages($product, $logger, $product->getSku() . "_e.jpeg");
                             $this->setImages($product, $logger, $product->getSku() . ".jpeg");
                         }
+
                     } else {
                         continue;
                     }
