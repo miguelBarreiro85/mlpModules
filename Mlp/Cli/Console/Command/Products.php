@@ -338,7 +338,7 @@ class Products extends Command
                                         'use_config_manage_stock' => 0,
                                         'manage_stock' => 1,
                                         'is_in_stock' => 1,
-                                        'qty' => 999999999
+                                        'qty' => 9
                                     )
                                 );
                                 break;
@@ -409,8 +409,8 @@ stock 11
             while (!feof($handle)) {
                 $row++;
                 if (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-                    if ( $row == 1 || strcmp($data[8], "ACESSÓRIOS E BATERIAS") == 0 ||
-                        strcmp($data[9], "AR CONDICIONADO") == 0) {
+                    if ( $row == 1 || strcmp($data[9], "ACESSÓRIOS E BATERIAS") == 0 ||
+                        strcmp($data[10], "AR CONDICIONADO") == 0) {
                         continue;
                         print_r("data: " . $data . "\n");
                     }
@@ -630,7 +630,7 @@ stock 11
         } catch (RuntimeException $exception) {
             print_r("run time exception");
         } catch (LocalizedException $localizedException) {
-            $logger->info($product->getName() . "  Sem Imagem");
+            $logger->info($product->getName() . "Image name" .$ImgName ."  Sem Imagem");
             print_r($ImgName . "  Sem Imagem ");
         }
     }
