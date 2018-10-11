@@ -409,8 +409,8 @@ stock 11
             while (!feof($handle)) {
                 $row++;
                 if (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-                    if ( $row == 1 || strcmp($data[9], "ACESSÓRIOS E BATERIAS") == 0 ||
-                        strcmp($data[10], "AR CONDICIONADO") == 0) {
+                    if ( $row == 1 || strcmp($data[8], "ACESSÓRIOS E BATERIAS") == 0 ||
+                        strcmp($data[9], "AR CONDICIONADO") == 0) {
                         continue;
                         print_r("data: " . $data . "\n");
                     }
