@@ -341,9 +341,9 @@ class Products extends Command
                                         'qty' => 9
                                     )
                                 );
-                                //$optionId = $this->dataAttributeOptions->createOrGetId('is_in_stock', 'SIM');
-                                //print_r($optionId." - sim");
-                                $product->setCustomAttribute('is_in_stock',171);
+                                $optionId = $this->dataAttributeOptions->createOrGetId('is_in_stock', 'SIM');
+                                print_r($optionId." - sim");
+                                $product->setCustomAttribute('is_in_stock',$optionId);
                                 break;
                             default:
                                 $product->setStockData(
@@ -354,9 +354,9 @@ class Products extends Command
                                         'qty' => 0
                                     )
                                 );
-                                //$optionId = $this->dataAttributeOptions->createOrGetId('is_in_stock', 'NÃO');
-                                //print_r($optionId." - não");
-                                $product->setCustomAttribute('is_in_stock',172);
+                                $optionId = $this->dataAttributeOptions->createOrGetId('is_in_stock', 'NÃO');
+                                print_r($optionId." - não");
+                                $product->setCustomAttribute('is_in_stock',$optionId);
                                 break;
                         }
                     } catch (\Exception $ex) {
