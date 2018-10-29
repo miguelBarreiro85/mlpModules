@@ -237,7 +237,7 @@ class Products extends Command
         */
         $categories = $this->categoryManager->getCategoriesArray();
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $writer = new \Zend\Log\Writer\Stream('/var/www/html/var/log/SorefozCSV' . date('d:m:y') . '.log');
+        $writer = new \Zend\Log\Writer\Stream('/var/www/html/var/log/Sorefoz.log');
         $logger = new \Zend\Log\Logger();
         $logger->addWriter($writer);
         print_r("Adding Sorefoz products" . "\n");
@@ -405,7 +405,7 @@ stock 11
         print_r("start\n");
         $categories = $this->categoryManager->getCategoriesArray();
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $writer = new \Zend\Log\Writer\Stream('/var/www/html/var/log/Auferma' . date('d:m:y') . '.log');
+        $writer = new \Zend\Log\Writer\Stream('/var/www/html/var/log/Auferma.log');
         $logger = new \Zend\Log\Logger();
         $logger->addWriter($writer);
         print_r("Adding Auferma products" . "\n");
