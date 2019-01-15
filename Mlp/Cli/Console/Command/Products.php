@@ -92,6 +92,10 @@ class Products extends Command
 
     private $registry;
 
+    private $stockStateInterface;
+
+    private $stockRegistry;
+
     public function __construct(EavSetupFactory $eavSetupFactory,
                                 AttributeSetFactory $attributeSetFactory,
                                 Attribute $entityAttribute,
@@ -104,7 +108,9 @@ class Products extends Command
                                 \Mlp\Cli\Helper\Data $dataAttributeOptions,
                                 \Mlp\Cli\Helper\Attribute $attributeManager,
                                 \Mlp\Cli\Helper\Category $categoryManager,
-                                \Magento\Framework\Registry $registry)
+                                \Magento\Framework\Registry $registry,
+                                \Magento\CatalogInventory\Api\StockStateInterface $stockStateInterface,
+                                \Magento\CatalogInventory\Api\StockRegistryInterface $stockRegistry)
     {
         $this->eavSetupFactory = $eavSetupFactory;
         $this->attributeSetFactory = $attributeSetFactory;
@@ -119,6 +125,8 @@ class Products extends Command
         $this->attributeManager = $attributeManager;
         $this->categoryManager = $categoryManager;
         $this->registry = $registry;
+        $this->stockRegistry = $stockRegistry;
+        $this->stockStateInterface = $this->stockStateInterface;
 
         parent::__construct();
     }
@@ -333,45 +341,34 @@ class Products extends Command
                     try {
                         switch ($data[29]) {
                             case 'Sim':
-                                $product->setStockData(
-                                    array(
-                                        'use_config_manage_stock' => 0,
-                                        'manage_stock' => 1,
-                                        'is_in_stock' => 1,
-                                        'qty' => 9
-                                    )
-                                );
-                                $optionId = $this->dataAttributeOptions->createOrGetId('is_in_stock', 'SIM');
-                                print_r($optionId." - sim");
-                                $product->setCustomAttribute('is_in_stock',$optionId);
+                                $stockItem=$this->stockRegistry->getStockItem($product->getId()); // load stock of that product
+                                $stockItem->setIsInStock(true); //set updated data as your requirement
+                                $stockItem->setQty(9); //set updated quantity
+                                $stockItem->setManageStock(false);
+                                $stockItem->setUseConfigNotifyStockQty(false);
+                                $stockItem->save(); //save stock of item
                                 break;
                             default:
-                                $product->setStockData(
-                                    array(
-                                        'use_config_manage_stock' => 0,
-                                        'manage_stock' => 1,
-                                        'is_in_stock' => 0,
-                                        'qty' => 0
-                                    )
-                                );
-                                $optionId = $this->dataAttributeOptions->createOrGetId('is_in_stock', 'NÃO');
-                                print_r($optionId." - não");
-                                $product->setCustomAttribute('is_in_stock',$optionId);
+                                $stockItem=$this->stockRegistry->getStockItem($product->getId()); // load stock of that product
+                                $stockItem->setIsInStock(false); //set updated data as your requirement
+                                $stockItem->setQty(0); //set updated quantity
+                                $stockItem->setManageStock(false);
+                                $stockItem->setUseConfigNotifyStockQty(false);
+                                $stockItem->save(); //save stock of item
                                 break;
                         }
                     } catch (\Exception $ex) {
                         print_r($ex->getMessage());
-                        $product->setStockData(
-                            array(
-                                'use_config_manage_stock' => 0,
-                                'manage_stock' => 1,
-                                'is_in_stock' => 0,
-                                'qty' => 0
-                            )
-                        );
+                        $stockItem=$this->stockRegistry->getStockItem($product->getId()); // load stock of that product
+                        $stockItem->setIsInStock(false); //set updated data as your requirement
+                        $stockItem->setQty(0); //set updated quantity
+                        $stockItem->setManageStock(false);
+                        $stockItem->setUseConfigNotifyStockQty(false);
+                        $stockItem->save(); //save stock of item
+                        break;
                     }
                     try {
-                        $product->save();
+                        $this->productRepository->save($product);
 
                     } catch (\Exception $exception) {
                         $logger->info($sku . " Deu merda a salvar: Exception:  " . $exception->getMessage());
@@ -386,6 +383,9 @@ class Products extends Command
         }
     }
 
+    /**
+     * @throws LocalizedException
+     */
     protected function addAufermaProducts_csv()
     {
         /*
@@ -605,6 +605,8 @@ stock 11
                 $fp = fopen("/var/www/html/pub/media/catalog/product/" . $product->getSku() . '_e.jpeg', 'wb');
                 curl_setopt($ch, CURLOPT_FILE, $fp);
                 curl_setopt($ch, CURLOPT_HEADER, 0);
+                curl_setopt($ch,CURLOPT_TIMEOUT,1);
+                curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,1);
                 curl_exec($ch);
                 curl_close($ch);
                 fclose($fp);
@@ -619,6 +621,8 @@ stock 11
                 $fp = fopen("/var/www/html/pub/media/catalog/product/" . $product->getSku() . ".jpeg", 'wb');
                 curl_setopt($ch, CURLOPT_FILE, $fp);
                 curl_setopt($ch, CURLOPT_HEADER, 0);
+                curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,1);
+                curl_setopt($ch,CURLOPT_TIMEOUT,1);
                 curl_exec($ch);
                 curl_close($ch);
                 fclose($fp);
