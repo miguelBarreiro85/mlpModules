@@ -368,7 +368,7 @@ class Products extends Command
                         break;
                     }
                     try {
-                        $this->productRepository->save($product);
+                        $product->save();
 
                     } catch (\Exception $exception) {
                         $logger->info($sku . " Deu merda a salvar: Exception:  " . $exception->getMessage());
