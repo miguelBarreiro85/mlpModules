@@ -316,11 +316,6 @@ class Products extends Command
                     } else {
                         continue;
                     }
-                    $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', trim($data[3]));
-                    $product->setCustomAttribute('manufacturer', $optionId);
-                    $product->setTaxClassId(2); // Tax class id
-                    $product->setLength(50);
-                    $product->setCustomAttribute('width',(int)$data[22]);
                     $preco = (int)str_replace(".","",$data[12]);
                     if ($preco < 400){
                         $preco = $preco * 1.20;
@@ -365,7 +360,6 @@ class Products extends Command
                         $stockItem->setManageStock(false);
                         $stockItem->setUseConfigNotifyStockQty(false);
                         $stockItem->save(); //save stock of item
-                        break;
                     }
                     try {
                         $product->save();
