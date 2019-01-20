@@ -5,6 +5,7 @@
  */
 namespace Mlp\Cli\Console\Command;
 
+use Braintree\Exception;
 use Magento\Catalog\Model\CategoryFactory;
 use Magento\Catalog\Model\CategoryRepository;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
@@ -261,8 +262,6 @@ class Products extends Command
                         continue;
                     }
                     print_r($row . ":" . $data[2] . "\n");
-                    $num = count($data);
-                    //EAN - 18
                     if (strcmp($data[5], "ACESSÓRIOS E BATERIAS") == 0 || strcmp($data[7], "MAT. PROMOCIONAL / PUBLICIDADE") == 0
                         || strcmp($data[7], "FERRAMENTAS") == 0) {
                         continue;
@@ -311,9 +310,15 @@ class Products extends Command
                             }
                             $this->setImages($product, $logger, $product->getSku() . "_e.jpeg");
                             $this->setImages($product, $logger, $product->getSku() . ".jpeg");
+                        } catch (\Exception $ex){
+                            //Se der outro erro a ler o produto do repositório
+                            print_r($ex->getMessage());
+                            continue;
                         }
 
                     } else {
+                        //Se o sku for inválido passa ao proximo produto e não adiciona este
+                        //TODO adicionar  um log para ver se é importante o produto
                         continue;
                     }
                     $preco = (int)str_replace(".","",$data[12]);
@@ -331,6 +336,13 @@ class Products extends Command
                             break;
                         default:
                             $product->setStatus(Status::STATUS_ENABLED);
+                    }
+                    try {
+                        $product->save();
+
+                    } catch (\Exception $exception) {
+                        $logger->info($sku . " Deu merda a salvar: Exception:  " . $exception->getMessage());
+                        print_r($exception->getMessage());
                     }
                     //STOCK
                     try {
@@ -353,20 +365,13 @@ class Products extends Command
                                 break;
                         }
                     } catch (\Exception $ex) {
-                        print_r($ex->getMessage());
+                        print_r("\nStock: ".$data[29]."\n".$ex->getMessage()."\n");
                         $stockItem=$this->stockRegistry->getStockItem($product->getId()); // load stock of that product
                         $stockItem->setIsInStock(false); //set updated data as your requirement
                         $stockItem->setQty(0); //set updated quantity
                         $stockItem->setManageStock(false);
                         $stockItem->setUseConfigNotifyStockQty(false);
                         $stockItem->save(); //save stock of item
-                    }
-                    try {
-                        $product->save();
-
-                    } catch (\Exception $exception) {
-                        $logger->info($sku . " Deu merda a salvar: Exception:  " . $exception->getMessage());
-                        print_r($exception->getMessage());
                     }
                     print_r($sku . "->" . $row . "->" . microtime(true) . "\n");
                 }
