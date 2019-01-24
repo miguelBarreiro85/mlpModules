@@ -685,7 +685,8 @@ stock 11
                         continue;
                     }
                     $preco = (int)str_replace(".","",$data[7]);
-                    $preco = $preco * 1.30 * 1.23;
+                    $preco = $preco * 1.30;
+                    $preco = $preco * 1.23;
                     $product->setPrice($preco);
                     try {
                         $product->save();
