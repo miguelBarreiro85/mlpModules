@@ -685,12 +685,7 @@ stock 11
                         continue;
                     }
                     $preco = (int)str_replace(".","",$data[7]);
-                    if ($preco < 400){
-                        $preco = $preco * 1.20;
-                    }else{
-                        $preco = $preco * 1.15;
-                    }
-
+                    $preco = $preco * 1.30 * 1.23;
                     $product->setPrice($preco);
                     try {
                         $product->save();
