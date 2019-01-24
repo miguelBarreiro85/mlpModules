@@ -197,7 +197,7 @@ class Products extends Command
         }
         $addTelefacOption = $input->getOption(self::ADD_TELEFAC_PRODUCTS);
         if ($addTelefacOption) {
-            $this->addTelefacProducts();
+            $this->addTelefacProducts_csv();
             $output->writeln('<info>ACABEI DE ADICIONAR OS PRODUTOS TELEFAC!</info>');
         }
         if ($input->getOption(self::ADD_AUFERMA_PRODUCTS)) {
@@ -354,6 +354,9 @@ class Products extends Command
                                 $stockItem->setManageStock(false);
                                 $stockItem->setUseConfigNotifyStockQty(false);
                                 $stockItem->save(); //save stock of item
+                            //Para por os atributos
+                                $optionId = $this->dataAttributeOptions->createOrGetId('is_in_stock', 'SIM');
+                                $product->setCustomAttribute('is_in_stock',$optionId);
                                 break;
                             default:
                                 $stockItem=$this->stockRegistry->getStockItem($product->getId()); // load stock of that product
@@ -362,6 +365,9 @@ class Products extends Command
                                 $stockItem->setManageStock(false);
                                 $stockItem->setUseConfigNotifyStockQty(false);
                                 $stockItem->save(); //save stock of item
+                            //Para por os atributos
+                                $optionId = $this->dataAttributeOptions->createOrGetId('is_in_stock', 'NÃO');
+                                $product->setCustomAttribute('is_in_stock',$optionId);
                                 break;
                         }
                     } catch (\Exception $ex) {
@@ -372,6 +378,11 @@ class Products extends Command
                         $stockItem->setManageStock(false);
                         $stockItem->setUseConfigNotifyStockQty(false);
                         $stockItem->save(); //save stock of item
+                    //Para por os atributos
+                        $optionId = $this->dataAttributeOptions->createOrGetId('is_in_stock', 'NÃO');
+                        $product->setCustomAttribute('is_in_stock',$optionId);
+                        break;
+
                     }
                     print_r($sku . "->" . $row . "->" . microtime(true) . "\n");
                 }
@@ -596,6 +607,147 @@ stock 11
         }
     }
 
+    protected function addTelefacProducts_csv(){
+        /*
+         * 0 - Nome
+         * 1 - marca
+         * 2 - codigo
+         * 3 - sku
+         * 4 - descrição
+         * 5 - pvp
+         * 6 - stock
+         * 7 - preço custo
+         * 8 - gama
+         * 9 - familia
+         * 10 - sub familia
+         */
+        $categories = $this->categoryManager->getCategoriesArray();
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $writer = new \Zend\Log\Writer\Stream('/var/www/html/var/log/Telefac.log');
+        $logger = new \Zend\Log\Logger();
+        $logger->addWriter($writer);
+        print_r("Adding Telefac products" . "\n");
+        $row = 0;
+        if (($handle = fopen("/var/www/html/app/code/Mlp/Cli/Console/Command/telefac_interno.csv", "r")) !== FALSE) {
+            print_r("abri ficheiro\n");
+            //print_r($handle);
+            while (!feof($handle)) {
+                if (($data = fgetcsv($handle, 4000, ",", '"')) !== FALSE) {
+                    $row++;
+                    $sku = trim($data[3]);
+                    if (strlen($sku) == 13) {
+                        try {
+                            $product = $this->productRepository->get($sku, true, null, true);
+                            if ($product->getStatus() == 2) {
+                                print_r($sku . "\n");
+                                continue;
+                            }
+                        } catch (NoSuchEntityException $exception) {
+                            //Produto NOVO
+                            $product = $this->productFactory->create();
+                            $product->setSku($sku);
+                            $product->setName(trim($data[0]));
+                            $subFamilia = $this->categoryManager->setSubFamiliaSorefoz(trim($data[10]));
+                            $familia = $this->categoryManager->setFamiliaSorefoz(trim($data[9]));
+                            $gama = $this->categoryManager->setGamaSorefoz(trim($data[8]));
+                            $product->setCustomAttribute('description', $data[3]);
+                            $product->setCustomAttribute('meta_description', $data[3]);
+                            $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', trim($data[1]));
+                            $product->setCustomAttribute('manufacturer', $optionId);
+                            $product->setCustomAttribute('tax_class_id',2); //taxable goods id
+                            $product->setWebsiteIds([1]);
+                            //$attributeSetId = $this->attributeManager->getAttributeSetId($familia,$subFamilia);
+                            $product->setAttributeSetId(4); // Attribute set id
+                            $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
+                            $product->setTaxClassId(2); // Tax class id
+                            $product->setTypeId('simple'); // type of product (simple/virtual/downloadable/configurable)
+                            $product->setCreatedAt(date("Y/m/d"));
+                            $product->setCustomAttribute('news_from_date',date("Y/m/d"));
+                            $this->setImages($product,$logger,$data[3].".jpg");
+                            $this->setImages($product,$logger,$data[3]."_2.jpg");
+                            try {
+                                $product->setCategoryIds([$categories[$gama], $categories[$familia], $categories[$subFamilia]]);
+                            } catch (\Exception $ex) {
+                                print_r($ex->getMessage());
+                                $this->categoryManager->createCategory($gama, $familia, $subFamilia, $categories);
+                                $categories = $this->categoryManager->getCategoriesArray();
+                                $product->setCategoryIds([$categories[$gama], $categories[$familia], $categories[$subFamilia]]);
+                            }
+                        } catch (\Exception $ex){
+                            //Se der outro erro a ler o produto do repositório
+                            print_r($ex->getMessage());
+                            continue;
+                        }
+
+                    } else {
+                        //Se o sku for inválido passa ao proximo produto e não adiciona este
+                        //TODO adicionar  um log para ver se é importante o produto
+                        continue;
+                    }
+                    $preco = (int)str_replace(".","",$data[7]);
+                    if ($preco < 400){
+                        $preco = $preco * 1.20;
+                    }else{
+                        $preco = $preco * 1.15;
+                    }
+
+                    $product->setPrice($preco);
+                    try {
+                        $product->save();
+
+                    } catch (\Exception $exception) {
+                        $logger->info($sku . " Deu merda a salvar: Exception:  " . $exception->getMessage());
+                        print_r($exception->getMessage());
+                    }
+                    //STOCK
+                    try {
+                        switch ($data[6]) {
+                            case 'Sim':
+                                $stockItem=$this->stockRegistry->getStockItem($product->getId()); // load stock of that product
+                                $stockItem->setIsInStock(true); //set updated data as your requirement
+                                $stockItem->setQty(9); //set updated quantity
+                                $stockItem->setManageStock(false);
+                                $stockItem->setUseConfigNotifyStockQty(false);
+                                $stockItem->save(); //save stock of item
+                                //Para por os atributos
+                                $optionId = $this->dataAttributeOptions->createOrGetId('is_in_stock', 'SIM');
+                                $product->setCustomAttribute('is_in_stock',$optionId);
+                                break;
+                            default:
+                                $stockItem=$this->stockRegistry->getStockItem($product->getId()); // load stock of that product
+                                $stockItem->setIsInStock(false); //set updated data as your requirement
+                                $stockItem->setQty(0); //set updated quantity
+                                $stockItem->setManageStock(false);
+                                $stockItem->setUseConfigNotifyStockQty(false);
+                                $stockItem->save(); //save stock of item
+                                //Para por os atributos
+                                $optionId = $this->dataAttributeOptions->createOrGetId('is_in_stock', 'NÃO');
+                                $product->setCustomAttribute('is_in_stock',$optionId);
+                                break;
+                        }
+                    } catch (\Exception $ex) {
+                        print_r("\nStock: ".$data[6]."\n".$ex->getMessage()."\n");
+                        $stockItem=$this->stockRegistry->getStockItem($product->getId()); // load stock of that product
+                        $stockItem->setIsInStock(false); //set updated data as your requirement
+                        $stockItem->setQty(0); //set updated quantity
+                        $stockItem->setManageStock(false);
+                        $stockItem->setUseConfigNotifyStockQty(false);
+                        $stockItem->save(); //save stock of item
+                        //Para por os atributos
+                        $optionId = $this->dataAttributeOptions->createOrGetId('is_in_stock', 'NÃO');
+                        $product->setCustomAttribute('is_in_stock',$optionId);
+                        break;
+
+                    }
+                    print_r($sku . "->" . $row . "->" . microtime(true) . "\n");
+                }
+            }
+            fclose($handle);
+        } else {
+            print_r("Não abriu o ficheiro");
+        }
+    }
+
     protected function getImages($product, $data)
     {
         try {
@@ -604,8 +756,8 @@ stock 11
                 $fp = fopen("/var/www/html/pub/media/catalog/product/" . $product->getSku() . '_e.jpeg', 'wb');
                 curl_setopt($ch, CURLOPT_FILE, $fp);
                 curl_setopt($ch, CURLOPT_HEADER, 0);
-                curl_setopt($ch,CURLOPT_TIMEOUT,1);
-                curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,1);
+                curl_setopt($ch,CURLOPT_TIMEOUT,100);
+                curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,100);
                 curl_exec($ch);
                 curl_close($ch);
                 fclose($fp);
