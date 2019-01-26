@@ -18,6 +18,7 @@ use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\App\State;
 use Magento\Framework\Filesystem;
 use Magento\UrlRewrite\Model\Exception\UrlAlreadyExistsException;
+use phpDocumentor\Reflection\Types\This;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -97,6 +98,10 @@ class Products extends Command
 
     private $stockRegistry;
 
+    private $option;
+
+    private $productRepositoryInterface;
+
     public function __construct(EavSetupFactory $eavSetupFactory,
                                 AttributeSetFactory $attributeSetFactory,
                                 Attribute $entityAttribute,
@@ -111,8 +116,11 @@ class Products extends Command
                                 \Mlp\Cli\Helper\Category $categoryManager,
                                 \Magento\Framework\Registry $registry,
                                 \Magento\CatalogInventory\Api\StockStateInterface $stockStateInterface,
-                                \Magento\CatalogInventory\Api\StockRegistryInterface $stockRegistry)
+                                \Magento\CatalogInventory\Api\StockRegistryInterface $stockRegistry,
+                                \Magento\Catalog\Model\Product\Option $option,
+                                \Magento\Catalog\Api\ProductRepositoryInterface $productRepositoryInterface)
     {
+        $this->productRepositoryInterface = $productRepositoryInterface;
         $this->eavSetupFactory = $eavSetupFactory;
         $this->attributeSetFactory = $attributeSetFactory;
         $this->entityAttribute = $entityAttribute;
@@ -127,7 +135,8 @@ class Products extends Command
         $this->categoryManager = $categoryManager;
         $this->registry = $registry;
         $this->stockRegistry = $stockRegistry;
-        $this->stockStateInterface = $this->stockStateInterface;
+        $this->stockStateInterface = $stockStateInterface;
+        $this->option = $option;
 
         parent::__construct();
     }
@@ -429,6 +438,7 @@ stock 11
                     print_r($data[9]." ");
                     print_r($data[10]."\n");
                     continue;
+                    }
                     if ( $row == 1 || strcmp($data[8], "ACESSÓRIOS E BATERIAS") == 0 ||
                         strcmp($data[9], "AR CONDICIONADO") == 0) {
                         continue;
@@ -508,8 +518,6 @@ stock 11
             }
             fclose($handle);
         }
-
-    }
 
     protected function addTelefacProducts()
     {
@@ -688,8 +696,10 @@ stock 11
                     $preco = $preco * 1.30;
                     $preco = $preco * 1.23;
                     $product->setPrice($preco);
+                    $this->add_warranty_option($product);
                     try {
                         $product->save();
+                        $this->productRepositoryInterface->save($product);
 
                     } catch (\Exception $exception) {
                         $logger->info($sku . " Deu merda a salvar: Exception:  " . $exception->getMessage());
@@ -810,6 +820,54 @@ stock 11
     {
         $attribute = $this->entityAttribute->loadByCode('catalog_product', $attCode);
         return $attribute->getData();
+    }
+
+    protected function add_warranty_option($product){
+        $one_year = $this->get_one_year_warranty_price((int)$product->getPrice());
+        $three_years = $this->get_three_years_warranty_price((int)$product->getPrice());
+
+        $options = [
+            [
+                'title' => 'Extensão de garantia',
+                'type' => 'checkbox',
+                'is_require' => false,
+                'sort_order' => 4,
+                'values' => [
+                    [
+                        'title' => '1 ano',
+                        'price' => $one_year,
+                        'price_type' => 'fixed',
+                        'sort_order' => 0,
+                    ],
+                    [
+                        'title' => '3 anos',
+                        'price' => $three_years,
+                        'price_type' => 'fixed',
+                        'sort_order' => 1,
+                    ],
+                ],
+            ]
+        ];
+
+        $product->setCustomOptions($options);
+        /*
+         foreach ($options as $arrayOption) {
+            $this->option->setProductId($product->getId())
+                ->setStoreId($product->getStoreId())
+                ->addData($arrayOption);
+            $this->option->save();
+            $product->addOption($this->option);
+
+        }
+        */
+    }
+
+    protected function get_one_year_warranty_price($price){
+        return 30;
+    }
+
+    protected function get_three_years_warranty_price($price){
+        return 85;
     }
 
     /*
