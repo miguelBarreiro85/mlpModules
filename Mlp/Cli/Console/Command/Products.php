@@ -98,7 +98,7 @@ class Products extends Command
 
     private $stockRegistry;
 
-    private $option;
+    private $optionFactory;
 
     private $productRepositoryInterface;
 
@@ -117,7 +117,7 @@ class Products extends Command
                                 \Magento\Framework\Registry $registry,
                                 \Magento\CatalogInventory\Api\StockStateInterface $stockStateInterface,
                                 \Magento\CatalogInventory\Api\StockRegistryInterface $stockRegistry,
-                                \Magento\Catalog\Model\Product\Option $option,
+                                \Magento\Catalog\Model\Product\OptionFactory $optionFactory,
                                 \Magento\Catalog\Api\ProductRepositoryInterface $productRepositoryInterface)
     {
         $this->productRepositoryInterface = $productRepositoryInterface;
@@ -136,7 +136,7 @@ class Products extends Command
         $this->registry = $registry;
         $this->stockRegistry = $stockRegistry;
         $this->stockStateInterface = $stockStateInterface;
-        $this->option = $option;
+        $this->optionFactory = $optionFactory;
 
         parent::__construct();
     }
@@ -696,15 +696,17 @@ stock 11
                     $preco = $preco * 1.30;
                     $preco = $preco * 1.23;
                     $product->setPrice($preco);
-                    $this->add_warranty_option($product);
                     try {
                         $product->save();
-                        $this->productRepositoryInterface->save($product);
-
                     } catch (\Exception $exception) {
                         $logger->info($sku . " Deu merda a salvar: Exception:  " . $exception->getMessage());
                         print_r($exception->getMessage());
                     }
+                    if ($product->getOptions() == null){
+                        $this->add_warranty_option($product);
+                    }
+
+
                     //STOCK
                     try {
                         switch ($data[6]) {
@@ -792,6 +794,7 @@ stock 11
 
     protected function setImages($product, $logger, $ImgName)
     {
+        print_r($product->getSku());
         $baseMediaPath = $this->config->getBaseMediaPath();
         try {
             $images = $product->getMediaGalleryImages();
@@ -801,7 +804,7 @@ stock 11
         } catch (RuntimeException $exception) {
             print_r("run time exception");
         } catch (LocalizedException $localizedException) {
-            $logger->info($product->getName() . "Image name" .$ImgName ."  Sem Imagem");
+            $logger->info($product->getName() . "Image name" . $ImgName . "  Sem Imagem");
             print_r($ImgName . "  Sem Imagem ");
         }
     }
@@ -849,17 +852,16 @@ stock 11
             ]
         ];
 
-        $product->setCustomOptions($options);
-        /*
          foreach ($options as $arrayOption) {
-            $this->option->setProductId($product->getId())
+             $option = $this->optionFactory->create();
+             $option->setProductId($product->getId())
                 ->setStoreId($product->getStoreId())
                 ->addData($arrayOption);
-            $this->option->save();
-            $product->addOption($this->option);
+             $option->save();
+             $product->addOption($option);
+         }
+         $this->productRepositoryInterface->save($product);
 
-        }
-        */
     }
 
     protected function get_one_year_warranty_price($price){
