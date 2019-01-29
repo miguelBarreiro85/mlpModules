@@ -402,9 +402,6 @@ class Products extends Command
         }
     }
 
-    /**
-     * @throws LocalizedException
-     */
     protected function addAufermaProducts_csv()
     {
         /*
@@ -518,102 +515,6 @@ stock 11
             }
             fclose($handle);
         }
-
-    protected function addTelefacProducts()
-    {
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $writer = new \Zend\Log\Writer\Stream('/var/log/TelefacProducts.log');
-        $logger = new \Zend\Log\Logger();
-        $logger->addWriter($writer);
-
-        print_r("Adding Telefac products");
-
-        $spreadsheetSorefoz = IOFactory::load("/var/www/html/app/code/Mlp/Cli/Console/Command/tab_telefac.xlsx");
-
-        $aSheet = $spreadsheetSorefoz->getActiveSheet();
-        foreach ($aSheet->getRowIterator() as $aRow) {
-            if ($aRow->getRowIndex() == 1) {
-                continue;
-            }
-            /*if (strcmp(trim($aSheet->getCell('H' . $aRow->getRowIndex())), 'TELEVISÃO') != 0) {
-                print_r("continua\n");
-                continue;
-            }*/
-            $sku = trim($aSheet->getCell('B' . $aRow->getRowIndex())->getValue());
-            if (strlen($sku) == 13) {
-                try {
-                    $product = $this->productRepository->get($sku, true, null, true);
-                } catch (NoSuchEntityException $exception) {
-                    $product = $this->productFactory->create();
-                    $product->setSku($sku);
-                }
-            } else {
-                continue;
-            }
-            $gama = '';
-            $familia = '';
-            $subFamilia = '';
-
-            foreach ($aRow->getCellIterator() as $aCell) {
-                //Regex para partir a coluna da linha para depois ser inserido na folha magento
-                switch ($aCell->getColumn()) {
-                    case 'A':
-                        $product->setName(trim($aCell->getValue()));
-                        break;
-                    case 'G':
-                        //Manufacter
-                        $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', trim($aCell->getValue()));
-                        $product->setCustomAttribute('manufacturer', $optionId);
-                        break;
-                    case 'F':
-                        $subFamilia = trim($aCell->getValue());
-                        break;
-                    case 'D':
-                        $preco = $aCell->getValue();
-                        $product->setPrice($preco);
-                        break;
-                    //Gama | Fora de Gama
-                    case 'E':
-                        switch ($aCell->getValue()) {
-                            case 'Sim':
-                                $product->setStatus(Status::STATUS_ENABLED);
-                                $product->setStockData(
-                                    array(
-                                        'use_config_manage_stock' => 0,
-                                        'manage_stock' => 1,
-                                        'is_in_stock' => 1,
-                                        'qty' => 999999999
-                                    )
-                                );
-                                break;
-                            default:
-                                $product->setStatus(Status::STATUS_DISABLED);
-                                break;
-                        }
-                        break;
-                    case 'C':
-                        $product->setCustomAttribute('description', $aCell->getValue());
-                        $product->setCustomAttribute('meta_description', $aCell->getValue());
-
-                        break;
-                }
-            }
-            $product->setWeight(0);
-            $product->setWebsiteIds([1]);
-            $product->setAttributeSetId(4); // Attribute set id
-            $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
-            $product->setTaxClassId(0); // Tax class id
-            $product->setTypeId('simple'); // type of product (simple/virtual/downloadable/configurable)
-            $this->setImages($product, $logger, $product->getSku());
-            try {
-                $product->save();
-            } catch (\Exception $exception) {
-                $logger->info($sku . " Deu merda a salvar Exception:  " . $exception->getMessage());
-            }
-            $this->categoryManager->setTelefacCategories($subFamilia, $product->getSku(), $logger);
-
-        }
-    }
 
     protected function addTelefacProducts_csv(){
         /*
@@ -906,26 +807,25 @@ stock 11
         return 85;
     }
 
-    /*
+    protected function getInstallationValue($familia)
+    {
+        switch ($familia){
+            case 'ENCASTRE':
+                return 54.90;
+            case 'FOGÕES':
+                return 39.90;
+            case 'ESQUENTADORES/CALDEIRAS':
+                return 74.90;
+            case 'TERMOACUMULADORES':
+                return 64.90;
+            case 'AR CONDICIONADO':
+                return 180;
+            default:
+                return 0;
+        }
+    }
 
-    AUFERMA
-    Codigo,0
-    Nome,1
-    CodCurto,2
-    PVPBase,3
-    PesoBrt,4
-    Marca,5
-    Familia Auf,6
-    NomeXtra 7
-    gama 8
-    familia 9
-    sub familia 10
-    stock 11
-
-
-
-    */
-
+    
     protected function addSorefozProducts()
     {
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
@@ -1089,22 +989,99 @@ stock 11
             $this->categoryManager->setCategories($gama, $familia, $subFamilia, $product->getSku(), $logger);
         }
     }
-
-    protected function getInstallationValue($familia)
+    protected function addTelefacProducts()
     {
-        switch ($familia){
-            case 'ENCASTRE':
-                return 54.90;
-            case 'FOGÕES':
-                return 39.90;
-            case 'ESQUENTADORES/CALDEIRAS':
-                return 74.90;
-            case 'TERMOACUMULADORES':
-                return 64.90;
-            case 'AR CONDICIONADO':
-                return 180;
-            default:
-                return 0;
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $writer = new \Zend\Log\Writer\Stream('/var/log/TelefacProducts.log');
+        $logger = new \Zend\Log\Logger();
+        $logger->addWriter($writer);
+
+        print_r("Adding Telefac products");
+
+        $spreadsheetSorefoz = IOFactory::load("/var/www/html/app/code/Mlp/Cli/Console/Command/tab_telefac.xlsx");
+
+        $aSheet = $spreadsheetSorefoz->getActiveSheet();
+        foreach ($aSheet->getRowIterator() as $aRow) {
+            if ($aRow->getRowIndex() == 1) {
+                continue;
+            }
+            /*if (strcmp(trim($aSheet->getCell('H' . $aRow->getRowIndex())), 'TELEVISÃO') != 0) {
+                print_r("continua\n");
+                continue;
+            }*/
+            $sku = trim($aSheet->getCell('B' . $aRow->getRowIndex())->getValue());
+            if (strlen($sku) == 13) {
+                try {
+                    $product = $this->productRepository->get($sku, true, null, true);
+                } catch (NoSuchEntityException $exception) {
+                    $product = $this->productFactory->create();
+                    $product->setSku($sku);
+                }
+            } else {
+                continue;
+            }
+            $gama = '';
+            $familia = '';
+            $subFamilia = '';
+
+            foreach ($aRow->getCellIterator() as $aCell) {
+                //Regex para partir a coluna da linha para depois ser inserido na folha magento
+                switch ($aCell->getColumn()) {
+                    case 'A':
+                        $product->setName(trim($aCell->getValue()));
+                        break;
+                    case 'G':
+                        //Manufacter
+                        $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', trim($aCell->getValue()));
+                        $product->setCustomAttribute('manufacturer', $optionId);
+                        break;
+                    case 'F':
+                        $subFamilia = trim($aCell->getValue());
+                        break;
+                    case 'D':
+                        $preco = $aCell->getValue();
+                        $product->setPrice($preco);
+                        break;
+                    //Gama | Fora de Gama
+                    case 'E':
+                        switch ($aCell->getValue()) {
+                            case 'Sim':
+                                $product->setStatus(Status::STATUS_ENABLED);
+                                $product->setStockData(
+                                    array(
+                                        'use_config_manage_stock' => 0,
+                                        'manage_stock' => 1,
+                                        'is_in_stock' => 1,
+                                        'qty' => 999999999
+                                    )
+                                );
+                                break;
+                            default:
+                                $product->setStatus(Status::STATUS_DISABLED);
+                                break;
+                        }
+                        break;
+                    case 'C':
+                        $product->setCustomAttribute('description', $aCell->getValue());
+                        $product->setCustomAttribute('meta_description', $aCell->getValue());
+
+                        break;
+                }
+            }
+            $product->setWeight(0);
+            $product->setWebsiteIds([1]);
+            $product->setAttributeSetId(4); // Attribute set id
+            $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
+            $product->setTaxClassId(0); // Tax class id
+            $product->setTypeId('simple'); // type of product (simple/virtual/downloadable/configurable)
+            $this->setImages($product, $logger, $product->getSku());
+            try {
+                $product->save();
+            } catch (\Exception $exception) {
+                $logger->info($sku . " Deu merda a salvar Exception:  " . $exception->getMessage());
+            }
+            $this->categoryManager->setTelefacCategories($subFamilia, $product->getSku(), $logger);
+
         }
     }
 }
