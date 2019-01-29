@@ -704,6 +704,11 @@ stock 11
                     }
                     if ($product->getOptions() == null){
                         $this->add_warranty_option($product);
+                        $value = $this->getInstallationValue($familia);
+                        if ($value > 0){
+                            $this->add_installation_option($product,$value);
+                        }
+
                     }
 
 
@@ -849,7 +854,7 @@ stock 11
                         'sort_order' => 1,
                     ],
                 ],
-            ]
+            ],
         ];
 
          foreach ($options as $arrayOption) {
@@ -862,6 +867,35 @@ stock 11
          }
          $this->productRepositoryInterface->save($product);
 
+    }
+
+    protected function add_installation_option($product, $value){
+        $options = [
+            [
+                'title' => 'Serviço de instalação',
+                'type' => 'checkbox',
+                'is_require' => false,
+                'sort_order' => 4,
+                'values' => [
+                    [
+                        'title' => 'Instalação de equipamento',
+                        'price' => $value,
+                        'price_type' => 'fixed',
+                        'sort_order' => 0,
+                    ],
+                ],
+            ],
+        ];
+
+        foreach ($options as $arrayOption) {
+            $option = $this->optionFactory->create();
+            $option->setProductId($product->getId())
+                ->setStoreId($product->getStoreId())
+                ->addData($arrayOption);
+            $option->save();
+            $product->addOption($option);
+        }
+        $this->productRepositoryInterface->save($product);
     }
 
     protected function get_one_year_warranty_price($price){
@@ -1053,6 +1087,24 @@ stock 11
                 $logger->info($sku . " Deu merda. Exception:  " . $exception->getMessage());
             }
             $this->categoryManager->setCategories($gama, $familia, $subFamilia, $product->getSku(), $logger);
+        }
+    }
+
+    protected function getInstallationValue($familia)
+    {
+        switch ($familia){
+            case 'ENCASTRE':
+                return 54.90;
+            case 'FOGÕES':
+                return 39.90;
+            case 'ESQUENTADORES/CALDEIRAS':
+                return 74.90;
+            case 'TERMOACUMULADORES':
+                return 64.90;
+            case 'AR CONDICIONADO':
+                return 180;
+            default:
+                return 0;
         }
     }
 }
