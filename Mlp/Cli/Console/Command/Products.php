@@ -468,8 +468,9 @@ stock 11
                         $product->setTypeId('simple'); // type of product (simple/virtual/downloadable/configurable)
                         $this->setImages($product, $logger, $data[2] . ".jpg");
                     }
+                    //$product->getIma
                     $product->setTaxClassId(2); // Tax class id
-                    $preco = (int)str_replace(' ', '', $data[3]);
+                    $preco = (int)trim($data[3]);
                     if ($preco == 0) {
                         $logger->info("Preço igual a 0: " . $product->getName());
                     }
