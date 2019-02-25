@@ -286,8 +286,8 @@ class Products extends Command
                             $product->setCustomAttribute('tax_class_id',2); //taxable goods id
                             $product->setWeight($data[19]);
                             $product->setWebsiteIds([1]);
-                            //$attributeSetId = $this->attributeManager->getAttributeSetId($familia,$subFamilia);
-                            $product->setAttributeSetId(4); // Attribute set id
+                            $attributeSetId = $this->attributeManager->getAttributeSetId($familia,$subFamilia);
+                            $product->setAttributeSetId($attributeSetId); // Attribute set id
                             $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
                             $product->setTaxClassId(2); // Tax class id
                             $product->setTypeId('simple'); // type of product (simple/virtual/downloadable/configurable)

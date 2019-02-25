@@ -80,6 +80,30 @@ class Attribute
                     ->toArray();
                 $attributeSetId = (int) $attributeSet['attribute_set_id'];
                 return $attributeSetId;
+            case 'MAQUINAS LAVAR ROUPA':
+                $attributeSet = $this->attributeSetCollection->create()
+                    ->addFieldToSelect('attribute_set_id')
+                    ->addFieldToFilter('attribute_set_name', 'MLR')
+                    ->getFirstItem()
+                    ->toArray();
+                $attributeSetId = (int) $attributeSet['attribute_set_id'];
+                return $attributeSetId;
+            case 'MAQUINAS LAVAR LOUÇA':
+                $attributeSet = $this->attributeSetCollection->create()
+                    ->addFieldToSelect('attribute_set_id')
+                    ->addFieldToFilter('attribute_set_name', 'MLL')
+                    ->getFirstItem()
+                    ->toArray();
+                $attributeSetId = (int) $attributeSet['attribute_set_id'];
+                return $attributeSetId;
+            case 'FOGÕES':
+                $attributeSet = $this->attributeSetCollection->create()
+                    ->addFieldToSelect('attribute_set_id')
+                    ->addFieldToFilter('attribute_set_name', 'FOGÕES')
+                    ->getFirstItem()
+                    ->toArray();
+                $attributeSetId = (int) $attributeSet['attribute_set_id'];
+                return $attributeSetId;
         }
         switch ($subfamilia){
             case 'PORTÁTEIS':

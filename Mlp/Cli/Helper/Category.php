@@ -197,6 +197,13 @@ class Category
                     return 'MÁQUINAS DE LOIÇA';
                 case 'MAQ.LAVAR LOUÇA 45 Cm':
                     return 'MÁQUINAS DE LOIÇA';
+
+                case 'TV LED 46"':
+                    return 'TV LED+46"';
+                case 'TV LED 27"':
+                    return 'TV LED 28"';
+                case 'TV LED 42"':
+                    return 'TV LED+42"';
                 default:
                     return $subFamilia;
             }
