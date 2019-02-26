@@ -204,6 +204,8 @@ class Category
                     return 'TV LED 28"';
                 case 'TV LED 42"':
                     return 'TV LED+42"';
+                case 'MICROONDAS':
+                    return 'MICROONDAS ENCASTRE';
                 default:
                     return $subFamilia;
             }

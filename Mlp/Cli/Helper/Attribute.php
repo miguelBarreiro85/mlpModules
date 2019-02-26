@@ -96,6 +96,14 @@ class Attribute
                     ->toArray();
                 $attributeSetId = (int) $attributeSet['attribute_set_id'];
                 return $attributeSetId;
+            case 'MAQUINAS SECAR ROUPA':
+                $attributeSet = $this->attributeSetCollection->create()
+                    ->addFieldToSelect('attribute_set_id')
+                    ->addFieldToFilter('attribute_set_name', 'MSR')
+                    ->getFirstItem()
+                    ->toArray();
+                $attributeSetId = (int) $attributeSet['attribute_set_id'];
+                return $attributeSetId;
             case 'FOGÕES':
                 $attributeSet = $this->attributeSetCollection->create()
                     ->addFieldToSelect('attribute_set_id')
@@ -104,6 +112,31 @@ class Attribute
                     ->toArray();
                 $attributeSetId = (int) $attributeSet['attribute_set_id'];
                 return $attributeSetId;
+            case 'AR CONDICIONADO':
+                $attributeSet = $this->attributeSetCollection->create()
+                    ->addFieldToSelect('attribute_set_id')
+                    ->addFieldToFilter('attribute_set_name', 'AC')
+                    ->getFirstItem()
+                    ->toArray();
+                $attributeSetId = (int) $attributeSet['attribute_set_id'];
+                return $attributeSetId;
+            case 'CONGELADORES':
+                $attributeSet = $this->attributeSetCollection->create()
+                    ->addFieldToSelect('attribute_set_id')
+                    ->addFieldToFilter('attribute_set_name', 'CONGELADORES')
+                    ->getFirstItem()
+                    ->toArray();
+                $attributeSetId = (int) $attributeSet['attribute_set_id'];
+                return $attributeSetId;
+            case 'FRIGORIFICOS/COMBINADOS':
+                $attributeSet = $this->attributeSetCollection->create()
+                    ->addFieldToSelect('attribute_set_id')
+                    ->addFieldToFilter('attribute_set_name', 'FRIGORIFICOS')
+                    ->getFirstItem()
+                    ->toArray();
+                $attributeSetId = (int) $attributeSet['attribute_set_id'];
+                return $attributeSetId;
+
         }
         switch ($subfamilia){
             case 'PORTÁTEIS':
@@ -114,6 +147,95 @@ class Attribute
                     ->toArray();
                 $attributeSetId = (int) $attributeSet['attribute_set_id'];
                 return $attributeSetId;
+            case 'PAINEIS SOLARES':
+                $attributeSet = $this->attributeSetCollection->create()
+                    ->addFieldToSelect('attribute_set_id')
+                    ->addFieldToFilter('attribute_set_name', 'PAINEIS_SOLARES')
+                    ->getFirstItem()
+                    ->toArray();
+                $attributeSetId = (int) $attributeSet['attribute_set_id'];
+                return $attributeSetId;
+            case 'FORNOS':
+                $attributeSet = $this->attributeSetCollection->create()
+                    ->addFieldToSelect('attribute_set_id')
+                    ->addFieldToFilter('attribute_set_name', 'FORNOS')
+                    ->getFirstItem()
+                    ->toArray();
+                $attributeSetId = (int) $attributeSet['attribute_set_id'];
+                return $attributeSetId;
+            case 'PLACAS':
+                $attributeSet = $this->attributeSetCollection->create()
+                    ->addFieldToSelect('attribute_set_id')
+                    ->addFieldToFilter('attribute_set_name', 'PLACAS')
+                    ->getFirstItem()
+                    ->toArray();
+                $attributeSetId = (int) $attributeSet['attribute_set_id'];
+                return $attributeSetId;
+            case 'EXAUSTORES':
+                $attributeSet = $this->attributeSetCollection->create()
+                    ->addFieldToSelect('attribute_set_id')
+                    ->addFieldToFilter('attribute_set_name', 'EXAUSTORES')
+                    ->getFirstItem()
+                    ->toArray();
+                $attributeSetId = (int) $attributeSet['attribute_set_id'];
+                return $attributeSetId;
+            case 'MÁQUINAS DE LOIÇA':
+                $attributeSet = $this->attributeSetCollection->create()
+                    ->addFieldToSelect('attribute_set_id')
+                    ->addFieldToFilter('attribute_set_name', 'MLL_ENCASTRE')
+                    ->getFirstItem()
+                    ->toArray();
+                $attributeSetId = (int) $attributeSet['attribute_set_id'];
+                return $attributeSetId;
+            case 'COMBINADOS':
+                $attributeSet = $this->attributeSetCollection->create()
+                    ->addFieldToSelect('attribute_set_id')
+                    ->addFieldToFilter('attribute_set_name', 'FRIGORIFICOS')
+                    ->getFirstItem()
+                    ->toArray();
+                $attributeSetId = (int) $attributeSet['attribute_set_id'];
+                return $attributeSetId;
+            case 'FRIGORIFICOS':
+                $attributeSet = $this->attributeSetCollection->create()
+                    ->addFieldToSelect('attribute_set_id')
+                    ->addFieldToFilter('attribute_set_name', 'FRIGORIFICOS')
+                    ->getFirstItem()
+                    ->toArray();
+                $attributeSetId = (int) $attributeSet['attribute_set_id'];
+                return $attributeSetId;
+            case 'MAQ.LAVAR/SECAR ROUPA':
+                $attributeSet = $this->attributeSetCollection->create()
+                    ->addFieldToSelect('attribute_set_id')
+                    ->addFieldToFilter('attribute_set_name', 'MLSR')
+                    ->getFirstItem()
+                    ->toArray();
+                $attributeSetId = (int) $attributeSet['attribute_set_id'];
+                return $attributeSetId;
+            CASE 'CONGELADORES VERTICAIS':
+                $attributeSet = $this->attributeSetCollection->create()
+                    ->addFieldToSelect('attribute_set_id')
+                    ->addFieldToFilter('attribute_set_name', 'CONGELADORES')
+                    ->getFirstItem()
+                    ->toArray();
+                $attributeSetId = (int) $attributeSet['attribute_set_id'];
+                return $attributeSetId;
+            case 'MAQ.LAVAR ROUPA':
+                $attributeSet = $this->attributeSetCollection->create()
+                    ->addFieldToSelect('attribute_set_id')
+                    ->addFieldToFilter('attribute_set_name', 'MLR')
+                    ->getFirstItem()
+                    ->toArray();
+                $attributeSetId = (int) $attributeSet['attribute_set_id'];
+                return $attributeSetId;
+            case 'MAQ.SECAR ROUPA':
+                $attributeSet = $this->attributeSetCollection->create()
+                    ->addFieldToSelect('attribute_set_id')
+                    ->addFieldToFilter('attribute_set_name', 'MSR')
+                    ->getFirstItem()
+                    ->toArray();
+                $attributeSetId = (int) $attributeSet['attribute_set_id'];
+                return $attributeSetId;
+
         }
         return 4; //Default
 
