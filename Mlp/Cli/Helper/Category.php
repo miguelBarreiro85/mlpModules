@@ -208,6 +208,8 @@ class Category
                     return 'TV LED+42"';
                 case 'MICROONDAS':
                     return 'MICROONDAS ENCASTRE';
+                case 'DE SECRETÁRIA':
+                    return 'DESKTOPS';
                 default:
                     return $subFamilia;
             }
