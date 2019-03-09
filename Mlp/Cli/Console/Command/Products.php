@@ -253,179 +253,258 @@ class Products extends Command
         Link_Classe_Energetica 28
         Stock 29
         */
-        $categories = $this->categoryManager->getCategoriesArray();
-        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
-        $writer = new \Zend\Log\Writer\Stream('/var/www/html/var/log/Sorefoz.log');
-        $logger = new \Zend\Log\Logger();
-        $logger->addWriter($writer);
-        print_r("Adding Sorefoz products" . "\n");
-
-        $row = 0;
-        if (($handle = fopen("/var/www/html/app/code/Mlp/Cli/Console/Command/tot_jlcb_utf.csv", "r")) !== FALSE) {
-            print_r("abri ficheiro\n");
-            //print_r($handle);
-            while (!feof($handle)) {
-                if (($data = fgetcsv($handle, 4000, ";")) !== FALSE) {
-                    $row++;
-                    if ($row == 1) {
-                        continue;
-                    }
-                    print_r($row . ":" . $data[2] . "\n");
-                    if (strcmp($data[5], "ACESSÓRIOS E BATERIAS") == 0 || strcmp($data[7], "MAT. PROMOCIONAL / PUBLICIDADE") == 0
-                        || strcmp($data[7], "FERRAMENTAS") == 0) {
-                        continue;
-                    }
-                    $sku = trim($data[18]);
-                    if (strlen($sku) == 13) {
-                        try {
-                            $product = $this->productRepository->get($sku, true, null, true);
-                            if ($product->getStatus() == 2) {
-                                print_r($sku . "\n");
-                                continue;
+        $this->state->emulateAreaCode(
+            'adminhtml',
+            function () {
+                $categories = $this->categoryManager->getCategoriesArray();
+                $writer = new \Zend\Log\Writer\Stream('/var/www/html/var/log/Sorefoz.log');
+                $logger = new \Zend\Log\Logger();
+                $logger->addWriter($writer);
+                print_r("Adding Sorefoz products" . "\n");
+                $row = 0;
+                if (($handle = fopen("/var/www/html/app/code/Mlp/Cli/Console/Command/tot_jlcb_utf.csv", "r")) !== FALSE) {
+                    print_r("abri ficheiro\n");
+                    while (!feof($handle)) {
+                        if (($data = fgetcsv($handle, 4000, ";")) !== FALSE) {
+                            if($data == "\n" || $data == "\r\n" || $data == "")
+                            {
+                                throw new Exception("Empty line found.");
                             }
-                        } catch (NoSuchEntityException $exception) {
-                            //Produto NOVO
-                            $product = $this->productFactory->create();
-                            $product->setSku($sku);
-                            $this->getImages($product, $data);
-                            $product->setName(trim($data[1]));
-                            $subFamilia = $this->categoryManager->setSubFamiliaSorefoz(trim($data[9]));
-                            $familia = $this->categoryManager->setFamiliaSorefoz(trim($data[7]));
-                            $gama = $this->categoryManager->setGamaSorefoz(trim($data[5]));
-                            $product->setCustomAttribute('description', $data[26]);
-                            $product->setCustomAttribute('meta_description', $data[25]);
-                            $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', trim($data[3]));
-                            $product->setCustomAttribute('manufacturer', $optionId);
-                            $product->setCustomAttribute('ts_dimensions_length',(int)$data[21]/10);
-                            $product->setCustomAttribute('ts_dimensions_width',(int)$data[22]/10);
-                            $product->setCustomAttribute('ts_dimensions_height',(int)$data[23]/10);
-                            $product->setCustomAttribute('tax_class_id',2); //taxable goods id
-                            $product->setWeight($data[19]);
-                            $product->setWebsiteIds([1]);
-                            $attributeSetId = $this->attributeManager->getAttributeSetId($familia,$subFamilia);
-                            $product->setAttributeSetId($attributeSetId); // Attribute set id
-                            $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
-                            $product->setTaxClassId(2); // Tax class id
-                            $product->setTypeId('simple'); // type of product (simple/virtual/downloadable/configurable)
-                            $product->setCreatedAt(date("Y/m/d"));
-                            $product->setCustomAttribute('news_from_date',date("Y/m/d"));
-                            try {
-                                $product->setCategoryIds([$categories[$gama], $categories[$familia], $categories[$subFamilia]]);
-                            } catch (\Exception $ex) {
-                                print_r($ex->getMessage());
-                                $this->categoryManager->createCategory($gama, $familia, $subFamilia, $categories);
-                                $categories = $this->categoryManager->getCategoriesArray();
-                                $product->setCategoryIds([$categories[$gama], $categories[$familia], $categories[$subFamilia]]);
+
+                            if($data === false && !feof($handle))
+                            {
+                                echo "Error reading file besides EOF";
                             }
-                            $this->setImages($product, $logger, $product->getSku() . "_e.jpeg");
-                            $this->setImages($product, $logger, $product->getSku() . ".jpeg");
-                        } catch (\Exception $ex){
-                            //Se der outro erro a ler o produto do repositório
-                            print_r($ex->getMessage());
-                            continue;
+                            elseif($data === false && feof($handle))
+                            {
+                                echo "We are at the end of the file.\n";
+
+                                //check status of the stream
+                                $meta = stream_get_meta_data($handle);
+                                var_dump($meta);
+                            }
+                            else {
+                                $row++;
+                                if ($row == 1) {
+                                    continue;
+                                }
+                                print_r($row . "-");
+                                $this->addSorefozProduct($data, $logger, $categories);
+                            }
                         }
+                    }
+                    fclose($handle);
+                } else {
+                    print_r("Não abriu o ficheiro");
+                }
+            }
+        );
+    }
+    protected function addSorefozProduct($data, $logger, $categories){
+        if (strcmp($data[5], "ACESSÓRIOS E BATERIAS") == 0 || strcmp($data[7], "MAT. PROMOCIONAL / PUBLICIDADE") == 0
+            || strcmp($data[7], "FERRAMENTAS") == 0 || strcmp(trim($data[16]), "sim") == 0) {
+            return;
+        }
+        $sku = trim($data[18]);
+        if (strlen($sku) == 13) {
+            try {
+                $product = $this->productRepository->get($sku, true, null, true);
+                if ($product->getStatus() == 2) {
+                    print_r($sku . "\n");
+                    return;
+                }
+            } catch (NoSuchEntityException $exception) {
+                //Produto NOVO
+                $product = $this->productFactory->create();
+                $product->setSku($sku);
+                $this->getImages($product, $data);
+                $product->setName(trim($data[1]));
+                $product->setTypeId(\Magento\Catalog\Model\Product\Type::TYPE_SIMPLE);
+                $subFamilia = $this->categoryManager->setSubFamiliaSorefoz(trim($data[9]));
+                $familia = $this->categoryManager->setFamiliaSorefoz(trim($data[7]));
+                $gama = $this->categoryManager->setGamaSorefoz(trim($data[5]));
+                $product->setCustomAttribute('description', $data[26]);
+                $product->setCustomAttribute('meta_description', $data[25]);
+                $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', trim($data[3]));
+                $product->setCustomAttribute('manufacturer', $optionId);
+                $product->setCustomAttribute('ts_dimensions_length', (int)$data[21] / 10);
+                $product->setCustomAttribute('ts_dimensions_width', (int)$data[22] / 10);
+                $product->setCustomAttribute('ts_dimensions_height', (int)$data[23] / 10);
+                $product->setCustomAttribute('tax_class_id', 2); //taxable goods id
+                $product->setWeight($data[19]);
+                $product->setWebsiteIds([1]);
+                $attributeSetId = $this->attributeManager->getAttributeSetId($familia, $subFamilia);
+                $product->setAttributeSetId($attributeSetId); // Attribute set id
+                $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
+                $product->setTaxClassId(2); // Tax class id
+                $product->setTypeId('simple'); // type of product (simple/virtual/downloadable/configurable)
+                $product->setCreatedAt(date("Y/m/d"));
+                $product->setCustomAttribute('news_from_date', date("Y/m/d"));
+                try {
+                    $product->setCategoryIds([$categories[$gama], $categories[$familia], $categories[$subFamilia]]);
+                } catch (\Exception $ex) { //Adicionar nova categoria
+                    print_r("\nErro ao adicionar nova categtoria ". $ex->getMessage() . "\n");
+                    $this->categoryManager->createCategory($gama, $familia, $subFamilia, $categories);
+                    $categories = $this->categoryManager->getCategoriesArray();
+                    $product->setCategoryIds([$categories[$gama], $categories[$familia], $categories[$subFamilia]]);
+                }
+                $this->setImages($product, $logger, $product->getSku() . "_e.jpeg");
+                $this->setImages($product, $logger, $product->getSku() . ".jpeg");
+                //Salvar o produto novo antes de adicionar as opções
+                try {
+                    $product->save();
 
-                    } else {
-                        //Se o sku for inválido passa ao proximo produto e não adiciona este
-                        //TODO adicionar  um log para ver se é importante o produto
-                        continue;
+                } catch (\Exception $exception) {
+                    print_r("\n".$sku . " Deu merda a salvar: Exception:  " . $exception->getMessage() . "\n");
+                    $logger->info($sku . " Deu merda a salvar: Exception:  " . $exception->getMessage());
+                    return;
+                }
+                //Adicionar as opções
+                if ($product->getOptions() == null) {
+                    $this->add_warranty_option($product);
+                    $value = $this->getInstallationValue($familia);
+                    if ($value > 0) {
+                        $this->add_installation_option($product, $value);
                     }
-                    $preco = (int)str_replace(".","",$data[12]);
-                    if ($preco < 400){
-                        $preco = $preco * 1.20;
-                    }else{
-                        $preco = $preco * 1.15;
-                    }
+                }
+            } catch (\Exception $ex) {
+                //Se der outro erro a ler o produto do repositório
+                print_r($ex->getMessage());
+                return;
+            }
+            // Se o produto já existir atualizar o preço e se estiver fora de gama atualizar
+            $preco = (int)str_replace(".", "", $data[12]);
+            if ($preco < 400) {
+                $preco = $preco * 1.20;
+            } else {
+                $preco = $preco * 1.15;
+            }
 
-                    $product->setPrice($preco);
-                    //GAMA
-                    switch ($data[16]) {
-                        case 'sim':
-                            $product->setStatus(Status::STATUS_DISABLED);
-                            break;
-                        default:
-                            $product->setStatus(Status::STATUS_ENABLED);
-                    }
-                    try {
-                        $product->save();
+            $product->setPrice($preco);
+            //GAMA
+            switch ($data[16]) {
+                case 'sim':
+                    $product->setStatus(Status::STATUS_DISABLED);
+                    break;
+                default:
+                    $product->setStatus(Status::STATUS_ENABLED);
+            }
+            //STOCK
+            try {
+                //$product->save();
+                $this->productRepository->save($product);
 
-                    } catch (\Exception $exception) {
-                        $logger->info($sku . " Deu merda a salvar: Exception:  " . $exception->getMessage());
-                        print_r($exception->getMessage());
-                    }
-                    //STOCK
-                    try {
-                        switch ($data[29]) {
-                            case 'Sim':
-                                $stockItem=$this->stockRegistry->getStockItem($product->getId()); // load stock of that product
-                                $stockItem->setIsInStock(true); //set updated data as your requirement
-                                $stockItem->setQty(9); //set updated quantity
-                                $stockItem->setManageStock(false);
-                                $stockItem->setUseConfigNotifyStockQty(false);
-                                $stockItem->save(); //save stock of item
-                            //Para por os atributos
-                                $optionId = $this->dataAttributeOptions->createOrGetId('is_in_stock', 'SIM');
-                                $product->setCustomAttribute('is_in_stock',$optionId);
-                                break;
-                            default:
-                                $stockItem=$this->stockRegistry->getStockItem($product->getId()); // load stock of that product
-                                $stockItem->setIsInStock(false); //set updated data as your requirement
-                                $stockItem->setQty(0); //set updated quantity
-                                $stockItem->setManageStock(false);
-                                $stockItem->setUseConfigNotifyStockQty(false);
-                                $stockItem->save(); //save stock of item
-                            //Para por os atributos
-                                $optionId = $this->dataAttributeOptions->createOrGetId('is_in_stock', 'NÃO');
-                                $product->setCustomAttribute('is_in_stock',$optionId);
-                                break;
-                        }
-                    } catch (\Exception $ex) {
-                        print_r("\nStock: ".$data[29]."\n".$ex->getMessage()."\n");
-                        $stockItem=$this->stockRegistry->getStockItem($product->getId()); // load stock of that product
+            } catch (\Exception $exception) {
+                print_r("\n".$sku . " Deu merda a salvar produto existente - 
+                                        Exception:  " . $exception->getMessage() . "\n");
+                $logger->info($sku . " Deu merda a salvar produto existente - Exception:  
+                                        " . $exception->getMessage());
+                return;
+            }
+            try {
+                $stockItem = $this->stockRegistry->getStockItem($product->getId()); // load stock of that product
+                switch ($data[29]) {
+                    case 'Sim':
+                        $stockItem->setIsInStock(true); //set updated data as your requirement
+                        $stockItem->setQty(9); //set updated quantity
+                        $stockItem->setManageStock(false);
+                        $stockItem->setUseConfigNotifyStockQty(false);
+                        break;
+                    default:
+                        $stockItem = $this->stockRegistry->getStockItem($product->getId()); // load stock of that product
                         $stockItem->setIsInStock(false); //set updated data as your requirement
                         $stockItem->setQty(0); //set updated quantity
                         $stockItem->setManageStock(false);
                         $stockItem->setUseConfigNotifyStockQty(false);
-                        $stockItem->save(); //save stock of item
-                    //Para por os atributos
-                        $optionId = $this->dataAttributeOptions->createOrGetId('is_in_stock', 'NÃO');
-                        $product->setCustomAttribute('is_in_stock',$optionId);
                         break;
+                }
+                $stockItem->save(); //save stock of item
+                $this->stockRegistry->updateStockItemBySku($product->getSku(),$stockItem);
+            }catch (\Exception $ex) {
+                print_r("\nStock: " . $product->getSku()  . $ex->getMessage() . "\n");
+            }
 
+        } else {
+            //Se o sku for inválido passa ao proximo produto e não adiciona este
+            //TODO adicionar  um log para ver se é importante o produto
+            return;
+        }
+
+        print_r($sku . "->" . microtime(true) . "\n");
+    }
+
+    protected function disableSorefozProducts()
+    {
+        $this->state->emulateAreaCode(
+            'adminhtml',
+            function () {
+                $writer = new \Zend\Log\Writer\Stream('/var/www/html/var/log/Sorefoz.log');
+                $logger = new \Zend\Log\Logger();
+                $logger->addWriter($writer);
+                print_r("Disable Sorefoz products" . "\n");
+                $row = 0;
+                if (($handle = fopen("/var/www/html/app/code/Mlp/Cli/Console/Command/tot_jlcb_utf.csv", "r")) !== FALSE) {
+                    print_r("abri ficheiro\n");
+                    while (!feof($handle)) {
+                        if (($data = fgetcsv($handle, 4000, ";")) !== FALSE) {
+                            $row++;
+                            if ($row == 1) {
+                                continue;
+                            }
+                            print_r($row . "\n");
+                            if (strcmp($data[5], "ACESSÓRIOS E BATERIAS") == 0 || strcmp($data[7], "MAT. PROMOCIONAL / PUBLICIDADE") == 0
+                                || strcmp($data[7], "FERRAMENTAS") == 0 || strcmp(trim($data[16]), "sim") != 0) {
+                                continue;
+                            }
+                            $sku = trim($data[18]);
+                            if (strlen($sku) == 13) {
+                                try {
+                                    $product = $this->productRepository->get($sku, true, null, true);
+                                    if ($product->getStatus() != 2) {
+                                        $product->setStatus(Status::STATUS_DISABLED);
+                                        try {
+                                            $product->save();
+                                        } catch (\Exception $ex) {
+                                            print_r("save: " . $ex->getMessage() . "\n");
+                                        }
+                                        continue;
+                                    } else {
+                                        continue;
+                                    }
+                                } catch (NoSuchEntityException $exception) {
+                                    continue;
+                                }
+
+                            }
+                        }
                     }
-                    print_r($sku . "->" . $row . "->" . microtime(true) . "\n");
                 }
             }
-            fclose($handle);
-        } else {
-            print_r("Não abriu o ficheiro");
-        }
+        );
     }
 
     protected function addAufermaProducts_csv()
     {
         /*
-Codigo,0
-Nome,1
-CodCurto,2
-PVPBase,3
-PesoBrt,4
-Marca,5
-FamiliaAuferma,6
-NomeXtra 7
-Gama,8
-Familia, 9
-subfamilia 10
-stock 11
+            Codigo,0
+            Nome,1
+            CodCurto,2
+            PVPBase,3
+            PesoBrt,4
+            Marca,5
+            FamiliaAuferma,6
+            NomeXtra 7
+            Gama,8
+            Familia, 9
+            subfamilia 10
+            stock 11
         */
-        print_r("start\n");
         $categories = $this->categoryManager->getCategoriesArray();
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $writer = new \Zend\Log\Writer\Stream('/var/www/html/var/log/Auferma.log');
         $logger = new \Zend\Log\Logger();
         $logger->addWriter($writer);
         print_r("Adding Auferma products" . "\n");
-
         $row = 0;
         if (($handle = fopen("/var/www/html/app/code/Mlp/Cli/Console/Command/aufermaInterno.csv", "r")) !== FALSE) {
             while (!feof($handle)) {
@@ -438,10 +517,9 @@ stock 11
                     $sku = trim($data[0]);
                     try {
                         $product = $this->productRepository->get($sku, true, null, true);
-                        /*if ($product->getStatus() == 2){
-                            print_r($sku."\n");
+                        if ($product->getStatus() == 2){
                             continue;
-                        }*/
+                        }
                     } catch (NoSuchEntityException $exception) {
                         $product = $this->productFactory->create();
                         $product->setSku($sku);
@@ -461,15 +539,14 @@ stock 11
                             $product->setCategoryIds([$categories[$gama], $categories[$familia], $categories[$subFamilia]]);
                         }
                         $product->setWebsiteIds([1]);
-                        //$attributeSetId = $this->attributeManager->getAttributeSetId($familia, $subFamilia);
-                        $product->setAttributeSetId(4); // Attribute set id
+                        $attributeSetId = $this->attributeManager->getAttributeSetId($familia, $subFamilia);
+                        $product->setAttributeSetId($attributeSetId); // Attribute set id
                         $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
                         $product->setTaxClassId(2); // Tax class id
                         $product->setTypeId('simple'); // type of product (simple/virtual/downloadable/configurable)
                         $this->setImages($product, $logger, $data[2] . ".jpg");
                     }
-                    //$product->getIma
-                    $product->setTaxClassId(2); // Tax class id
+                    //Se produto já existir basta atualizar preço e informação do stock
                     $preco = (int)trim($data[3]);
                     if ($preco == 0) {
                         $logger->info("Preço igual a 0: " . $product->getName());
@@ -477,6 +554,7 @@ stock 11
                     $preco = $preco / 1.23;
                     $product->setPrice($preco);
                     $product->setStatus(Status::STATUS_ENABLED);
+                    // Salvar o produto
                     try {
                         $product->save();
 
@@ -484,27 +562,25 @@ stock 11
                         $logger->info($sku . " Deu merda a gravar:  " . $exception->getMessage());
                         print_r($exception->getMessage());
                     }
+                    //Adicionar as informações de garantia e instalação
                     if ($product->getOptions() == null) {
                         $this->add_warranty_option($product);
                         $value = $this->getInstallationValue($familia);
                         if ($value > 0) {
                             $this->add_installation_option($product, $value);
                         }
-
                     }
+                    
+                    
                     //STOCK
                     try {
+                        $stockItem = $this->stockRegistry->getStockItem($product->getId()); // load stock of that product
                         switch ($data[11]) {
-                            case 'sim':
-                                $stockItem = $this->stockRegistry->getStockItem($product->getId()); // load stock of that product
+                            case 'Sim':
                                 $stockItem->setIsInStock(true); //set updated data as your requirement
                                 $stockItem->setQty(9); //set updated quantity
                                 $stockItem->setManageStock(false);
                                 $stockItem->setUseConfigNotifyStockQty(false);
-                                $stockItem->save(); //save stock of item
-                                //Para por os atributos
-                                $optionId = $this->dataAttributeOptions->createOrGetId('is_in_stock', 'SIM');
-                                $product->setCustomAttribute('is_in_stock', $optionId);
                                 break;
                             default:
                                 $stockItem = $this->stockRegistry->getStockItem($product->getId()); // load stock of that product
@@ -512,19 +588,14 @@ stock 11
                                 $stockItem->setQty(0); //set updated quantity
                                 $stockItem->setManageStock(false);
                                 $stockItem->setUseConfigNotifyStockQty(false);
-                                $stockItem->save(); //save stock of item
-                                //Para por os atributos
-                                $optionId = $this->dataAttributeOptions->createOrGetId('is_in_stock', 'NÃO');
-                                $product->setCustomAttribute('is_in_stock', $optionId);
                                 break;
                         }
-                    } catch (\Exception $ex) {
-                        print_r("\nStock: " . $data[6] . "\n" . $ex->getMessage() . "\n");
-                        //Para por os atributos
-                        $optionId = $this->dataAttributeOptions->createOrGetId('is_in_stock', 'NÃO');
-                        $product->setCustomAttribute('is_in_stock', $optionId);
-                        break;
+                        $stockItem->save(); //save stock of item
+                        $this->stockRegistry->updateStockItemBySku($product->getSku(),$stockItem);
+                    }catch (\Exception $ex) {
+                        print_r("\nStock exception: " . $product->getSku()  . $ex->getMessage() . "\n");
                     }
+                    //imprime informação e passa ao proximo
                     print_r($sku . "->" . $row . "->" . microtime(true) . "\n");
                 }
             }
@@ -555,7 +626,6 @@ stock 11
         $row = 0;
         if (($handle = fopen("/var/www/html/app/code/Mlp/Cli/Console/Command/telefac_interno.csv", "r")) !== FALSE) {
             print_r("abri ficheiro\n");
-            //print_r($handle);
             while (!feof($handle)) {
                 if (($data = fgetcsv($handle, 4000, ",", '"')) !== FALSE) {
                     $row++;
@@ -603,61 +673,56 @@ stock 11
                             print_r($ex->getMessage());
                             continue;
                         }
+                        $preco = (int)str_replace(".","",$data[7]);
+                        $preco = $preco * 1.30;
+                        $preco = $preco * 1.23;
+                        $product->setPrice($preco);
+                        try {
+                            $product->save();
+                        } catch (\Exception $exception) {
+                            $logger->info($sku . " Deu merda a salvar: Exception:  " . $exception->getMessage());
+                            print_r($exception->getMessage());
+                        }
+                        if ($product->getOptions() == null){
+                            $this->add_warranty_option($product);
+                            $value = $this->getInstallationValue($familia);
+                            if ($value > 0){
+                                $this->add_installation_option($product,$value);
+                            }
+
+                        }
+                        //STOCK
+                        try {
+                            print_r($product->getId() . "-");
+                            $stockItem = $this->stockRegistry->getStockItem($product->getId()); // load stock of that product
+                            switch ($data[29]) {
+                                case 'Sim':
+                                    $stockItem->setIsInStock(true); //set updated data as your requirement
+                                    $stockItem->setQty(9); //set updated quantity
+                                    $stockItem->setManageStock(false);
+                                    $stockItem->setUseConfigNotifyStockQty(false);
+                                    break;
+                                default:
+                                    $stockItem = $this->stockRegistry->getStockItem($product->getId()); // load stock of that product
+                                    $stockItem->setIsInStock(false); //set updated data as your requirement
+                                    $stockItem->setQty(0); //set updated quantity
+                                    $stockItem->setManageStock(false);
+                                    $stockItem->setUseConfigNotifyStockQty(false);
+                                    break;
+                            }
+                            $stockItem->save(); //save stock of item
+                            $this->stockRegistry->updateStockItemBySku($product->getSku(),$stockItem);
+                        }catch (\Exception $ex) {
+                            print_r("\nStock: " . $product->getSku() . "\n" . $ex->getMessage() . "\n");
+                            break;
+                        }
 
                     } else {
                         //Se o sku for inválido passa ao proximo produto e não adiciona este
                         //TODO adicionar  um log para ver se é importante o produto
                         continue;
                     }
-                    $preco = (int)str_replace(".","",$data[7]);
-                    $preco = $preco * 1.30;
-                    $preco = $preco * 1.23;
-                    $product->setPrice($preco);
-                    try {
-                        $product->save();
-                    } catch (\Exception $exception) {
-                        $logger->info($sku . " Deu merda a salvar: Exception:  " . $exception->getMessage());
-                        print_r($exception->getMessage());
-                    }
-                    if ($product->getOptions() == null){
-                        $this->add_warranty_option($product);
-                        $value = $this->getInstallationValue($familia);
-                        if ($value > 0){
-                            $this->add_installation_option($product,$value);
-                        }
 
-                    }
-                    //STOCK
-                    try {
-                        switch ($data[6]) {
-                            case 'Sim':
-                                $stockItem=$this->stockRegistry->getStockItem($product->getId()); // load stock of that product
-                                $stockItem->setIsInStock(true); //set updated data as your requirement
-                                $stockItem->setQty(9); //set updated quantity
-                                $stockItem->setManageStock(false);
-                                $stockItem->setUseConfigNotifyStockQty(false);
-                                $stockItem->save(); //save stock of item
-                                //Para por os atributos
-                                $optionId = $this->dataAttributeOptions->createOrGetId('is_in_stock', 'SIM');
-                                $product->setCustomAttribute('is_in_stock',$optionId);
-                                break;
-                            default:
-                                $stockItem=$this->stockRegistry->getStockItem($product->getId()); // load stock of that product
-                                $stockItem->setIsInStock(false); //set updated data as your requirement
-                                $stockItem->setQty(0); //set updated quantity
-                                $stockItem->setManageStock(false);
-                                $stockItem->setUseConfigNotifyStockQty(false);
-                                $stockItem->save(); //save stock of item
-                                //Para por os atributos
-                                $optionId = $this->dataAttributeOptions->createOrGetId('is_in_stock', 'NÃO');
-                                $product->setCustomAttribute('is_in_stock',$optionId);
-                                break;
-                        }
-                    } catch (\Exception $ex) {
-                        print_r("\nStock: ".$data[6]."\n".$ex->getMessage()."\n");
-                        break;
-
-                    }
                     print_r($sku . "->" . $row . "->" . microtime(true) . "\n");
                 }
             }
@@ -831,7 +896,7 @@ stock 11
     }
 
     
-    protected function addSorefozProducts()
+    protected function addSorefozProducts_xlsx()
     {
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $writer = new \Zend\Log\Writer\Stream('/var/log/addSorefozProducts.log');
