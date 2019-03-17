@@ -160,8 +160,6 @@ class Category
 
     public function setSubFamiliaSorefoz($subFamilia){
             switch ($subFamilia){
-                case 'TV LED 46"':
-                    return 'TV LED+46"';
                 case 'INDEPENDENTES - ELÉCTRICOS':
                     return 'FORNOS';
                 case 'PIROLITICOS':

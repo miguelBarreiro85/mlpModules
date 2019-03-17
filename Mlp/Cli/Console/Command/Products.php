@@ -256,7 +256,6 @@ class Products extends Command
         $this->state->emulateAreaCode(
             'adminhtml',
             function () {
-                $categories = $this->categoryManager->getCategoriesArray();
                 $writer = new \Zend\Log\Writer\Stream('/var/www/html/var/log/Sorefoz.log');
                 $logger = new \Zend\Log\Logger();
                 $logger->addWriter($writer);
@@ -289,6 +288,7 @@ class Products extends Command
                                     continue;
                                 }
                                 print_r($row . "-");
+                                $categories = $this->categoryManager->getCategoriesArray();
                                 $this->addSorefozProduct($data, $logger, $categories);
                             }
                         }
@@ -343,30 +343,19 @@ class Products extends Command
                 try {
                     $product->setCategoryIds([$categories[$gama], $categories[$familia], $categories[$subFamilia]]);
                 } catch (\Exception $ex) { //Adicionar nova categoria
-                    print_r("\nErro ao adicionar nova categtoria ". $ex->getMessage() . "\n");
-                    $this->categoryManager->createCategory($gama, $familia, $subFamilia, $categories);
-                    $categories = $this->categoryManager->getCategoriesArray();
-                    $product->setCategoryIds([$categories[$gama], $categories[$familia], $categories[$subFamilia]]);
+                    try{
+                        print_r("\nErro ao adicionar nova categtoria ". $ex->getMessage() . "\n");
+                        $this->categoryManager->createCategory($gama, $familia, $subFamilia, $categories);
+                        $categories = $this->categoryManager->getCategoriesArray();
+                        $product->setCategoryIds([$categories[$gama], $categories[$familia], $categories[$subFamilia]]);
+                    }catch (\Exception $ex){
+                        print_r($ex->getMessage() ."\n");
+                    }
+
                 }
                 $this->setImages($product, $logger, $product->getSku() . "_e.jpeg");
                 $this->setImages($product, $logger, $product->getSku() . ".jpeg");
-                //Salvar o produto novo antes de adicionar as opções
-                try {
-                    $product->save();
 
-                } catch (\Exception $exception) {
-                    print_r("\n".$sku . " Deu merda a salvar: Exception:  " . $exception->getMessage() . "\n");
-                    $logger->info($sku . " Deu merda a salvar: Exception:  " . $exception->getMessage());
-                    return;
-                }
-                //Adicionar as opções
-                if ($product->getOptions() == null) {
-                    $this->add_warranty_option($product);
-                    $value = $this->getInstallationValue($familia);
-                    if ($value > 0) {
-                        $this->add_installation_option($product, $value);
-                    }
-                }
             } catch (\Exception $ex) {
                 //Se der outro erro a ler o produto do repositório
                 print_r($ex->getMessage());
@@ -390,16 +379,22 @@ class Products extends Command
                     $product->setStatus(Status::STATUS_ENABLED);
             }
             //STOCK
+            //Salvar o produto novo antes de adicionar as opções
             try {
-                //$product->save();
-                $this->productRepository->save($product);
+                $product->save();
 
             } catch (\Exception $exception) {
-                print_r("\n".$sku . " Deu merda a salvar produto existente - 
-                                        Exception:  " . $exception->getMessage() . "\n");
-                $logger->info($sku . " Deu merda a salvar produto existente - Exception:  
-                                        " . $exception->getMessage());
+                print_r("\n".$sku . " Deu merda a salvar: Exception:  " . $exception->getMessage() . "\n");
+                $logger->info($sku . " Deu merda a salvar: Exception:  " . $exception->getMessage());
                 return;
+            }
+            //Adicionar as opções
+            if ($product->getOptions() == null) {
+                $this->add_warranty_option($product);
+                $value = $this->getInstallationValue($familia);
+                if ($value > 0) {
+                    $this->add_installation_option($product, $value);
+                }
             }
             try {
                 $stockItem = $this->stockRegistry->getStockItem($product->getId()); // load stock of that product
@@ -651,8 +646,8 @@ class Products extends Command
                             $product->setCustomAttribute('manufacturer', $optionId);
                             $product->setCustomAttribute('tax_class_id',2); //taxable goods id
                             $product->setWebsiteIds([1]);
-                            //$attributeSetId = $this->attributeManager->getAttributeSetId($familia,$subFamilia);
-                            $product->setAttributeSetId(4); // Attribute set id
+                            $attributeSetId = $this->attributeManager->getAttributeSetId($familia,$subFamilia);
+                            $product->setAttributeSetId($attributeSetId); // Attribute set id
                             $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
                             $product->setTaxClassId(2); // Tax class id
                             $product->setTypeId('simple'); // type of product (simple/virtual/downloadable/configurable)
@@ -695,7 +690,7 @@ class Products extends Command
                         try {
                             print_r($product->getId() . "-");
                             $stockItem = $this->stockRegistry->getStockItem($product->getId()); // load stock of that product
-                            switch ($data[29]) {
+                            switch ($data[6]) {
                                 case 'Sim':
                                     $stockItem->setIsInStock(true); //set updated data as your requirement
                                     $stockItem->setQty(9); //set updated quantity
@@ -777,9 +772,9 @@ class Products extends Command
             if (!$images || $images->getSize() == 0) {
                 $product->addImageToMediaGallery($baseMediaPath . "/" . $ImgName, ['image', 'small_image', 'thumbnail'], false, false);
             }
-        } catch (RuntimeException $exception) {
-            print_r("run time exception");
-        } catch (LocalizedException $localizedException) {
+        } catch (\RuntimeException $exception) {
+            print_r("run time exception" . $exception->getMessage() . "\n");
+        } catch (\Exception $localizedException) {
             $logger->info($product->getName() . "Image name" . $ImgName . "  Sem Imagem");
             print_r($ImgName . "  Sem Imagem ");
         }
