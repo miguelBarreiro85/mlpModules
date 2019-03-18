@@ -116,7 +116,7 @@ class Attribute
                         case 'DESKTOPS':
                             $attributeSet = $this->attributeSetCollection->create()
                                 ->addFieldToSelect('attribute_set_id')
-                                ->addFieldToFilter('attribute_set_name', 'DESKTOPS')
+                                ->addFieldToFilter('attribute_set_name', 'COMPUTADORES')
                                 ->getFirstItem()
                                 ->toArray();
                             $attributeSetId = (int)$attributeSet['attribute_set_id'];
@@ -299,7 +299,7 @@ class Attribute
                         case 'ESQUENTADORES - ELÉCTRICOS':
                             $attributeSet = $this->attributeSetCollection->create()
                                 ->addFieldToSelect('attribute_set_id')
-                                ->addFieldToFilter('attribute_set_name', 'ESQUENTADORES')
+                                ->addFieldToFilter('attribute_set_name', 'ESQUENTADORES_ELETRICOS')
                                 ->getFirstItem()
                                 ->toArray();
                             $attributeSetId = (int)$attributeSet['attribute_set_id'];

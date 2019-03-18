@@ -355,47 +355,50 @@ class Products extends Command
                 }
                 $this->setImages($product, $logger, $product->getSku() . "_e.jpeg");
                 $this->setImages($product, $logger, $product->getSku() . ".jpeg");
+                $product->setStatus(Status::STATUS_ENABLED);
+                //Preço
+                $preco = (int)str_replace(".","",$data[12]);
+                $preco = $preco * 1.30;
+                $preco = $preco * 1.23;
+                $product->setPrice($preco);
+                try {
+                    $product->setCategoryIds([$categories[$gama], $categories[$familia], $categories[$subFamilia]]);
+                } catch (\Exception $ex) {
+                    print_r($ex->getMessage());
+                    $this->categoryManager->createCategory($gama, $familia, $subFamilia, $categories);
+                    $categories = $this->categoryManager->getCategoriesArray();
+                    $product->setCategoryIds([$categories[$gama], $categories[$familia], $categories[$subFamilia]]);
+                }
+                try {
+                    $product->save();
+                } catch (\Exception $exception) {
+                    $logger->info($sku . " Deu merda a salvar: Exception:  " . $exception->getMessage());
+                    print_r($exception->getMessage());
+                }
+                if ($product->getOptions() == null){
+                    $this->add_warranty_option($product);
+                    $value = $this->getInstallationValue($familia);
+                    if ($value > 0){
+                        $this->add_installation_option($product,$value);
+                    }
 
+                }
             } catch (\Exception $ex) {
                 //Se der outro erro a ler o produto do repositório
                 print_r($ex->getMessage());
                 return;
             }
             // Se o produto já existir atualizar o preço e se estiver fora de gama atualizar
-            $preco = (int)str_replace(".", "", $data[12]);
-            if ($preco < 400) {
-                $preco = $preco * 1.20;
-            } else {
-                $preco = $preco * 1.15;
-            }
-
-            $product->setPrice($preco);
-            //GAMA
-            switch ($data[16]) {
-                case 'sim':
-                    $product->setStatus(Status::STATUS_DISABLED);
-                    break;
-                default:
-                    $product->setStatus(Status::STATUS_ENABLED);
+            if (isset($preco)) {
+                $preco = (int)str_replace(".", "", $data[12]);
+                if ($preco < 400) {
+                    $preco = $preco * 1.20;
+                } else {
+                    $preco = $preco * 1.15;
+                }
+                $product->setPrice($preco);
             }
             //STOCK
-            //Salvar o produto novo antes de adicionar as opções
-            try {
-                $product->save();
-
-            } catch (\Exception $exception) {
-                print_r("\n".$sku . " Deu merda a salvar: Exception:  " . $exception->getMessage() . "\n");
-                $logger->info($sku . " Deu merda a salvar: Exception:  " . $exception->getMessage());
-                return;
-            }
-            //Adicionar as opções
-            if ($product->getOptions() == null) {
-                $this->add_warranty_option($product);
-                $value = $this->getInstallationValue($familia);
-                if ($value > 0) {
-                    $this->add_installation_option($product, $value);
-                }
-            }
             try {
                 $stockItem = $this->stockRegistry->getStockItem($product->getId()); // load stock of that product
                 switch ($data[29]) {
@@ -417,6 +420,11 @@ class Products extends Command
                 $this->stockRegistry->updateStockItemBySku($product->getSku(),$stockItem);
             }catch (\Exception $ex) {
                 print_r("\nStock: " . $product->getSku()  . $ex->getMessage() . "\n");
+            }
+            try{
+                $this->productRepository->save($product);
+            }catch (\Exception $ex){
+                print_r($ex->getMessage());
             }
 
         } else {
@@ -655,6 +663,11 @@ class Products extends Command
                             $product->setCustomAttribute('news_from_date',date("Y/m/d"));
                             $this->setImages($product,$logger,$data[3].".jpg");
                             $this->setImages($product,$logger,$data[3]."_2.jpg");
+                            //Preço
+                            $preco = (int)str_replace(".","",$data[7]);
+                            $preco = $preco * 1.30;
+                            $preco = $preco * 1.23;
+                            $product->setPrice($preco);
                             try {
                                 $product->setCategoryIds([$categories[$gama], $categories[$familia], $categories[$subFamilia]]);
                             } catch (\Exception $ex) {
@@ -663,29 +676,41 @@ class Products extends Command
                                 $categories = $this->categoryManager->getCategoriesArray();
                                 $product->setCategoryIds([$categories[$gama], $categories[$familia], $categories[$subFamilia]]);
                             }
-                        } catch (\Exception $ex){
+                            try {
+                                $product->save();
+                            } catch (\Exception $exception) {
+                                $logger->info($sku . " Deu merda a salvar: Exception:  " . $exception->getMessage());
+                                print_r($exception->getMessage());
+                            }
+                            if ($product->getOptions() == null){
+                                $this->add_warranty_option($product);
+                                $value = $this->getInstallationValue($familia);
+                                if ($value > 0){
+                                    $this->add_installation_option($product,$value);
+                                }
+
+                            }
+                        } catch (\Exception $ex) {
                             //Se der outro erro a ler o produto do repositório
                             print_r($ex->getMessage());
                             continue;
                         }
-                        $preco = (int)str_replace(".","",$data[7]);
-                        $preco = $preco * 1.30;
-                        $preco = $preco * 1.23;
-                        $product->setPrice($preco);
-                        try {
-                            $product->save();
-                        } catch (\Exception $exception) {
-                            $logger->info($sku . " Deu merda a salvar: Exception:  " . $exception->getMessage());
-                            print_r($exception->getMessage());
-                        }
-                        if ($product->getOptions() == null){
-                            $this->add_warranty_option($product);
-                            $value = $this->getInstallationValue($familia);
-                            if ($value > 0){
-                                $this->add_installation_option($product,$value);
-                            }
 
+                        //Atualizar preço se não for produto novo
+                        if (!isset($preco)) {
+                            $preco = (int)str_replace(".","",$data[7]);
+                            $preco = $preco * 1.30;
+                            $preco = $preco * 1.23;
+                            $product->setPrice($preco);
                         }
+                        //
+                        try{
+                            $this->productRepository->save($product);
+                        }catch (\Exception $ex){
+                            print_r($ex->getMessage() . "\n");
+                        }
+
+
                         //STOCK
                         try {
                             print_r($product->getId() . "-");
