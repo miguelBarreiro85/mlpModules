@@ -370,7 +370,7 @@ class Products extends Command
                     print_r($exception->getMessage() . " Save product exception" . "\n");
                 }
                 if ($product->getOptions() == null){
-                    $this->add_warranty_option($product);
+                    $this->add_warranty_option($product, $gama, $familia);
                     $value = $this->getInstallationValue($familia);
                     if ($value > 0){
                         $this->add_installation_option($product,$value);
@@ -815,33 +815,57 @@ class Products extends Command
         return $attribute->getData();
     }
 
-    protected function add_warranty_option($product, $gama){
-        $one_year = $this->get_one_year_warranty_price((int)$product->getPrice(), $gama);
+    protected function add_warranty_option($product, $gama, $familia){
+        $one_year = $this->get_one_year_warranty_price((int)$product->getPrice(), $gama, $familia);
         $three_years = $this->get_three_years_warranty_price((int)$product->getPrice(), $gama);
-
-        $options = [
-            [
-                'title' => 'Extensão de garantia',
-                'type' => 'checkbox',
-                'is_require' => false,
-                'sort_order' => 4,
-                'values' => [
-                    [
-                        'title' => '1 ano',
-                        'price' => $one_year,
-                        'price_type' => 'fixed',
-                        'sort_order' => 0,
-                    ],
-                    [
-                        'title' => '3 anos',
-                        'price' => $three_years,
-                        'price_type' => 'fixed',
-                        'sort_order' => 1,
+        //Se os valores forem 0 não adiciona
+        if ($one_year == 0 && $three_years == 0){
+            return;
+        }
+        elseif ($one_year != 0 && $three_years != 0) {
+            $options = [
+                [
+                    'title' => 'Extensão de garantia',
+                    'type' => 'checkbox',
+                    'is_require' => false,
+                    'sort_order' => 4,
+                    'values' => [
+                        [
+                            'title' => '1 ano',
+                            'price' => $one_year,
+                            'price_type' => 'fixed',
+                            'sort_order' => 0,
+                        ],
+                        [
+                            'title' => '3 anos',
+                            'price' => $three_years,
+                            'price_type' => 'fixed',
+                            'sort_order' => 1,
+                        ],
                     ],
                 ],
-            ],
-        ];
-
+            ];
+        }elseif ($one_year == 0 && $three_years != 0){
+            $options = [
+                [
+                    'title' => 'Extensão de garantia',
+                    'type' => 'checkbox',
+                    'is_require' => false,
+                    'sort_order' => 4,
+                    'values' => [
+                        [
+                            'title' => '3 anos',
+                            'price' => $three_years,
+                            'price_type' => 'fixed',
+                            'sort_order' => 1,
+                        ],
+                    ],
+                ],
+            ];
+        }
+        if(!isset($options)){
+            return;
+        }
          foreach ($options as $arrayOption) {
              $option = $this->optionFactory->create();
              $option->setProductId($product->getId())
@@ -883,20 +907,21 @@ class Products extends Command
         $this->productRepositoryInterface->save($product);
     }
 
-    protected function get_one_year_warranty_price($preco, $gama, $familia){
-        switch ($gama){
+    protected function get_one_year_warranty_price($preco, $gama, $familia)
+    {
+        switch ($gama) {
             case 'GRANDES DOMÉSTICOS':
-                if ($preco <= 200){
+                if ($preco <= 200) {
                     return 14;
-                }elseif ($preco > 200 && $preco <= 400 ) {
+                } elseif ($preco > 200 && $preco <= 400) {
                     return 19;
-                }elseif ($preco > 400 && $preco <= 600 ) {
+                } elseif ($preco > 400 && $preco <= 600) {
                     return 29;
-                }elseif ($preco > 600 && $preco <= 1000) {
+                } elseif ($preco > 600 && $preco <= 1000) {
                     return 49;
-                }elseif ($preco > 1000 && $preco <= 1500) {
+                } elseif ($preco > 1000 && $preco <= 1500) {
                     return 59;
-                }elseif ($preco > 1500) {
+                } elseif ($preco > 1500) {
                     return 79;
                 }
                 break;
@@ -918,74 +943,104 @@ class Products extends Command
                         }
                         break;
                     default:
-                        if ($preco <= 200){
+                        if ($preco <= 200) {
                             return 19;
-                        }elseif (200 < $preco && $preco <= 400 ) {
+                        } elseif (200 < $preco && $preco <= 400) {
                             return 29;
-                        }elseif ($preco > 400 && $preco <= 600 ) {
+                        } elseif ($preco > 400 && $preco <= 600) {
                             return 49;
-                        }elseif ($preco > 600 && $preco <= 1000) {
+                        } elseif ($preco > 600 && $preco <= 1000) {
                             return 69;
-                        }elseif ($preco > 1000 && $preco <= 1500) {
+                        } elseif ($preco > 1000 && $preco <= 1500) {
                             return 79;
-                        }elseif ($preco > 1500) {
+                        } elseif ($preco > 1500) {
                             return 119;
                         }
                         break;
                 }
             case 'INFORMÁTICA':
-                if ($preco <= 200){
-                    return 24;
-                }elseif ($preco > 200 && $preco <= 400 ) {
-                    return 39;
-                }elseif ($preco > 400 && $preco <= 600 ) {
-                    return 49;
-                }elseif ($preco > 600 && $preco <= 1000) {
-                    return 69;
-                }elseif ($preco > 1000 && $preco <= 1500) {
-                    return 89;
-                }elseif ($preco > 1500) {
-                    return 99;
-                }
-                break;
-            case 'COMUNICAÇÕES':
-                if ($preco <= 150){
-                    return 19;
-                }elseif ($preco > 150 && $preco <= 300 ) {
-                    return 24;
-                }elseif ($preco > 300 && $preco <= 400 ) {
-                    return 39;
-                }elseif ($preco > 400 && $preco <= 500) {
-                    return 49;
-                }elseif ($preco > 500 && $preco <= 700) {
-                    return 69;
-                }elseif ($preco > 700 && $preco <= 900) {
-                    return 79;
-                }elseif ($preco > 900) {
-                    return 89;
-                }
-                break;
-            case 'CÂMARAS':
-                if ($preco <= 100) {
-                    return 19;
-                } elseif ($preco > 100 && $preco <= 200) {
+                if ($preco <= 200) {
                     return 24;
                 } elseif ($preco > 200 && $preco <= 400) {
                     return 39;
                 } elseif ($preco > 400 && $preco <= 600) {
                     return 49;
-                } elseif ($preco > 600 && $preco <= 800) {
+                } elseif ($preco > 600 && $preco <= 1000) {
                     return 69;
-                } elseif ($preco > 800) {
+                } elseif ($preco > 1000 && $preco <= 1500) {
+                    return 89;
+                } elseif ($preco > 1500) {
+                    return 99;
+                }
+                break;
+            case 'COMUNICAÇÕES':
+                if ($preco <= 150) {
+                    return 19;
+                } elseif ($preco > 150 && $preco <= 300) {
+                    return 24;
+                } elseif ($preco > 300 && $preco <= 400) {
+                    return 39;
+                } elseif ($preco > 400 && $preco <= 500) {
+                    return 49;
+                } elseif ($preco > 500 && $preco <= 700) {
+                    return 69;
+                } elseif ($preco > 700 && $preco <= 900) {
+                    return 79;
+                } elseif ($preco > 900) {
                     return 89;
                 }
                 break;
+            case 'PEQUENOS DOMÉSTICOS':
+                if ($preco <= 50) {
+                    return 9;
+                } elseif ($preco > 50 && $preco <= 100) {
+                    return 14;
+                } elseif ($preco > 100 && $preco <= 200) {
+                    return 19;
+                } elseif ($preco > 200 && $preco <= 500) {
+                    return 29;
+                }
+                break;
+            default:
+                return 0;
         }
-        return 30;
     }
 
-    protected function get_three_years_warranty_price($price){
-        return 85;
+    protected function get_three_years_warranty_price($preco, $gama){
+        switch ($gama) {
+            case 'GRANDES DOMÉSTICOS':
+                if ($preco <= 200) {
+                    return 29;
+                } elseif ($preco > 200 && $preco <= 400) {
+                    return 49;
+                } elseif ($preco > 400 && $preco <= 600) {
+                    return 69;
+                } elseif ($preco > 600 && $preco <= 1000) {
+                    return 99;
+                } elseif ($preco > 1000 && $preco <= 1500) {
+                    return 119;
+                } elseif ($preco > 1500) {
+                    return 149;
+                }
+                break;
+            case 'IMAGEM E SOM':
+                if ($preco <= 200) {
+                    return 39;
+                } elseif (200 < $preco && $preco <= 400) {
+                    return 59;
+                } elseif ($preco > 400 && $preco <= 600) {
+                    return 69;
+                } elseif ($preco > 600 && $preco <= 1000) {
+                    return 99;
+                } elseif ($preco > 1000 && $preco <= 1500) {
+                    return 119;
+                } elseif ($preco > 1500) {
+                    return 169;
+                }
+                break;
+            default:
+                return 0;
+        }
     }
 
     protected function getInstallationValue($familia)
