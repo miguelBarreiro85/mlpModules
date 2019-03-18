@@ -6,6 +6,7 @@
 namespace Mlp\Cli\Console\Command;
 
 use Braintree\Exception;
+use function GuzzleHttp\default_ca_bundle;
 use Magento\Catalog\Model\CategoryFactory;
 use Magento\Catalog\Model\CategoryRepository;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
@@ -361,19 +362,12 @@ class Products extends Command
                 $preco = $preco * 1.30;
                 $preco = $preco * 1.23;
                 $product->setPrice($preco);
-                try {
-                    $product->setCategoryIds([$categories[$gama], $categories[$familia], $categories[$subFamilia]]);
-                } catch (\Exception $ex) {
-                    print_r($ex->getMessage());
-                    $this->categoryManager->createCategory($gama, $familia, $subFamilia, $categories);
-                    $categories = $this->categoryManager->getCategoriesArray();
-                    $product->setCategoryIds([$categories[$gama], $categories[$familia], $categories[$subFamilia]]);
-                }
+                //Salvar produto
                 try {
                     $product->save();
                 } catch (\Exception $exception) {
                     $logger->info($sku . " Deu merda a salvar: Exception:  " . $exception->getMessage());
-                    print_r($exception->getMessage());
+                    print_r($exception->getMessage() . " Save product exception" . "\n");
                 }
                 if ($product->getOptions() == null){
                     $this->add_warranty_option($product);
@@ -385,7 +379,7 @@ class Products extends Command
                 }
             } catch (\Exception $ex) {
                 //Se der outro erro a ler o produto do repositório
-                print_r($ex->getMessage());
+                print_r($ex->getMessage() . " read from repository exception" . "\n");
                 return;
             }
             // Se o produto já existir atualizar o preço e se estiver fora de gama atualizar
@@ -821,9 +815,9 @@ class Products extends Command
         return $attribute->getData();
     }
 
-    protected function add_warranty_option($product){
-        $one_year = $this->get_one_year_warranty_price((int)$product->getPrice());
-        $three_years = $this->get_three_years_warranty_price((int)$product->getPrice());
+    protected function add_warranty_option($product, $gama){
+        $one_year = $this->get_one_year_warranty_price((int)$product->getPrice(), $gama);
+        $three_years = $this->get_three_years_warranty_price((int)$product->getPrice(), $gama);
 
         $options = [
             [
@@ -889,7 +883,104 @@ class Products extends Command
         $this->productRepositoryInterface->save($product);
     }
 
-    protected function get_one_year_warranty_price($price){
+    protected function get_one_year_warranty_price($preco, $gama, $familia){
+        switch ($gama){
+            case 'GRANDES DOMÉSTICOS':
+                if ($preco <= 200){
+                    return 14;
+                }elseif ($preco > 200 && $preco <= 400 ) {
+                    return 19;
+                }elseif ($preco > 400 && $preco <= 600 ) {
+                    return 29;
+                }elseif ($preco > 600 && $preco <= 1000) {
+                    return 49;
+                }elseif ($preco > 1000 && $preco <= 1500) {
+                    return 59;
+                }elseif ($preco > 1500) {
+                    return 79;
+                }
+                break;
+            case 'IMAGEM E SOM':
+                switch ($familia) {
+                    case 'CÂMARAS':
+                        if ($preco <= 100) {
+                            return 19;
+                        } elseif ($preco > 100 && $preco <= 200) {
+                            return 24;
+                        } elseif ($preco > 200 && $preco <= 400) {
+                            return 39;
+                        } elseif ($preco > 400 && $preco <= 600) {
+                            return 49;
+                        } elseif ($preco > 600 && $preco <= 800) {
+                            return 69;
+                        } elseif ($preco > 800) {
+                            return 89;
+                        }
+                        break;
+                    default:
+                        if ($preco <= 200){
+                            return 19;
+                        }elseif (200 < $preco && $preco <= 400 ) {
+                            return 29;
+                        }elseif ($preco > 400 && $preco <= 600 ) {
+                            return 49;
+                        }elseif ($preco > 600 && $preco <= 1000) {
+                            return 69;
+                        }elseif ($preco > 1000 && $preco <= 1500) {
+                            return 79;
+                        }elseif ($preco > 1500) {
+                            return 119;
+                        }
+                        break;
+                }
+            case 'INFORMÁTICA':
+                if ($preco <= 200){
+                    return 24;
+                }elseif ($preco > 200 && $preco <= 400 ) {
+                    return 39;
+                }elseif ($preco > 400 && $preco <= 600 ) {
+                    return 49;
+                }elseif ($preco > 600 && $preco <= 1000) {
+                    return 69;
+                }elseif ($preco > 1000 && $preco <= 1500) {
+                    return 89;
+                }elseif ($preco > 1500) {
+                    return 99;
+                }
+                break;
+            case 'COMUNICAÇÕES':
+                if ($preco <= 150){
+                    return 19;
+                }elseif ($preco > 150 && $preco <= 300 ) {
+                    return 24;
+                }elseif ($preco > 300 && $preco <= 400 ) {
+                    return 39;
+                }elseif ($preco > 400 && $preco <= 500) {
+                    return 49;
+                }elseif ($preco > 500 && $preco <= 700) {
+                    return 69;
+                }elseif ($preco > 700 && $preco <= 900) {
+                    return 79;
+                }elseif ($preco > 900) {
+                    return 89;
+                }
+                break;
+            case 'CÂMARAS':
+                if ($preco <= 100) {
+                    return 19;
+                } elseif ($preco > 100 && $preco <= 200) {
+                    return 24;
+                } elseif ($preco > 200 && $preco <= 400) {
+                    return 39;
+                } elseif ($preco > 400 && $preco <= 600) {
+                    return 49;
+                } elseif ($preco > 600 && $preco <= 800) {
+                    return 69;
+                } elseif ($preco > 800) {
+                    return 89;
+                }
+                break;
+        }
         return 30;
     }
 
