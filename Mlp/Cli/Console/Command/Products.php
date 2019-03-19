@@ -20,6 +20,7 @@ use Magento\Framework\App\State;
 use Magento\Framework\Filesystem;
 use Magento\UrlRewrite\Model\Exception\UrlAlreadyExistsException;
 use phpDocumentor\Reflection\Types\This;
+use Mlp\Cli\Helper\Product;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -103,6 +104,8 @@ class Products extends Command
 
     private $productRepositoryInterface;
 
+    private $productManager;
+
     public function __construct(EavSetupFactory $eavSetupFactory,
                                 AttributeSetFactory $attributeSetFactory,
                                 Attribute $entityAttribute,
@@ -115,6 +118,7 @@ class Products extends Command
                                 \Mlp\Cli\Helper\Data $dataAttributeOptions,
                                 \Mlp\Cli\Helper\Attribute $attributeManager,
                                 \Mlp\Cli\Helper\Category $categoryManager,
+                                \Mlp\Cli\Helper\Product $productManager,
                                 \Magento\Framework\Registry $registry,
                                 \Magento\CatalogInventory\Api\StockStateInterface $stockStateInterface,
                                 \Magento\CatalogInventory\Api\StockRegistryInterface $stockRegistry,
@@ -138,6 +142,7 @@ class Products extends Command
         $this->stockRegistry = $stockRegistry;
         $this->stockStateInterface = $stockStateInterface;
         $this->optionFactory = $optionFactory;
+        $this->productManager= $productManager;
 
         parent::__construct();
     }
@@ -318,7 +323,7 @@ class Products extends Command
                 //Produto NOVO
                 $product = $this->productFactory->create();
                 $product->setSku($sku);
-                $this->getImages($product, $data);
+                $this->getImages($sku, $data);
                 $product->setName(trim($data[1]));
                 $product->setTypeId(\Magento\Catalog\Model\Product\Type::TYPE_SIMPLE);
                 $subFamilia = $this->categoryManager->setSubFamiliaSorefoz(trim($data[9]));
@@ -368,9 +373,10 @@ class Products extends Command
                 } catch (\Exception $exception) {
                     $logger->info($sku . " Deu merda a salvar: Exception:  " . $exception->getMessage());
                     print_r($exception->getMessage() . " Save product exception" . "\n");
+                    return;
                 }
                 if ($product->getOptions() == null){
-                    $this->add_warranty_option($product, $gama, $familia);
+                    $this->add_warranty_option($product, $gama, $familia, $subFamilia);
                     $value = $this->getInstallationValue($familia);
                     if ($value > 0){
                         $this->add_installation_option($product,$value);
@@ -430,6 +436,78 @@ class Products extends Command
         print_r($sku . "->" . microtime(true) . "\n");
     }
 
+    /**
+     * @param $data
+     * @param $logger
+     * @param $categories
+     */
+    protected function addSorefozProduct2($data, $logger, $categories)
+    {
+        if (strcmp($data[5], "ACESSÓRIOS E BATERIAS") == 0 || strcmp($data[7], "MAT. PROMOCIONAL / PUBLICIDADE") == 0
+            || strcmp($data[7], "FERRAMENTAS") == 0 || strcmp(trim($data[16]), "sim") == 0) {
+            return;
+        }
+        $sku = trim($data[18]);
+        if (strlen($sku) == 13) {
+            try {
+                $product = $this->productRepository->get($sku, true, null, true);
+                if ($product->getStatus() == 2) {
+                    print_r($sku . "\n");
+                    return;
+                }
+            } catch (NoSuchEntityException $exception) {
+                $name = trim($data[1]);
+                $gama = trim($data[5]);
+                $familia = trim(data[7]);
+                $subfamilia = trim($data[9]);
+                $description = trim($data[25]);
+                $meta_description = trim($data[26]);
+                $manufacter = trim($data[3]);
+                $length = trim($data[21]);
+                $width = trim($data[22]);
+                $height = trim($data[23]);
+                $weight = trim ($data[19]);
+                $price = $preco = (int)str_replace(".", "", $data[12]);
+
+                $this->getImages($sku, $data );
+                $productInterno = $this->productManager->__construct($sku, $name, $gama, $familia,$subfamilia,$description,
+                    $meta_description,$manufacter,$length,$width,$height,$weight,$price);
+
+                $productInterno->add_product($categories,$logger);
+            }
+            if (isset($product)){
+                $this->productManager->setStock($data[29]);
+            }
+        }
+    }
+    /*
+
+        Descrição 1
+
+        NOME_MARCA 3
+
+
+        NOME_FAMILIA 7
+        SUBFAMILIA 8
+        NOME_SUBFAMILIA 9
+        PVP_MARCA 10
+        PVP_CENTRAL 11
+        PR_LIQUIDO 12
+        EM_PROMOÇ+O 13
+        FORA_GAMA 16
+        EAN 18
+        Peso(kg) 19
+        Volume(dm3) 20
+        Comprimento(mm) 21
+        Largura(mm) 22
+        Altura(mm) 23
+        LinkImagem 24
+        Caracteristicas_Resumo 25
+        Caracteristicas_Completa 26
+        Classe_energetica 27
+        Link_Classe_Energetica 28
+        Stock 29
+    */
     protected function disableSorefozProducts()
     {
         $this->state->emulateAreaCode(
@@ -746,12 +824,12 @@ class Products extends Command
         }
     }
 
-    protected function getImages($product, $data)
+    protected function getImages($sku, $data)
     {
         try {
             if (preg_match('/^http/', (string)$data[28]) == 1) {
                 $ch = curl_init($data[28]);
-                $fp = fopen("/var/www/html/pub/media/catalog/product/" . $product->getSku() . '_e.jpeg', 'wb');
+                $fp = fopen("/var/www/html/pub/media/catalog/product/" . $sku. '_e.jpeg', 'wb');
                 curl_setopt($ch, CURLOPT_FILE, $fp);
                 curl_setopt($ch, CURLOPT_HEADER, 0);
                 curl_setopt($ch,CURLOPT_TIMEOUT,100);
@@ -767,7 +845,7 @@ class Products extends Command
         try {
             if (preg_match('/^http/', $data[24]) == 1) {
                 $ch = curl_init($data[24]);
-                $fp = fopen("/var/www/html/pub/media/catalog/product/" . $product->getSku() . ".jpeg", 'wb');
+                $fp = fopen("/var/www/html/pub/media/catalog/product/" . $sku . ".jpeg", 'wb');
                 curl_setopt($ch, CURLOPT_FILE, $fp);
                 curl_setopt($ch, CURLOPT_HEADER, 0);
                 curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,1);
@@ -815,8 +893,8 @@ class Products extends Command
         return $attribute->getData();
     }
 
-    protected function add_warranty_option($product, $gama, $familia){
-        $one_year = $this->get_one_year_warranty_price((int)$product->getPrice(), $gama, $familia);
+    protected function add_warranty_option($product, $gama, $familia, $subfamilia){
+        $one_year = $this->get_one_year_warranty_price((int)$product->getPrice(), $gama, $familia, $subfamilia);
         $three_years = $this->get_three_years_warranty_price((int)$product->getPrice(), $gama);
         //Se os valores forem 0 não adiciona
         if ($one_year == 0 && $three_years == 0){
@@ -907,7 +985,7 @@ class Products extends Command
         $this->productRepositoryInterface->save($product);
     }
 
-    protected function get_one_year_warranty_price($preco, $gama, $familia)
+    protected function get_one_year_warranty_price($preco, $gama, $familia, $subfamilia)
     {
         switch ($gama) {
             case 'GRANDES DOMÉSTICOS':
@@ -974,20 +1052,24 @@ class Products extends Command
                 }
                 break;
             case 'COMUNICAÇÕES':
-                if ($preco <= 150) {
-                    return 19;
-                } elseif ($preco > 150 && $preco <= 300) {
-                    return 24;
-                } elseif ($preco > 300 && $preco <= 400) {
-                    return 39;
-                } elseif ($preco > 400 && $preco <= 500) {
-                    return 49;
-                } elseif ($preco > 500 && $preco <= 700) {
-                    return 69;
-                } elseif ($preco > 700 && $preco <= 900) {
-                    return 79;
-                } elseif ($preco > 900) {
-                    return 89;
+                if (strcmp($familia, "TELEFONES FIXOS") == 0 || strcmp($subfamilia, "TELEMÓVEIS") == 0){
+                    if ($preco <= 150) {
+                        return 19;
+                    } elseif ($preco > 150 && $preco <= 300) {
+                        return 24;
+                    } elseif ($preco > 300 && $preco <= 400) {
+                        return 39;
+                    } elseif ($preco > 400 && $preco <= 500) {
+                        return 49;
+                    } elseif ($preco > 500 && $preco <= 700) {
+                        return 69;
+                    } elseif ($preco > 700 && $preco <= 900) {
+                        return 79;
+                    } elseif ($preco > 900) {
+                        return 89;
+                    }
+                }else{
+                    return 0;
                 }
                 break;
             case 'PEQUENOS DOMÉSTICOS':
@@ -999,6 +1081,27 @@ class Products extends Command
                     return 19;
                 } elseif ($preco > 200 && $preco <= 500) {
                     return 29;
+                }
+                break;
+            case 'CLIMATIZAÇÃO':
+                switch ($familia){
+                    case 'AR CONDICIONADO':
+                        if ($preco <= 200) {
+                            return 14;
+                        } elseif ($preco > 200 && $preco <= 400) {
+                            return 19;
+                        } elseif ($preco > 400 && $preco <= 600) {
+                            return 29;
+                        } elseif ($preco > 600 && $preco <= 1000) {
+                            return 49;
+                        } elseif ($preco > 1000 && $preco <= 1500) {
+                            return 59;
+                        } elseif ($preco > 1500) {
+                            return 79;
+                        }
+                        break;
+                    default:
+                        return 0;
                 }
                 break;
             default:
