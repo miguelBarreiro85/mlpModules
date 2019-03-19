@@ -471,7 +471,7 @@ class Products extends Command
 
                 $this->getImages($sku, $data );
                 //$productInterno = $this->productManager->__construct($sku, $name, $gama, $familia,$subfamilia,$description,
-                    $meta_description,$manufacter,$length,$width,$height,$weight,$price);
+                    //$meta_description,$manufacter,$length,$width,$height,$weight,$price);
 
                 //$productInterno->add_product($categories,$logger);
             }
