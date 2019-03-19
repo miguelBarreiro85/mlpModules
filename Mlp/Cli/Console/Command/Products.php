@@ -470,10 +470,10 @@ class Products extends Command
                 $price = $preco = (int)str_replace(".", "", $data[12]);
 
                 $this->getImages($sku, $data );
-                $productInterno = $this->productManager->__construct($sku, $name, $gama, $familia,$subfamilia,$description,
+                //$productInterno = $this->productManager->__construct($sku, $name, $gama, $familia,$subfamilia,$description,
                     $meta_description,$manufacter,$length,$width,$height,$weight,$price);
 
-                $productInterno->add_product($categories,$logger);
+                //$productInterno->add_product($categories,$logger);
             }
             if (isset($product)){
                 $this->productManager->setStock($data[29]);
