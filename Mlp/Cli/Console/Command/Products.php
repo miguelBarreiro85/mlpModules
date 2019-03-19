@@ -118,7 +118,7 @@ class Products extends Command
                                 \Mlp\Cli\Helper\Data $dataAttributeOptions,
                                 \Mlp\Cli\Helper\Attribute $attributeManager,
                                 \Mlp\Cli\Helper\Category $categoryManager,
-                                \Mlp\Cli\Helper\Product $productManager,
+                                //\Mlp\Cli\Helper\Product $productManager,
                                 \Magento\Framework\Registry $registry,
                                 \Magento\CatalogInventory\Api\StockStateInterface $stockStateInterface,
                                 \Magento\CatalogInventory\Api\StockRegistryInterface $stockRegistry,
@@ -142,7 +142,7 @@ class Products extends Command
         $this->stockRegistry = $stockRegistry;
         $this->stockStateInterface = $stockStateInterface;
         $this->optionFactory = $optionFactory;
-        $this->productManager= $productManager;
+        //$this->productManager= $productManager;
 
         parent::__construct();
     }
