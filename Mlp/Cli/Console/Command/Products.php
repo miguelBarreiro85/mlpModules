@@ -436,11 +436,7 @@ class Products extends Command
         print_r($sku . "->" . microtime(true) . "\n");
     }
 
-    /**
-     * @param $data
-     * @param $logger
-     * @param $categories
-     */
+    /*
     protected function addSorefozProduct2($data, $logger, $categories)
     {
         if (strcmp($data[5], "ACESSÓRIOS E BATERIAS") == 0 || strcmp($data[7], "MAT. PROMOCIONAL / PUBLICIDADE") == 0
@@ -470,16 +466,19 @@ class Products extends Command
                 $price = $preco = (int)str_replace(".", "", $data[12]);
 
                 $this->getImages($sku, $data );
-                //$productInterno = $this->productManager->__construct($sku, $name, $gama, $familia,$subfamilia,$description,
-                    //$meta_description,$manufacter,$length,$width,$height,$weight,$price);
+                $productInterno = $this->productManager->__construct($sku, $name, $gama, $familia,$subfamilia,$description,
+                    $meta_description,$manufacter,$length,$width,$height,$weight,$price);
 
-                //$productInterno->add_product($categories,$logger);
+                $productInterno->add_product($categories,$logger);
             }
             if (isset($product)){
                 $this->productManager->setStock($data[29]);
             }
         }
     }
+    */
+
+
     /*
 
         Descrição 1
