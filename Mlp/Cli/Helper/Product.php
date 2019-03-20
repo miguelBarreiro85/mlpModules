@@ -8,6 +8,9 @@
 
 namespace Mlp\Cli\Helper;
 
+use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Catalog\Model\Product\Media\Config;
+use Magento\Catalog\Model\Product\OptionFactory;
 use Magento\Catalog\Model\ProductRepository as ProductRepository;
 use Magento\Catalog\Model\ProductFactory as ProductFactory;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
@@ -26,7 +29,7 @@ class Product
     private $description;
     private $meta_description;
     private $manufacter;
-    private $length
+    private $length;
     private $width;
     private $height;
     private $weight;
@@ -39,15 +42,22 @@ class Product
     private $dataAttributeOptions;
     private $attributeManager;
     private $stockRegistry;
-    
+    private $config;
+    private $optionFactory;
+    private $productRepositoryInterface;
+
     public function __construct($sku, $name, $gama, $familia, $subfamilia,
                                 $description, $meta_description, $manufacter,
-                                    $length, $width, $height, $weight, $price,
-                                        ProductRepository $productRepository,
-                                        ProductFactory $productFactory,
-                                        CategoryManager $categoryManager,
+                                $length, $width, $height, $weight, $price,
+                                ProductRepository $productRepository,
+                                ProductFactory $productFactory,
+                                CategoryManager $categoryManager,
                                 DataAttributeOptions $dataAttributeOptions,
-                                Attribute $attributeManager, StockRegistryInterface $stockRegistry)
+                                Attribute $attributeManager,
+                                StockRegistryInterface $stockRegistry,
+                                Config $config,
+                                OptionFactory $optionFactory,
+                                ProductRepositoryInterface $productRepositoryInterface)
     {
         $this->sku = $sku;
         $this->name = $name;
@@ -69,9 +79,12 @@ class Product
         $this->dataAttributeOptions = $dataAttributeOptions;
         $this->attributeManager = $attributeManager;
         $this->stockRegistry = $stockRegistry;
+        $this->config = $config;
+        $this->optionFactory = $optionFactory;
+        $this->productRepositoryInterface = $productRepositoryInterface;
     }
 
-    public function add_product($categories, $logger) {
+    public function add_product($categories, $logger, $imgName) {
                 $product = $this->productFactory->create();
                 $product->setSku($this->sku);
                 $product->setName($this->name);
@@ -100,46 +113,32 @@ class Product
                     $product->setCategoryIds([$categories[$gama], $categories[$familia], $categories[$subFamilia]]);
                 } catch (\Exception $ex) { //Adicionar nova categoria
                     try{
-                        print_r("\nErro ao adicionar nova categtoria ". $ex->getMessage() . "\n");
                         $this->categoryManager->createCategory($gama, $familia, $subFamilia, $categories);
                         $categories = $this->categoryManager->getCategoriesArray();
                         $product->setCategoryIds([$categories[$gama], $categories[$familia], $categories[$subFamilia]]);
                     }catch (\Exception $ex){
-                        print_r($ex->getMessage() ."\n");
+                        print_r("\nErro ao adicionar nova categtoria ". $ex->getMessage() . "\n");
                     }
 
                 }
-                $this->setImages($product, $logger, $product->getSku() . "_e.jpeg");
-                $this->setImages($product, $logger, $product->getSku() . ".jpeg");
-                $product->setStatus(Status::STATUS_ENABLED);
+                $this->setImages($product, $logger, $imgName . "_e.jpeg");
+                $this->setImages($product, $logger, $imgName . ".jpeg");
+                $product->setStatus(\Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED);
                 //Preço
-                $preco = (int)str_replace(".","",$this->price);
-                $preco = $preco * 1.30;
-                $preco = $preco * 1.23;
-                $product->setPrice($preco);
+                $product->setPrice($this->price);
                 //Salvar produto
                 try {
                     $product->save();
+                    print_r($this->sku . " - added" . "  -  ");
                 } catch (\Exception $exception) {
-                    $logger->info($sku . " Deu merda a salvar: Exception:  " . $exception->getMessage());
-                    print_r($exception->getMessage() . " Save product exception" . "\n");
+                    $logger->info(" - " . $this->sku . " Save product: Exception:  " . $exception->getMessage());
+                    print_r("- " . $exception->getMessage() . " Save product exception" . "\n");
                 }
-                if ($product->getOptions() == null){
-                    $this->add_warranty_option($product, $gama, $familia, $subFamilia);
-                    $value = $this->getInstallationValue($familia);
-                    if ($value > 0){
-                        $this->add_installation_option($product,$value);
-                    }
-
+                $this->add_warranty_option($product, $gama, $familia, $subFamilia);
+                $value = $this->getInstallationValue($familia);
+                if ($value > 0){
+                    $this->add_installation_option($product,$value);
                 }
-
-                $preco = (int)str_replace(".", "", $this->price);
-                if ($preco < 400) {
-                    $preco = $preco * 1.20;
-                } else {
-                    $preco = $preco * 1.15;
-                }
-                $product->setPrice($preco);
             }
 
         protected function setImages($product, $logger, $ImgName)
@@ -155,40 +154,275 @@ class Product
                 print_r("run time exception" . $exception->getMessage() . "\n");
             } catch (\Exception $localizedException) {
                 $logger->info($product->getName() . "Image name" . $ImgName . "  Sem Imagem");
-                print_r($ImgName . "  Sem Imagem ");
             }
         }
 
-        public function setStock($stock){
-            try {
-                $product = $this->productRepository->get($this->sku, true, null, true);
-                $stockItem = $this->stockRegistry->getStockItem($product->getId()); // load stock of that product
-                switch ($stock) {
-                    case 'Sim':
-                        $stockItem->setIsInStock(true); //set updated data as your requirement
-                        $stockItem->setQty(9); //set updated quantity
-                        $stockItem->setManageStock(false);
-                        $stockItem->setUseConfigNotifyStockQty(false);
+        protected function add_warranty_option($product, $gama, $familia, $subfamilia){
+        $one_year = $this->get_one_year_warranty_price((int)$product->getPrice(), $gama, $familia, $subfamilia);
+        $three_years = $this->get_three_years_warranty_price((int)$product->getPrice(), $gama);
+        //Se os valores forem 0 não adiciona
+        if ($one_year == 0 && $three_years == 0){
+            return;
+        }
+        elseif ($one_year != 0 && $three_years != 0) {
+            $options = [
+                [
+                    'title' => 'Extensão de garantia',
+                    'type' => 'checkbox',
+                    'is_require' => false,
+                    'sort_order' => 4,
+                    'values' => [
+                        [
+                            'title' => '1 ano',
+                            'price' => $one_year,
+                            'price_type' => 'fixed',
+                            'sort_order' => 0,
+                        ],
+                        [
+                            'title' => '3 anos',
+                            'price' => $three_years,
+                            'price_type' => 'fixed',
+                            'sort_order' => 1,
+                        ],
+                    ],
+                ],
+            ];
+        }elseif ($one_year == 0 && $three_years != 0){
+            $options = [
+                [
+                    'title' => 'Extensão de garantia',
+                    'type' => 'checkbox',
+                    'is_require' => false,
+                    'sort_order' => 4,
+                    'values' => [
+                        [
+                            'title' => '3 anos',
+                            'price' => $three_years,
+                            'price_type' => 'fixed',
+                            'sort_order' => 1,
+                        ],
+                    ],
+                ],
+            ];
+        }
+        if(!isset($options)){
+            return;
+        }
+        foreach ($options as $arrayOption) {
+            $option = $this->optionFactory->create();
+            $option->setProductId($product->getId())
+                ->setStoreId($product->getStoreId())
+                ->addData($arrayOption);
+            $option->save();
+            $product->addOption($option);
+        }
+        $this->productRepositoryInterface->save($product);
+
+    }
+        protected function get_one_year_warranty_price($preco, $gama, $familia, $subfamilia)
+    {
+        switch ($gama) {
+            case 'GRANDES DOMÉSTICOS':
+                if ($preco <= 200) {
+                    return 14;
+                } elseif ($preco > 200 && $preco <= 400) {
+                    return 19;
+                } elseif ($preco > 400 && $preco <= 600) {
+                    return 29;
+                } elseif ($preco > 600 && $preco <= 1000) {
+                    return 49;
+                } elseif ($preco > 1000 && $preco <= 1500) {
+                    return 59;
+                } elseif ($preco > 1500) {
+                    return 79;
+                }
+                break;
+            case 'IMAGEM E SOM':
+                switch ($familia) {
+                    case 'CÂMARAS':
+                        if ($preco <= 100) {
+                            return 19;
+                        } elseif ($preco > 100 && $preco <= 200) {
+                            return 24;
+                        } elseif ($preco > 200 && $preco <= 400) {
+                            return 39;
+                        } elseif ($preco > 400 && $preco <= 600) {
+                            return 49;
+                        } elseif ($preco > 600 && $preco <= 800) {
+                            return 69;
+                        } elseif ($preco > 800) {
+                            return 89;
+                        }
                         break;
                     default:
-                        $stockItem = $this->stockRegistry->getStockItem($product->getId()); // load stock of that product
-                        $stockItem->setIsInStock(false); //set updated data as your requirement
-                        $stockItem->setQty(0); //set updated quantity
-                        $stockItem->setManageStock(false);
-                        $stockItem->setUseConfigNotifyStockQty(false);
+                        if ($preco <= 200) {
+                            return 19;
+                        } elseif (200 < $preco && $preco <= 400) {
+                            return 29;
+                        } elseif ($preco > 400 && $preco <= 600) {
+                            return 49;
+                        } elseif ($preco > 600 && $preco <= 1000) {
+                            return 69;
+                        } elseif ($preco > 1000 && $preco <= 1500) {
+                            return 79;
+                        } elseif ($preco > 1500) {
+                            return 119;
+                        }
                         break;
                 }
-                $stockItem->save(); //save stock of item
-                $this->stockRegistry->updateStockItemBySku($product->getSku(),$stockItem);
-            }catch (\Exception $ex) {
-                print_r("\nStock: " . $product->getSku()  . $ex->getMessage() . "\n");
-            }
-            try{
-                $this->productRepository->save($product);
-            }catch (\Exception $ex){
-                print_r($ex->getMessage());
-            }
+            case 'INFORMÁTICA':
+                if ($preco <= 200) {
+                    return 24;
+                } elseif ($preco > 200 && $preco <= 400) {
+                    return 39;
+                } elseif ($preco > 400 && $preco <= 600) {
+                    return 49;
+                } elseif ($preco > 600 && $preco <= 1000) {
+                    return 69;
+                } elseif ($preco > 1000 && $preco <= 1500) {
+                    return 89;
+                } elseif ($preco > 1500) {
+                    return 99;
+                }
+                break;
+            case 'COMUNICAÇÕES':
+                if (strcmp($familia, "TELEFONES FIXOS") == 0 || strcmp($subfamilia, "TELEMÓVEIS") == 0){
+                    if ($preco <= 150) {
+                        return 19;
+                    } elseif ($preco > 150 && $preco <= 300) {
+                        return 24;
+                    } elseif ($preco > 300 && $preco <= 400) {
+                        return 39;
+                    } elseif ($preco > 400 && $preco <= 500) {
+                        return 49;
+                    } elseif ($preco > 500 && $preco <= 700) {
+                        return 69;
+                    } elseif ($preco > 700 && $preco <= 900) {
+                        return 79;
+                    } elseif ($preco > 900) {
+                        return 89;
+                    }
+                }else{
+                    return 0;
+                }
+                break;
+            case 'PEQUENOS DOMÉSTICOS':
+                if ($preco <= 50) {
+                    return 9;
+                } elseif ($preco > 50 && $preco <= 100) {
+                    return 14;
+                } elseif ($preco > 100 && $preco <= 200) {
+                    return 19;
+                } elseif ($preco > 200 && $preco <= 500) {
+                    return 29;
+                }
+                break;
+            case 'CLIMATIZAÇÃO':
+                switch ($familia){
+                    case 'AR CONDICIONADO':
+                        if ($preco <= 200) {
+                            return 14;
+                        } elseif ($preco > 200 && $preco <= 400) {
+                            return 19;
+                        } elseif ($preco > 400 && $preco <= 600) {
+                            return 29;
+                        } elseif ($preco > 600 && $preco <= 1000) {
+                            return 49;
+                        } elseif ($preco > 1000 && $preco <= 1500) {
+                            return 59;
+                        } elseif ($preco > 1500) {
+                            return 79;
+                        }
+                        break;
+                    default:
+                        return 0;
+                }
+                break;
+            default:
+                return 0;
         }
+    }
+        protected function get_three_years_warranty_price($preco, $gama){
+        switch ($gama) {
+            case 'GRANDES DOMÉSTICOS':
+                if ($preco <= 200) {
+                    return 29;
+                } elseif ($preco > 200 && $preco <= 400) {
+                    return 49;
+                } elseif ($preco > 400 && $preco <= 600) {
+                    return 69;
+                } elseif ($preco > 600 && $preco <= 1000) {
+                    return 99;
+                } elseif ($preco > 1000 && $preco <= 1500) {
+                    return 119;
+                } elseif ($preco > 1500) {
+                    return 149;
+                }
+                break;
+            case 'IMAGEM E SOM':
+                if ($preco <= 200) {
+                    return 39;
+                } elseif (200 < $preco && $preco <= 400) {
+                    return 59;
+                } elseif ($preco > 400 && $preco <= 600) {
+                    return 69;
+                } elseif ($preco > 600 && $preco <= 1000) {
+                    return 99;
+                } elseif ($preco > 1000 && $preco <= 1500) {
+                    return 119;
+                } elseif ($preco > 1500) {
+                    return 169;
+                }
+                break;
+            default:
+                return 0;
+        }
+    }
+        protected function getInstallationValue($familia)
+    {
+        switch ($familia){
+            case 'ENCASTRE':
+                return 54.90;
+            case 'FOGÕES':
+                return 39.90;
+            case 'ESQUENTADORES/CALDEIRAS':
+                return 74.90;
+            case 'TERMOACUMULADORES':
+                return 64.90;
+            case 'AR CONDICIONADO':
+                return 180;
+            default:
+                return 0;
+        }
+    }
+        protected function add_installation_option($product, $value){
+        $options = [
+            [
+                'title' => 'Serviço de instalação',
+                'type' => 'checkbox',
+                'is_require' => false,
+                'sort_order' => 4,
+                'values' => [
+                    [
+                        'title' => 'Instalação de equipamento',
+                        'price' => $value,
+                        'price_type' => 'fixed',
+                        'sort_order' => 0,
+                    ],
+                ],
+            ],
+        ];
+
+        foreach ($options as $arrayOption) {
+            $option = $this->optionFactory->create();
+            $option->setProductId($product->getId())
+                ->setStoreId($product->getStoreId())
+                ->addData($arrayOption);
+            $option->save();
+            $product->addOption($option);
+        }
+        $this->productRepositoryInterface->save($product);
+    }
     }
 
 
