@@ -305,7 +305,6 @@ class Products extends Command
             try {
                 $product = $this->productRepository->get($sku, true, null, true);
                 if ($product->getStatus() == 2) {
-                    print_r($sku . "\n");
                     return;
                 }
             } catch (NoSuchEntityException $exception) {
@@ -560,7 +559,6 @@ class Products extends Command
             switch ($stock) {
                 case 'Sim':
                 case 'sim':
-                    print_r(" - sim - " . "\n");
                     $stockItem->setIsInStock(true); //set updated data as your requirement
                     $stockItem->setQty(9); //set updated quantity
                     $stockItem->setManageStock(false);
