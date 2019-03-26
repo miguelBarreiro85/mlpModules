@@ -212,14 +212,44 @@ class Product
                                     if (preg_match('/UNID.INT/', $name) == 1) {
                                         $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('tipo_ac', 'Unidade interior');
                                         array_push($attributes,$attribute1);
+                                        if (preg_match('/Arrefecimento: (\d+)./', $description, $matches) == 1){
+                                            $potencia = $this->getPotencia((int)$matches[1]);
+                                            if ($potencia != null){
+                                                $attribute2['code'] = 'potencia_ac_int';
+                                                $attribute2['value'] = $this->dataAttributeOptions->createOrGetId('potencia_ac_int',
+                                                    $potencia);
+                                                array_push($attributes,$attribute2);
+                                            }
+
+                                        }
                                         return $attributes;
                                     } elseif (preg_match('/UNID.EXT/', $name) == 1) {
                                         $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('tipo_ac', 'Unidade exterior');
                                         array_push($attributes,$attribute1);
+                                        if (preg_match('/Arrefecimento: (\d+)./', $description, $matches) == 1){
+                                            $potencia = $this->getPotencia((int)$matches[1]);
+                                            if ($potencia != null){
+                                                $attribute2['code'] = 'potencia_ac_ext';
+                                                $attribute2['value'] = $this->dataAttributeOptions->createOrGetId('potencia_ac_ext',
+                                                    $potencia);
+                                                array_push($attributes,$attribute2);
+                                            }
+
+                                        }
                                         return $attributes;
                                     } else {
                                         $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('tipo_ac', 'Conjuntos');
                                         array_push($attributes,$attribute1);
+                                        if (preg_match('/Arrefecimento: (\d+)./', $description, $matches) == 1){
+                                            $potencia = $this->getPotencia((int)$matches[1]);
+                                            if ($potencia != null){
+                                                $attribute2['code'] = 'potencia_ac_conj';
+                                                $attribute2['value'] = $this->dataAttributeOptions->createOrGetId('potencia_ac_conj',
+                                                    $potencia);
+                                                array_push($attributes,$attribute2);
+                                            }
+
+                                        }
                                         return $attributes;
                                     }
                             }
@@ -227,6 +257,22 @@ class Product
 
             }
             
+        }
+
+        protected function getPotencia($matches){
+            if (4 > $matches && $matches < 9) {
+                return 'De 5KBTU a 7KBTU';
+            } elseif ( 9 > $matches && $matches < 12){
+                return 'De 9KBTU a 12KBTU';
+            } elseif ( 12 > $matches && $matches < 18) {
+                return 'De 18KBTU a 24KBTU';
+            } elseif ( $matches > 24){
+                return 'Superior a 24KBTU';
+            }else {
+                return null;
+            }
+
+
         }
         protected function add_warranty_option($product, $gama, $familia, $subfamilia){
         $one_year = $this->get_one_year_warranty_price((int)$product->getPrice(), $gama, $familia, $subfamilia);
