@@ -126,6 +126,12 @@ class Product
                 $product->setStatus(\Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED);
                 //Preço
                 $product->setPrice($this->price);
+                $attributes = $this->getSpecialAttributes($this->gama, $this->familia, $this->subfamilia, $this->description, $this->name);
+                if (isset($attributes)){
+                    foreach ($attributes as $attribute) {
+                        $product->setCustomAttribute($attribute['code'], $attribute['value']);
+                    }
+                }
                 //Salvar produto
                 try {
                     $product->save();
@@ -157,6 +163,71 @@ class Product
             }
         }
 
+        protected function getSpecialAttributes($gama,$familia,$subfamilia, $description, $name){
+        $attributes = [];
+            switch ($gama){
+                case 'GRANDES DOMÉSTICOS':
+                    switch ($familia) {
+                        case 'ENCASTRE - MESAS':
+                            $attribute['code'] = 'tipo_placa_encastre';
+                            switch ($subfamilia) {
+                                case 'CONVENCIONAIS C/GÁS':
+                                    $attribute['value'] = $this->dataAttributeOptions->createOrGetId('tipo_placa_encastre', 'Gás');
+                                    array_push($attributes, $attribute);
+                                    return $attributes;
+                                case 'DE INDUÇÃO':
+                                    $attribute['value'] = $this->dataAttributeOptions->createOrGetId('tipo_placa_encastre', 'Indução');
+                                    array_push($attributes, $attribute);
+                                    return $attributes;
+                                case 'VITROCERÂMICAS C/GÁS':
+                                    $attribute['value'] = $this->dataAttributeOptions->createOrGetId('tipo_placa_encastre', 'Vitrocerâmicas Gás');
+                                    array_push($attributes, $attribute);
+                                    return $attributes;
+                                case 'DOMINÓS C/GÁS':
+                                    $attribute['value'] = $this->dataAttributeOptions->createOrGetId('tipo_placa_encastre', 'Dominós Gás');
+                                    array_push($attributes, $attribute);
+                                    return $attributes;
+                                case 'VITROCERÂMICAS - ELÉCTRICAS':
+                                    $attribute['value'] = $this->dataAttributeOptions->createOrGetId('tipo_placa_encastre', 'Vitrocerâmicas');
+                                    array_push($attributes, $attribute);
+                                    return $attributes;
+                                case 'DOMINÓS - ELÉCTRICOS':
+                                    $attribute['value'] = $this->dataAttributeOptions->createOrGetId('tipo_placa_encastre', 'Dominós Eléctricos');
+                                    array_push($attributes, $attribute);
+                                    return $attributes;
+                                default:
+                                    $attribute['value'] = $this->dataAttributeOptions->createOrGetId('tipo_placa_encastre', 'Outras');
+                                    array_push($attributes, $attribute);
+                                    return $attributes;
+                            }
+                    }
+                case 'CLIMATIZAÇÃO':
+                    $attributes = [];
+                    switch ($familia) {
+                        case 'AR CONDICIONADO':
+                            switch ($subfamilia) {
+                                case 'AR COND.INVERTER':
+                                case 'AR COND.MULTI-SPLIT':
+                                    $attribute1['code'] = 'tipo_ac';
+                                    if (preg_match('/UNID.INT/', $name) == 1) {
+                                        $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('tipo_ac', 'Unidade interior');
+                                        array_push($attributes,$attribute1);
+                                        return $attributes;
+                                    } elseif (preg_match('/UNID.EXT/', $name) == 1) {
+                                        $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('tipo_ac', 'Unidade exterior');
+                                        array_push($attributes,$attribute1);
+                                        return $attributes;
+                                    } else {
+                                        $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('tipo_ac', 'Conjuntos');
+                                        array_push($attributes,$attribute1);
+                                        return $attributes;
+                                    }
+                            }
+                    }
+
+            }
+            
+        }
         protected function add_warranty_option($product, $gama, $familia, $subfamilia){
         $one_year = $this->get_one_year_warranty_price((int)$product->getPrice(), $gama, $familia, $subfamilia);
         $three_years = $this->get_three_years_warranty_price((int)$product->getPrice(), $gama);

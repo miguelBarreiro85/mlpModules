@@ -208,6 +208,10 @@ class Category
                     return 'MICROONDAS ENCASTRE';
                 case 'DE SECRETÁRIA':
                     return 'DESKTOPS';
+
+                case 'AR COND.INVERTER':
+                case 'AR COND.MULTI-SPLIT':
+                    return 'FIXO';
                 default:
                     return $subFamilia;
             }

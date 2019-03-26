@@ -253,7 +253,6 @@ class Products extends Command
                 print_r("Adding Sorefoz products" . "\n");
                 $row = 0;
                 if (($handle = fopen("/var/www/html/app/code/Mlp/Cli/Console/Command/tot_jlcb_utf.csv", "r")) !== FALSE) {
-                    print_r("abri ficheiro\n");
                     while (!feof($handle)) {
                         if (($data = fgetcsv($handle, 4000, ";")) !== FALSE) {
                             if($data == "\n" || $data == "\r\n" || $data == "")
@@ -554,7 +553,6 @@ class Products extends Command
         //STOCK
         try {
             $product = $this->productRepository->get($sku, true, null, true);
-            print_r(" - " . $product->getId(). " - ");
             $stockItem = $this->stockRegistry->getStockItem($product->getId()); // load stock of that product
             switch ($stock) {
                 case 'Sim':
