@@ -200,6 +200,77 @@ class Product
                                     array_push($attributes, $attribute);
                                     return $attributes;
                             }
+                        case 'MAQUINAS LAVAR ROUPA':
+                            if (preg_match('/(\d+)R\./', $name, $matches) == 1) {
+                                if ((int)$matches[1] > 600) {
+                                    $attribute1['code'] = 'rotacao_mlr';
+                                    $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('rotacao_mlr', (int)$matches[1]);
+                                    array_push($attributes, $attribute1);
+                                }
+                            }
+                            if (preg_match('/R.(\d+)K/', $name, $matches1) == 1) {
+                                if ((int)$matches1[1] > 1) {
+                                    $attribute2['code'] = 'capacidade_kg';
+                                    $attribute2['value'] = $this->dataAttributeOptions->createOrGetId('capacidade_kg', (int)$matches1[1]);
+                                    array_push($attributes, $attribute2);
+                                }
+
+                            }
+                            if (preg_match('/(A\+{1,3})/', $name, $matches2) == 1) {
+                                $attribute3['code'] = 'eficiencia_energetica';
+                                $attribute3['value'] = $this->dataAttributeOptions->createOrGetId('eficiencia_energetica', trim($matches2[1]));
+                                array_push($attributes, $attribute3);
+                            }
+                            if (preg_match('/Cor: (\w+)\s/', strip_tags($description), $matches3) == 1) {
+                                print_r("- " . $matches3[1] . " - ");
+                                $attribute4['code'] = 'color';
+                                $attribute4['value'] = $this->dataAttributeOptions->createOrGetId('color', trim($matches3[1]));
+                                array_push($attributes, $attribute4);
+                            }
+                            return $attributes;
+                        case 'MAQUINAS LAVAR LOUÇA':
+                            if (preg_match('/Cor: (\w+)\s/', strip_tags($description), $matches1) == 1) {
+                                $attribute1['code'] = 'color';
+                                $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('color', trim($matches1[1]));
+                                array_push($attributes, $attribute1);
+                            }
+                            if (preg_match('/(A\+{1,3})/', $name, $matches2) == 1) {
+                                $attribute2['code'] = 'eficiencia_energetica';
+                                $attribute2['value'] = $this->dataAttributeOptions->createOrGetId('eficiencia_energetica', trim($matches2[1]));
+                                array_push($attributes, $attribute2);
+                            }
+                            if (preg_match('/(\d+)TA/', $name, $matches3) == 1) {
+                                $attribute3['code'] = 'capacidade_mll';
+                                $attribute3['value'] = $this->dataAttributeOptions->createOrGetId('capacidade_mll', $matches3[1] . " Conjuntos");
+                                array_push($attributes, $attribute3);
+                            }
+                            if (preg_match('/(\d)P/', $name, $matches4) == 1) {
+                                print_r(" - programas: " . $matches4[1] . " - ");
+                                $attribute4['code'] = 'programas_mll';
+                                $attribute4['value'] = $this->dataAttributeOptions->createOrGetId('programas_mll', $matches4[1] . " Programas");
+                                array_push($attributes, $attribute4);
+                            }
+                            return $attributes;
+                        case 'MAQUINAS SECAR ROUPA':
+                            if (preg_match('/Cor: (\w+)/', strip_tags($description), $matches1) == 1) {
+                                $attribute1['code'] = 'color';
+                                $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('color', trim($matches1[1]));
+                                array_push($attributes, $attribute1);
+                            }if (preg_match('/(A\+{1,3})/', $name, $matches2) == 1) {
+                                $attribute2['code'] = 'eficiencia_energetica';
+                                $attribute2['value'] = $this->dataAttributeOptions->createOrGetId('eficiencia_energetica', trim($matches2[1]));
+                                array_push($attributes, $attribute2);
+                            }elseif (preg_match('/Classe Energética: (\w)/',html_entity_decode(strip_tags($description)),$matches3) == 1) {
+                                $attribute3['code'] = 'eficiencia_energetica';
+                                $attribute3['value'] = $this->dataAttributeOptions->createOrGetId('eficiencia_energetica', trim($matches3[1]));
+                                array_push($attributes, $attribute3);
+                            }
+                            if (preg_match('/(\d+)K/',$name,$matches4) == 1) {
+                                $attribute4['code'] = 'capacidade_kg';
+                                $attribute4['value'] = $this->dataAttributeOptions->createOrGetId('capacidade_kg', $matches4[1]." kg");
+                                array_push($attributes, $attribute4);
+                            }
+                            return $attributes;
                     }
                 case 'CLIMATIZAÇÃO':
                     $attributes = [];
@@ -208,10 +279,8 @@ class Product
                             switch ($subfamilia) {
                                 case 'AR COND.INVERTER':
                                 case 'AR COND.MULTI-SPLIT':
-                                    $attribute1['code'] = 'tipo_ac';
+                                    //$attribute1['code'] = 'tipo_ac';
                                     if (preg_match('/UNID.INT/', $name) == 1) {
-                                        $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('tipo_ac', 'Unidade interior');
-                                        array_push($attributes,$attribute1);
                                         if (preg_match('/Arrefecimento: (\d+)./', $description, $matches) == 1){
                                             $potencia = $this->getPotencia((int)$matches[1]);
                                             if ($potencia != null){
@@ -224,8 +293,6 @@ class Product
                                         }
                                         return $attributes;
                                     } elseif (preg_match('/UNID.EXT/', $name) == 1) {
-                                        $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('tipo_ac', 'Unidade exterior');
-                                        array_push($attributes,$attribute1);
                                         if (preg_match('/Arrefecimento: (\d+)./', $description, $matches) == 1){
                                             $potencia = $this->getPotencia((int)$matches[1]);
                                             if ($potencia != null){
@@ -238,8 +305,6 @@ class Product
                                         }
                                         return $attributes;
                                     } else {
-                                        $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('tipo_ac', 'Conjuntos');
-                                        array_push($attributes,$attribute1);
                                         if (preg_match('/Arrefecimento: (\d+)./', $description, $matches) == 1){
                                             $potencia = $this->getPotencia((int)$matches[1]);
                                             if ($potencia != null){
@@ -254,20 +319,27 @@ class Product
                                     }
                             }
                     }
-
             }
             
         }
 
         protected function getPotencia($matches){
-            if (4 > $matches && $matches < 9) {
+            if ($matches < 9) {
                 return 'De 5KBTU a 7KBTU';
-            } elseif ( 9 > $matches && $matches < 12){
+            } elseif ( 8 < $matches && $matches < 13){
                 return 'De 9KBTU a 12KBTU';
-            } elseif ( 12 > $matches && $matches < 18) {
+            } elseif ( 13 < $matches && $matches < 18) {
+                return 'De 12KBTU a 18KBTU';
+            } elseif (  18 < $matches && $matches< 24 ) {
                 return 'De 18KBTU a 24KBTU';
-            } elseif ( $matches > 24){
-                return 'Superior a 24KBTU';
+            }elseif (24 < $matches && $matches< 36) {
+                return 'De 24KBTU a 36KBTU';
+            }elseif (36 < $matches && $matches< 48){
+                return 'De 36KBTU a 48KBTU';
+            }elseif (48 < $matches && $matches< 60) {
+                return 'De 48KBTU a 60KBTU';
+            }elseif ($matches > 60){
+                return 'Superior a 60KBTU';
             }else {
                 return null;
             }
