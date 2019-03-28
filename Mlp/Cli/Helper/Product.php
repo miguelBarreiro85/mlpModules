@@ -163,9 +163,10 @@ class Product
             }
         }
 
-        protected function getSpecialAttributes($gama,$familia,$subfamilia, $description, $name){
-        $attributes = [];
-            switch ($gama){
+        protected function getSpecialAttributes($gama,$familia,$subfamilia, $description, $name)
+        {
+            $attributes = [];
+            switch ($gama) {
                 case 'GRANDES DOMÉSTICOS':
                     switch ($familia) {
                         case 'ENCASTRE - MESAS':
@@ -256,18 +257,24 @@ class Product
                                 $attribute1['code'] = 'color';
                                 $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('color', trim($matches1[1]));
                                 array_push($attributes, $attribute1);
-                            }if (preg_match('/(A\+{1,3})/', $name, $matches2) == 1) {
+                            }
+                            if (preg_match('/(A\+{1,3})/', $name, $matches2) == 1) {
                                 $attribute2['code'] = 'eficiencia_energetica';
                                 $attribute2['value'] = $this->dataAttributeOptions->createOrGetId('eficiencia_energetica', trim($matches2[1]));
                                 array_push($attributes, $attribute2);
-                            }elseif (preg_match('/Classe Energética: (\w)/',html_entity_decode(strip_tags($description)),$matches3) == 1) {
+                                if (preg_match('/(A\+{1,3})/', $name, $matches2) == 1) {
+                                    $attribute2['code'] = 'eficiencia_energetica';
+                                    $attribute2['value'] = $this->dataAttributeOptions->createOrGetId('eficiencia_energetica', trim($matches2[1]));
+                                    array_push($attributes, $attribute2);
+                                }
+                            } elseif (preg_match('/Classe Energética: (\w)/', html_entity_decode(strip_tags($description)), $matches3) == 1) {
                                 $attribute3['code'] = 'eficiencia_energetica';
                                 $attribute3['value'] = $this->dataAttributeOptions->createOrGetId('eficiencia_energetica', trim($matches3[1]));
                                 array_push($attributes, $attribute3);
                             }
-                            if (preg_match('/(\d+)K/',$name,$matches4) == 1) {
+                            if (preg_match('/(\d+)K/', $name, $matches4) == 1) {
                                 $attribute4['code'] = 'capacidade_kg';
-                                $attribute4['value'] = $this->dataAttributeOptions->createOrGetId('capacidade_kg', $matches4[1]." kg");
+                                $attribute4['value'] = $this->dataAttributeOptions->createOrGetId('capacidade_kg', $matches4[1] . " kg");
                                 array_push($attributes, $attribute4);
                             }
                             return $attributes;
@@ -288,58 +295,108 @@ class Product
                                 array_push($attributes, $attribute3);
                             }
                             return $attributes;
-                    }
-                case 'CLIMATIZAÇÃO':
-                    $attributes = [];
-                    switch ($familia) {
-                        case 'AR CONDICIONADO':
-                            switch ($subfamilia) {
-                                case 'AR COND.INVERTER':
-                                case 'AR COND.MULTI-SPLIT':
-                                    //$attribute1['code'] = 'tipo_ac';
-                                    if (preg_match('/UNID.INT/', $name) == 1) {
-                                        if (preg_match('/Arrefecimento: (\d+)./', $description, $matches) == 1){
-                                            $potencia = $this->getPotencia((int)$matches[1]);
-                                            if ($potencia != null){
-                                                $attribute2['code'] = 'potencia_ac_int';
-                                                $attribute2['value'] = $this->dataAttributeOptions->createOrGetId('potencia_ac_int',
-                                                    $potencia);
-                                                array_push($attributes,$attribute2);
-                                            }
+                        case 'CONGELADORES':
+                            if (preg_match('/(\d+,*\d*x\d+,*\d*)/', $name, $matches1) == 1) {
+                                $attribute1['code'] = 'medidas';
+                                $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('medidas', $matches1[1]);
+                                array_push($attributes, $attribute1);
+                            }
+                            if (preg_match('/Cor: (\w+)/ui', strip_tags($description), $matches2) == 1) {
+                                $attribute2['code'] = 'color';
+                                $attribute2['value'] = $this->dataAttributeOptions->createOrGetId('color', trim($matches2[1]));
+                                array_push($attributes, $attribute2);
+                            }
+                            if (preg_match('/(A\+{1,3})/', $name, $matches3) == 1) {
+                                $attribute3['code'] = 'eficiencia_energetica';
+                                $attribute3['value'] = $this->dataAttributeOptions->createOrGetId('eficiencia_energetica', trim($matches3[1]));
+                                array_push($attributes, $attribute3);
+                            } elseif (preg_match('/Classe Energética: (\w\S*\s*\S*)/', html_entity_decode(strip_tags($description)), $matches4) == 1) {
+                                $eficiencia = $this->getClasseEnergética($matches4[1]);
+                                $attribute4['code'] = 'eficiencia_energetica';
+                                $attribute4['value'] = $this->dataAttributeOptions->createOrGetId('eficiencia_energetica', $eficiencia);
+                                array_push($attributes, $attribute4);
+                            }
+                            /*
+                            if (preg_match('/Largura:(.+cm)/', $name, $matches5) == 1) {
+                                $attribute5['code'] = 'largura';
+                                $attribute5['value'] = $this->dataAttributeOptions->createOrGetId('largura', $matches1[1] );
+                                array_push($attributes, $attribute5);
+                            }
+                            if (preg_match('/Profundidade:(.+cm)/', $name, $matches6) == 1) {
+                                $attribute6['code'] = 'profundidade';
+                                $attribute6['value'] = $this->dataAttributeOptions->createOrGetId('profundidade', $matches6[1]);
+                                array_push($attributes, $attribute6);
+                            }
+                            if (preg_match('/Altura:(.+cm)/', $description, $matches7) == 1) {
+                                $attribute7['code'] = 'altura';
+                                $attribute7['value'] = $this->dataAttributeOptions->createOrGetId('altura', $matches7[1]);
+                                array_push($attributes, $attribute7);
+                            }
+                            */
+                            return $attributes;
 
-                                        }
-                                        return $attributes;
-                                    } elseif (preg_match('/UNID.EXT/', $name) == 1) {
-                                        if (preg_match('/Arrefecimento: (\d+)./', $description, $matches) == 1){
-                                            $potencia = $this->getPotencia((int)$matches[1]);
-                                            if ($potencia != null){
-                                                $attribute2['code'] = 'potencia_ac_ext';
-                                                $attribute2['value'] = $this->dataAttributeOptions->createOrGetId('potencia_ac_ext',
-                                                    $potencia);
-                                                array_push($attributes,$attribute2);
-                                            }
+                        case 'CLIMATIZAÇÃO':
+                            $attributes = [];
+                            switch ($familia) {
+                                case 'AR CONDICIONADO':
+                                    switch ($subfamilia) {
+                                        case 'AR COND.INVERTER':
+                                        case 'AR COND.MULTI-SPLIT':
+                                            //$attribute1['code'] = 'tipo_ac';
+                                            if (preg_match('/UNID.INT/', $name) == 1) {
+                                                if (preg_match('/Arrefecimento: (\d+)./', $description, $matches) == 1) {
+                                                    $potencia = $this->getPotencia((int)$matches[1]);
+                                                    if ($potencia != null) {
+                                                        $attribute2['code'] = 'potencia_ac_int';
+                                                        $attribute2['value'] = $this->dataAttributeOptions->createOrGetId('potencia_ac_int',
+                                                            $potencia);
+                                                        array_push($attributes, $attribute2);
+                                                    }
 
-                                        }
-                                        return $attributes;
-                                    } else {
-                                        if (preg_match('/Arrefecimento: (\d+)./', $description, $matches) == 1){
-                                            $potencia = $this->getPotencia((int)$matches[1]);
-                                            if ($potencia != null){
-                                                $attribute2['code'] = 'potencia_ac_conj';
-                                                $attribute2['value'] = $this->dataAttributeOptions->createOrGetId('potencia_ac_conj',
-                                                    $potencia);
-                                                array_push($attributes,$attribute2);
-                                            }
+                                                }
+                                                return $attributes;
+                                            } elseif (preg_match('/UNID.EXT/', $name) == 1) {
+                                                if (preg_match('/Arrefecimento: (\d+)./', $description, $matches) == 1) {
+                                                    $potencia = $this->getPotencia((int)$matches[1]);
+                                                    if ($potencia != null) {
+                                                        $attribute2['code'] = 'potencia_ac_ext';
+                                                        $attribute2['value'] = $this->dataAttributeOptions->createOrGetId('potencia_ac_ext',
+                                                            $potencia);
+                                                        array_push($attributes, $attribute2);
+                                                    }
 
-                                        }
-                                        return $attributes;
+                                                }
+                                                return $attributes;
+                                            } else {
+                                                if (preg_match('/Arrefecimento: (\d+)./', $description, $matches) == 1) {
+                                                    $potencia = $this->getPotencia((int)$matches[1]);
+                                                    if ($potencia != null) {
+                                                        $attribute2['code'] = 'potencia_ac_conj';
+                                                        $attribute2['value'] = $this->dataAttributeOptions->createOrGetId('potencia_ac_conj',
+                                                            $potencia);
+                                                        array_push($attributes, $attribute2);
+                                                    }
+
+                                                }
+                                                return $attributes;
+                                            }
                                     }
                             }
                     }
             }
-            
         }
 
+        protected function getClasseEnergética($eficiencia){
+            if (strcmp($eficiencia, 'A&#43 &#43') == 0 ){
+                return 'A++';
+            }elseif (strcmp($eficiencia, 'A&#43') == 0 ){
+                return 'A+';
+            }elseif (strcmp($eficiencia, 'A&#43 &#43 &#43') == 0 ){
+                return 'A++';
+            }else{
+                return $eficiencia;
+            }
+        }
         protected function getPotencia($matches){
             if ($matches < 9) {
                 return 'De 5KBTU a 7KBTU';
