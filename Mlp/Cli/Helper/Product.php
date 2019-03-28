@@ -316,23 +316,38 @@ class Product
                                 $attribute4['value'] = $this->dataAttributeOptions->createOrGetId('eficiencia_energetica', $eficiencia);
                                 array_push($attributes, $attribute4);
                             }
-                            /*
-                            if (preg_match('/Largura:(.+cm)/', $name, $matches5) == 1) {
-                                $attribute5['code'] = 'largura';
-                                $attribute5['value'] = $this->dataAttributeOptions->createOrGetId('largura', $matches1[1] );
-                                array_push($attributes, $attribute5);
+                            return $attributes;
+                        case 'FRIGORIFICOS/COMBINADOS':
+                            if (preg_match('/Largura:\s*(.+cm)/', strip_tags($description), $matches1) == 1) {
+                                $attribute1['code'] = 'largura';
+                                $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('largura', $matches1[1] );
+                                array_push($attributes, $attribute1);
                             }
-                            if (preg_match('/Profundidade:(.+cm)/', $name, $matches6) == 1) {
-                                $attribute6['code'] = 'profundidade';
-                                $attribute6['value'] = $this->dataAttributeOptions->createOrGetId('profundidade', $matches6[1]);
+                            if (preg_match('/Profundidade:\s*(.+cm)/', strip_tags($description), $matches2) == 1) {
+                                $attribute2['code'] = 'profundidade';
+                                $attribute2['value'] = $this->dataAttributeOptions->createOrGetId('profundidade', $matches2[1]);
+                                array_push($attributes, $attribute2);
+                            }
+                            if (preg_match('/Altura:\s*(.+cm)/', strip_tags($description), $matches3) == 1) {
+                                $attribute3['code'] = 'altura';
+                                $attribute3['value'] = $this->dataAttributeOptions->createOrGetId('altura', $matches3[1]);
+                                array_push($attributes, $attribute3);
+                            }
+                            if (preg_match('/Cor:\s*(\w+)/ui', strip_tags($description), $matches4) == 1) {
+                                $attribute4['code'] = 'color';
+                                $attribute4['value'] = $this->dataAttributeOptions->createOrGetId('color', trim($matches4[1]));
+                                array_push($attributes, $attribute4);
+                            }
+                            if (preg_match('/(A\+{1,3})/', $name, $matches5) == 1) {
+                                $attribute5['code'] = 'eficiencia_energetica';
+                                $attribute5['value'] = $this->dataAttributeOptions->createOrGetId('eficiencia_energetica', trim($matches3[1]));
+                                array_push($attributes, $attribute5);
+                            } elseif (preg_match('/Classe Energética: (\w\S*\s*\S*)/', strip_tags($description), $matches6) == 1) {
+                                $eficiencia = $this->getClasseEnergetica($matches6[1]);
+                                $attribute6['code'] = 'eficiencia_energetica';
+                                $attribute6['value'] = $this->dataAttributeOptions->createOrGetId('eficiencia_energetica', $eficiencia);
                                 array_push($attributes, $attribute6);
                             }
-                            if (preg_match('/Altura:(.+cm)/', $description, $matches7) == 1) {
-                                $attribute7['code'] = 'altura';
-                                $attribute7['value'] = $this->dataAttributeOptions->createOrGetId('altura', $matches7[1]);
-                                array_push($attributes, $attribute7);
-                            }
-                            */
                             return $attributes;
 
                         case 'CLIMATIZAÇÃO':
@@ -386,7 +401,7 @@ class Product
             }
         }
 
-        protected function getClasseEnergética($eficiencia){
+        protected function getClasseEnergetica($eficiencia){
             if (strcmp($eficiencia, 'A&#43 &#43') == 0 ){
                 return 'A++';
             }elseif (strcmp($eficiencia, 'A&#43') == 0 ){
