@@ -252,7 +252,7 @@ class Product
                             }
                             return $attributes;
                         case 'MAQUINAS SECAR ROUPA':
-                            if (preg_match('/Cor: (\w+)/', strip_tags($description), $matches1) == 1) {
+                            if (preg_match('/Cor: (\w+)/ui', strip_tags($description), $matches1) == 1) {
                                 $attribute1['code'] = 'color';
                                 $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('color', trim($matches1[1]));
                                 array_push($attributes, $attribute1);
@@ -269,6 +269,23 @@ class Product
                                 $attribute4['code'] = 'capacidade_kg';
                                 $attribute4['value'] = $this->dataAttributeOptions->createOrGetId('capacidade_kg', $matches4[1]." kg");
                                 array_push($attributes, $attribute4);
+                            }
+                            return $attributes;
+                        case 'FOGÕES':
+                            if (preg_match('/(\d+x\d+)/', $name, $matches1) == 1) {
+                                $attribute1['code'] = 'medidas_fogao';
+                                $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('medidas_fogao', trim($matches1[1]));
+                                array_push($attributes, $attribute1);
+                            }
+                            if (preg_match('/Forno: (\w+)/ui', strip_tags($description), $matches2) == 1) {
+                                $attribute2['code'] = 'tipo_forno';
+                                $attribute2['value'] = $this->dataAttributeOptions->createOrGetId('tipo_forno', trim($matches2[1]));
+                                array_push($attributes, $attribute2);
+                            }
+                            if (preg_match('/Cor: (\w+)/ui', strip_tags($description), $matches3) == 1) {
+                                $attribute3['code'] = 'color';
+                                $attribute3['value'] = $this->dataAttributeOptions->createOrGetId('color', trim($matches3[1]));
+                                array_push($attributes, $attribute3);
                             }
                             return $attributes;
                     }
