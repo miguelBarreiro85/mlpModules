@@ -201,6 +201,7 @@ class Product
                                     array_push($attributes, $attribute);
                                     return $attributes;
                             }
+                        case 'ENCASTRE - MAQ.L.ROUPA':
                         case 'MAQUINAS LAVAR ROUPA':
                             if (preg_match('/(\d+)R\./', $name, $matches) == 1) {
                                 if ((int)$matches[1] > 600) {
@@ -229,6 +230,7 @@ class Product
                                 array_push($attributes, $attribute4);
                             }
                             return $attributes;
+                        case 'ENCASTRE - MAQ.LOUÇA':
                         case 'MAQUINAS LAVAR LOUÇA':
                             if (preg_match('/Cor: (\w+)\s/', strip_tags($description), $matches1) == 1) {
                                 $attribute1['code'] = 'color';
@@ -311,24 +313,25 @@ class Product
                                 $attribute3['value'] = $this->dataAttributeOptions->createOrGetId('eficiencia_energetica', trim($matches3[1]));
                                 array_push($attributes, $attribute3);
                             } elseif (preg_match('/Classe Energética: (\w\S*\s*\S*)/', html_entity_decode(strip_tags($description)), $matches4) == 1) {
-                                $eficiencia = $this->getClasseEnergética($matches4[1]);
+                                $eficiencia = $this->getClasseEnergetica($matches4[1]);
                                 $attribute4['code'] = 'eficiencia_energetica';
                                 $attribute4['value'] = $this->dataAttributeOptions->createOrGetId('eficiencia_energetica', $eficiencia);
                                 array_push($attributes, $attribute4);
                             }
                             return $attributes;
+                        case 'ENCASTRE - FRIO':
                         case 'FRIGORIFICOS/COMBINADOS':
-                            if (preg_match('/Largura:\s*(.+cm)/', strip_tags($description), $matches1) == 1) {
+                            if (preg_match('/Largura:\s*(\d*,*\d*\s*cm)/', strip_tags($description), $matches1) == 1) {
                                 $attribute1['code'] = 'largura';
                                 $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('largura', $matches1[1] );
                                 array_push($attributes, $attribute1);
                             }
-                            if (preg_match('/Profundidade:\s*(.+cm)/', strip_tags($description), $matches2) == 1) {
+                            if (preg_match('/Profundidade:\s*(\d*,*\d*\s*cm)/', strip_tags($description), $matches2) == 1) {
                                 $attribute2['code'] = 'profundidade';
                                 $attribute2['value'] = $this->dataAttributeOptions->createOrGetId('profundidade', $matches2[1]);
                                 array_push($attributes, $attribute2);
                             }
-                            if (preg_match('/Altura:\s*(.+cm)/', strip_tags($description), $matches3) == 1) {
+                            if (preg_match('/Altura:\s*(\d*,*\d*\s*cm)/', strip_tags($description), $matches3) == 1) {
                                 $attribute3['code'] = 'altura';
                                 $attribute3['value'] = $this->dataAttributeOptions->createOrGetId('altura', $matches3[1]);
                                 array_push($attributes, $attribute3);
@@ -340,16 +343,65 @@ class Product
                             }
                             if (preg_match('/(A\+{1,3})/', $name, $matches5) == 1) {
                                 $attribute5['code'] = 'eficiencia_energetica';
-                                $attribute5['value'] = $this->dataAttributeOptions->createOrGetId('eficiencia_energetica', trim($matches3[1]));
+                                $attribute5['value'] = $this->dataAttributeOptions->createOrGetId('eficiencia_energetica', trim($matches5[1]));
                                 array_push($attributes, $attribute5);
-                            } elseif (preg_match('/Classe Energética: (\w\S*\s*\S*)/', strip_tags($description), $matches6) == 1) {
+                            } elseif (preg_match('/Classe Energética:\s*(\w\W*\d*\s*\W*\d*\s\W*\d*).*Con/', strip_tags($description), $matches6) == 1) {
                                 $eficiencia = $this->getClasseEnergetica($matches6[1]);
                                 $attribute6['code'] = 'eficiencia_energetica';
                                 $attribute6['value'] = $this->dataAttributeOptions->createOrGetId('eficiencia_energetica', $eficiencia);
                                 array_push($attributes, $attribute6);
                             }
                             return $attributes;
+                        case 'ENCASTRE - FORNOS':
+                            if (preg_match('/(A\+{1,3})/', $name, $matches1) == 1) {
+                                $attribute1['code'] = 'eficiencia_energetica';
+                                $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('eficiencia_energetica', trim($matches1[1]));
+                                array_push($attributes, $attribute1);
+                            } elseif (preg_match('/nergética:\s*(\w\W*\d*\s*\W*\d*\s\W*\d*).*Con/', strip_tags($description), $matches2) == 1) {
+                                $eficiencia = $this->getClasseEnergetica($matches2[1]);
+                                $attribute2['code'] = 'eficiencia_energetica';
+                                $attribute2['value'] = $this->dataAttributeOptions->createOrGetId('eficiencia_energetica', $eficiencia);
+                                array_push($attributes, $attribute2);
+                            }
+                            if (preg_match('/Cor:\s*(\w+)/ui', strip_tags($description), $matches3) == 1) {
+                                $attribute3['code'] = 'color';
+                                $attribute3['value'] = $this->dataAttributeOptions->createOrGetId('color', trim($matches3[1]));
+                                array_push($attributes, $attribute3);
+                            }
+                            if (preg_match('/Forno:\s*(\d+ Litros)/ui', strip_tags($description), $matches4) == 1) {
+                                $attribute4['code'] = 'capacidade_forno';
+                                $attribute4['value'] = $this->dataAttributeOptions->createOrGetId('capacidade_forno', trim($matches4[1]));
+                                array_push($attributes, $attribute4);
+                            }
+                            if (preg_match('/Forno: (\w+)/ui', strip_tags($description), $matches5) == 1) {
+                                $attribute5['code'] = 'tipo_forno';
+                                $attribute5['value'] = $this->dataAttributeOptions->createOrGetId('tipo_forno', trim($matches5[1]));
+                                array_push($attributes, $attribute5);
+                            }
+                            if (preg_match('/Largura:\s*(\d*,*\d*\s*cm)/', strip_tags($description), $matches6) == 1) {
+                                $attribute6['code'] = 'largura';
+                                $attribute6['value'] = $this->dataAttributeOptions->createOrGetId('largura', $matches6[1] );
+                                array_push($attributes, $attribute6);
+                            }
+                            if (preg_match('/Profundidade:\s*(\d*,*\d*\s*cm)/', strip_tags($description), $matches7) == 1) {
+                                $attribute7['code'] = 'profundidade';
+                                $attribute7['value'] = $this->dataAttributeOptions->createOrGetId('profundidade', $matches7[1]);
+                                array_push($attributes, $attribute7);
+                            }
+                            if (preg_match('/Altura:\s*(\d*,*\d*\s*cm)/', strip_tags($description), $matches8) == 1) {
+                                $attribute8['code'] = 'altura';
+                                $attribute8['value'] = $this->dataAttributeOptions->createOrGetId('altura', $matches8[1]);
+                                array_push($attributes, $attribute8);
+                            }
+                            return $attributes;
+                        case 'ENCASTRE - EXAUSTOR/EXTRATORES':
+                            if (strcmp($subfamilia, 'EXAUST.DE CHAMINÉ') == 0){
+                                $attribute1['code'] = 'tipo_exaustor';
+                                $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('tipo_exaustor', 'chaminé');
+                                array_push($attributes, $attribute1);
+                            }elseif (strcmp($subfamilia, 'EXAUST.TELESCÓPICOS') == 0){
 
+                            }
                         case 'CLIMATIZAÇÃO':
                             $attributes = [];
                             switch ($familia) {
@@ -402,14 +454,15 @@ class Product
         }
 
         protected function getClasseEnergetica($eficiencia){
-            if (strcmp($eficiencia, 'A&#43 &#43') == 0 ){
+        print_r(  " - ".$eficiencia." - ");
+            if (strcmp(trim($eficiencia), 'A&#43 &#43') == 0 ){
                 return 'A++';
-            }elseif (strcmp($eficiencia, 'A&#43') == 0 ){
+            }elseif (strcmp(trim($eficiencia), 'A&#43') == 0 ){
                 return 'A+';
-            }elseif (strcmp($eficiencia, 'A&#43 &#43 &#43') == 0 ){
+            }elseif (strcmp(trim($eficiencia), 'A&#43 &#43 &#43') == 0 ){
                 return 'A++';
             }else{
-                return $eficiencia;
+                return trim($eficiencia);
             }
         }
         protected function getPotencia($matches){
