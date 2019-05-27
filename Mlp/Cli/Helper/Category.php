@@ -72,40 +72,6 @@ class Category
         return $categories;
     }
 
-    public function setCategoriesCsv($categories,$gama,$familia,$subFamilia,$sku,$logger){
-        $categoryId=[];
-        print_r($categories[$subFamilia]);
-        try{
-            //array_push($categoryId,$categories[$gama]);
-            //array_push($categoryId,$categories[$familia]);
-            array_push($categoryId,$categories[$subFamilia]);
-        }catch (\Exception $e){
-            print_r($e."\n".$gama."\n".$familia."\n".$subFamilia."\n");
-        }
-        try{
-            print_r("vou associar as categorias");
-            $this->categoryLinkManagement->assignProductToCategories($sku,$categoryId);
-            print_r("já associei as categporias");
-        }catch (\Exception $exception){
-            $logger->info("Category Exception: ".$sku);
-            print_r("Set Categories: ".$exception->getMessage());
-        }
-    }
-
-    public function setCategories($gama,$familia,$subFamilia,$sku,$logger){
-        $categoryId = [];
-        $subFamilia = $this->categoryFactory->create()->getCollection()->addAttributeToFilter('name',$subFamilia)->setPageSize(1);
-        if ($subFamilia->getSize()) {
-            print_r($subFamilia->getFirstItem()->getId()."\n");
-            array_push($categoryId,$subFamilia->getFirstItem()->getId());
-        }
-        try{
-            $this->categoryLinkManagement->assignProductToCategories($sku,$categoryId);
-        }catch (\Exception $exception){
-            //$logger->info("Category Exception: ".$sku);
-            print_r("Set Categories: ".$exception->getMessage());
-        }
-    }
 
     public function setTelefacCategories($subFamilia,$sku,$logger){
         $categoryId = [];
@@ -216,5 +182,8 @@ class Category
                     return $subFamilia;
             }
         }
+    public function setCategories($gama, $familia, $subfamilia){
+
+    }
 
 }
