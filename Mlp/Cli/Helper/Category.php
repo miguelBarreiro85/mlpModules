@@ -182,8 +182,24 @@ class Category
                     return $subFamilia;
             }
         }
-    public function setCategories($gama, $familia, $subfamilia){
-
+    public function setCategories($gama, $familia, $subfamilia, $name){
+        $categories = [];
+        //Especifico para alguns artigos que tem categorias totalmente diferentes
+        //Informatica Acessorios Acessorios de som
+        if (preg_match('/^COLUNA/', $name) == 1) {
+            $categories[$gama] = 'IMAGEM E SOM';
+            $categories[$familia] = 'COLUNAS';
+            return $categories;
+        }
+        if (preg_match('/^AUSC/', $name) == 1) {
+            $categories[$gama] = 'IMAGEM E SOM';
+            $categories[$familia] = 'AUSCULTADORES';
+            return $categories;
+        }
+        $categories[$gama] = $this->setGamaSorefoz($gama);
+        $categories[$familia] = $this->setFamiliaSorefoz($familia);
+        $categories[$subfamilia] = $this->setSubFamiliaSorefoz($subfamilia);
+        return $categories;
     }
 
 }
