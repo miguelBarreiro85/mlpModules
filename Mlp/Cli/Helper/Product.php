@@ -90,8 +90,8 @@ class Product
                 $product->setName($this->name);
                 $product->setTypeId(\Magento\Catalog\Model\Product\Type::TYPE_SIMPLE);
                 //Set Categories
-                $pCategories = $this->categoryManager->setCategories($this->gama, $this->familia, $this->subfamilia);
-                //$subFamilia = $this->categoryManager->setSubFamiliaSorefoz($this->subfamilia);
+                $pCategories = $this->categoryManager->setCategories($this->gama, $this->familia, $this->subfamilia, $this->name);
+                //$subfamilia = $this->categoryManager->setSubFamiliaSorefoz($this->subfamilia);
                 //$familia = $this->categoryManager->setFamiliaSorefoz($this->familia);
                 //$gama = $this->categoryManager->setGamaSorefoz($this->gama);
                 $product->setCustomAttribute('description', $this->description);
@@ -104,7 +104,7 @@ class Product
                 $product->setCustomAttribute('tax_class_id', 2); //taxable goods id
                 $product->setWeight($this->weight);
                 $product->setWebsiteIds([1]);
-                $attributeSetId = $this->attributeManager->getAttributeSetId($pCategories['familia'], $pCategories['subFamilia']);
+                $attributeSetId = $this->attributeManager->getAttributeSetId($pCategories['familia'], $pCategories['subfamilia']);
                 $product->setAttributeSetId($attributeSetId); // Attribute set id
                 $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
                 $product->setTaxClassId(2); // Tax class id
@@ -113,13 +113,13 @@ class Product
                 $product->setCustomAttribute('news_from_date', date("Y/m/d"));
                 try {
                     $product->setCategoryIds([$categories[$pCategories['gama']],
-                        $categories[$pCategories['familia']], $categories[$pCategories['subFamilia']]);
+                        $categories[$pCategories['familia']], $categories[$pCategories['subfamilia']]]);
                 } catch (\Exception $ex) { //Adicionar nova categoria
                     try{
-                        $this->categoryManager->createCategory($pCategories['gama'], $pCategories['familia'], $pCategories['subFamilia'], $categories);
+                        $this->categoryManager->createCategory($pCategories['gama'], $pCategories['familia'], $pCategories['subfamilia'], $categories);
                         $categories = $this->categoryManager->getCategoriesArray();
                         $product->setCategoryIds([$categories[$pCategories['gama']],
-                            $categories[$pCategories['familia']], $categories[$pCategories['subFamilia']]);
+                            $categories[$pCategories['familia']], $categories[$pCategories['subfamilia']]]);
                     }catch (\Exception $ex){
                         print_r("\nErro ao adicionar nova categtoria ". $ex->getMessage() . "\n");
                     }
@@ -144,8 +144,8 @@ class Product
                     $logger->info(" - " . $this->sku . " Save product: Exception:  " . $exception->getMessage());
                     print_r("- " . $exception->getMessage() . " Save product exception" . "\n");
                 }
-                $this->add_warranty_option($product, $gama, $familia, $subFamilia);
-                $value = $this->getInstallationValue($familia);
+                $this->add_warranty_option($product,$pCategories['gama'], $pCategories['familia'], $pCategories['subfamilia']);
+                $value = $this->getInstallationValue($pCategories['familia']);
                 if ($value > 0){
                     $this->add_installation_option($product,$value);
                 }

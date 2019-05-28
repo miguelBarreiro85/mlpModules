@@ -96,7 +96,6 @@ class Category
                 break;
             default:
                 return $gama;
-                break;
         }
     }
 
@@ -196,9 +195,9 @@ class Category
             $categories[$familia] = 'AUSCULTADORES';
             return $categories;
         }
-        $categories[$gama] = $this->setGamaSorefoz($gama);
-        $categories[$familia] = $this->setFamiliaSorefoz($familia);
-        $categories[$subfamilia] = $this->setSubFamiliaSorefoz($subfamilia);
+        $categories['gama'] = $this->setGamaSorefoz($gama);
+        $categories['familia'] = $this->setFamiliaSorefoz($familia);
+        $categories['subfamilia'] = $this->setSubFamiliaSorefoz($subfamilia);
         return $categories;
     }
 
