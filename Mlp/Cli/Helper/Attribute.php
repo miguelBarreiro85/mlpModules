@@ -112,6 +112,36 @@ class Attribute
                         ->toArray();
                     $attributeSetId = (int)$attributeSet['attribute_set_id'];
                     return $attributeSetId;
+                case 'SIST.HOME CINEMA':
+                    $attributeSet = $this->attributeSetCollection->create()
+                        ->addFieldToSelect('attribute_set_id')
+                        ->addFieldToFilter('attribute_set_name', 'HOME_CINEMA')
+                        ->getFirstItem()
+                        ->toArray();
+                    $attributeSetId = (int)$attributeSet['attribute_set_id'];
+                    return $attributeSetId;
+                case 'DVD /BLURAY /TDT':
+                    switch ($subfamilia){
+                        case 'LEITOR DE DVD':
+                        case 'LEITOR BLURAY/HDDVD':
+                            $attributeSet = $this->attributeSetCollection->create()
+                                ->addFieldToSelect('attribute_set_id')
+                                ->addFieldToFilter('attribute_set_name', 'LEITOR_DVD')
+                                ->getFirstItem()
+                                ->toArray();
+                            $attributeSetId = (int)$attributeSet['attribute_set_id'];
+                            return $attributeSetId;
+                        case 'RECEPTORES TDT':
+                            $attributeSet = $this->attributeSetCollection->create()
+                                ->addFieldToSelect('attribute_set_id')
+                                ->addFieldToFilter('attribute_set_name', 'TDT')
+                                ->getFirstItem()
+                                ->toArray();
+                            $attributeSetId = (int)$attributeSet['attribute_set_id'];
+                            return $attributeSetId;
+                    }
+
+                case 'DVD /BLURAY /TDT':
                 //Informatica
                 case 'COMPUTADORES E TABLET\'S':
                     switch ($subfamilia) {
@@ -140,6 +170,24 @@ class Attribute
                             $attributeSetId = (int)$attributeSet['attribute_set_id'];
                             return $attributeSetId;
                         case 'DESKTOPS':
+                            $attributeSet = $this->attributeSetCollection->create()
+                                ->addFieldToSelect('attribute_set_id')
+                                ->addFieldToFilter('attribute_set_name', 'COMPUTADORES')
+                                ->getFirstItem()
+                                ->toArray();
+                            $attributeSetId = (int)$attributeSet['attribute_set_id'];
+                            return $attributeSetId;
+                        case 'ACESSÓRIOS':
+                            switch ($subfamilia){
+                                case 'RATOS':
+                                    $attributeSet = $this->attributeSetCollection->create()
+                                        ->addFieldToSelect('attribute_set_id')
+                                        ->addFieldToFilter('attribute_set_name', 'RATOS')
+                                        ->getFirstItem()
+                                        ->toArray();
+                                    $attributeSetId = (int)$attributeSet['attribute_set_id'];
+                                    return $attributeSetId;
+                            }
                             $attributeSet = $this->attributeSetCollection->create()
                                 ->addFieldToSelect('attribute_set_id')
                                 ->addFieldToFilter('attribute_set_name', 'COMPUTADORES')

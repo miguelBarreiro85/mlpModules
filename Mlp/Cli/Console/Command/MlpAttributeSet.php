@@ -39,7 +39,7 @@ class MlpAttributeSet extends Command
                             "CALDEIRAS_GAS", "ESQUENTADORES", "ESQUENTADORES_ELETRICOS", "TERMOACUMULADORES_ELETRICOS", "FORNOS", "PLACAS",
                             "EXAUSTORES", "MLL_ENCASTRE", "MLSR", "GARRAFEIRAS", "MISTURADORAS", "LAVA_LOUÇAS", "DESUMIDIFICADORES", "AC", "PAINEIS_SOLARES",
                             "ACUMULADORES_AGUA", "VENTOINHAS", "ASPIRADORES", "FERROS_ENGOMAR", "FERROS_CALDEIRA", "GRELHADORES", "BALANCAS_COZINHA","AUTO_RADIOS",
-                            "AUTO_ALTIFALANTES", "AUTO_SISTEMAS NAVEGACAO", "AUTO_AMPLIFICADORES", "CAMARAS"];
+                            "AUTO_ALTIFALANTES", "AUTO_SISTEMAS NAVEGACAO", "AUTO_AMPLIFICADORES", "CAMARAS", "HOME_CINEMA","LEITOR_DVD","TDT"];
         $entityTypeCode = 'catalog_product';
         $entityType     = $this->eavTypeFactory->create()->loadByCode($entityTypeCode);
         $defaultSetId   = $entityType->getDefaultAttributeSetId();
