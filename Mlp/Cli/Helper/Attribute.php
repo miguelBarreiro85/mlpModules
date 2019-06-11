@@ -632,6 +632,14 @@ class Attribute
                                 ->toArray();
                             $attributeSetId = (int)$attributeSet['attribute_set_id'];
                             return $attributeSetId;
+                        case 'HUMIDIFICADORES':
+                            $attributeSet = $this->attributeSetCollection->create()
+                                ->addFieldToSelect('attribute_set_id')
+                                ->addFieldToFilter('attribute_set_name', 'HUMIDIFICADORES')
+                                ->getFirstItem()
+                                ->toArray();
+                            $attributeSetId = (int)$attributeSet['attribute_set_id'];
+                            return $attributeSetId;
                     }
 
                 case 'AR CONDICIONADO':

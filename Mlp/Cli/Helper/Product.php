@@ -119,16 +119,28 @@ class Product
                 $product->setCreatedAt(date("Y/m/d"));
                 $product->setCustomAttribute('news_from_date', date("Y/m/d"));
                 try {
-                    $product->setCategoryIds([$categories[$pCategories['gama']],
-                        $categories[$pCategories['familia']], $categories[$pCategories['subfamilia']]]);
+                    if (isset($pCategories['subfamilia'])){
+                        $product->setCategoryIds([$categories[$pCategories['gama']],
+                            $categories[$pCategories['familia']], $categories[$pCategories['subfamilia']]]);
+                    }else {
+                        $product->setCategoryIds([$categories[$pCategories['gama']],
+                            $categories[$pCategories['familia']]]);
+                    }
+
                 } catch (\Exception $ex) { //Adicionar nova categoria
                     try{
                         $this->categoryManager->createCategory($pCategories['gama'], $pCategories['familia'], $pCategories['subfamilia'], $categories);
                         $categories = $this->categoryManager->getCategoriesArray();
-                        $product->setCategoryIds([$categories[$pCategories['gama']],
-                            $categories[$pCategories['familia']], $categories[$pCategories['subfamilia']]]);
+                        if (isset($pCategories['subfamilia'])){
+                            $product->setCategoryIds([$categories[$pCategories['gama']],
+                                $categories[$pCategories['familia']], $categories[$pCategories['subfamilia']]]);
+                        }else {
+                            $product->setCategoryIds([$categories[$pCategories['gama']],
+                                $categories[$pCategories['familia']]]);
+                        }
                     }catch (\Exception $ex){
-                        print_r("\nErro ao adicionar nova categtoria ". $ex->getMessage() . "\n");
+                        print_r("\nErro ao adicionar nova categtoria ". $ex->getMessage() .
+                            " ". $product->getSku() ."\n");
                     }
 
                 }

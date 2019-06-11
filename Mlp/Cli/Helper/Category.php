@@ -198,6 +198,12 @@ class Category
             $categories['subfamilia'] = null;
             return $categories;
         }
+        if (preg_match('/^CLIMATIZADOR/', $name) == 1) {
+            $categories['gama'] = 'CLIMATIZAÇÃO';
+            $categories['familia'] = 'AR CONDICIONADO';
+            $categories['subfamilia'] = 'CLIMATIZADORES';
+            return $categories;
+        }
         $categories['gama'] = $this->setGamaSorefoz($gama);
         $categories['familia'] = $this->setFamiliaSorefoz($familia);
         $categories['subfamilia'] = $this->setSubFamiliaSorefoz($subfamilia);
