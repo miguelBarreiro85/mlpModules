@@ -187,6 +187,14 @@ class Attribute
                                         ->toArray();
                                     $attributeSetId = (int)$attributeSet['attribute_set_id'];
                                     return $attributeSetId;
+                                case 'TECLADOS':
+                                    $attributeSet = $this->attributeSetCollection->create()
+                                        ->addFieldToSelect('attribute_set_id')
+                                        ->addFieldToFilter('attribute_set_name', 'TECLADOS')
+                                        ->getFirstItem()
+                                        ->toArray();
+                                    $attributeSetId = (int)$attributeSet['attribute_set_id'];
+                                    return $attributeSetId;
                             }
                             $attributeSet = $this->attributeSetCollection->create()
                                 ->addFieldToSelect('attribute_set_id')
@@ -613,6 +621,9 @@ class Attribute
                                 ->toArray();
                             $attributeSetId = (int)$attributeSet['attribute_set_id'];
                             return $attributeSetId;
+                    }
+                case 'TRATAMENTO DE AR':
+                    switch ($subfamilia){
                         case 'DESUMIDIFICADORES':
                             $attributeSet = $this->attributeSetCollection->create()
                                 ->addFieldToSelect('attribute_set_id')
@@ -621,51 +632,49 @@ class Attribute
                                 ->toArray();
                             $attributeSetId = (int)$attributeSet['attribute_set_id'];
                             return $attributeSetId;
-                        case 'AR CONDICIONADO':
+                    }
+
+                case 'AR CONDICIONADO':
+                    $attributeSet = $this->attributeSetCollection->create()
+                        ->addFieldToSelect('attribute_set_id')
+                        ->addFieldToFilter('attribute_set_name', 'AC')
+                        ->getFirstItem()
+                        ->toArray();
+                    $attributeSetId = (int)$attributeSet['attribute_set_id'];
+                    return $attributeSetId;
+                case 'SISTEMAS AQUEC.SOLAR':
+                    switch ($subfamilia) {
+                        case 'PAINEIS SOLARES':
                             $attributeSet = $this->attributeSetCollection->create()
                                 ->addFieldToSelect('attribute_set_id')
-                                ->addFieldToFilter('attribute_set_name', 'AC')
+                                ->addFieldToFilter('attribute_set_name', 'PAINEIS_SOLARES')
                                 ->getFirstItem()
                                 ->toArray();
                             $attributeSetId = (int)$attributeSet['attribute_set_id'];
                             return $attributeSetId;
-                        case 'SISTEMAS AQUEC.SOLAR':
-                            switch ($subfamilia) {
-                                case 'PAINEIS SOLARES':
-                                    $attributeSet = $this->attributeSetCollection->create()
-                                        ->addFieldToSelect('attribute_set_id')
-                                        ->addFieldToFilter('attribute_set_name', 'PAINEIS_SOLARES')
-                                        ->getFirstItem()
-                                        ->toArray();
-                                    $attributeSetId = (int)$attributeSet['attribute_set_id'];
-                                    return $attributeSetId;
-                                case 'ACUM.DE ÁGUA':
-                                    $attributeSet = $this->attributeSetCollection->create()
-                                        ->addFieldToSelect('attribute_set_id')
-                                        ->addFieldToFilter('attribute_set_name', 'ACUMULADORES_AGUA')
-                                        ->getFirstItem()
-                                        ->toArray();
-                                    $attributeSetId = (int)$attributeSet['attribute_set_id'];
-                                    return $attributeSetId;
-                                default:
-                                    return 4;
-                            }
-                        case 'VENTILAÇÃO':
-                            switch ($subfamilia) {
-                                case 'VENTOINHAS':
-                                    $attributeSet = $this->attributeSetCollection->create()
-                                        ->addFieldToSelect('attribute_set_id')
-                                        ->addFieldToFilter('attribute_set_name', 'VENTOINHAS')
-                                        ->getFirstItem()
-                                        ->toArray();
-                                    $attributeSetId = (int)$attributeSet['attribute_set_id'];
-                                    return $attributeSetId;
-                                default:
-                                    return 4;
-                            }
+                        case 'ACUM.DE ÁGUA':
+                            $attributeSet = $this->attributeSetCollection->create()
+                                ->addFieldToSelect('attribute_set_id')
+                                ->addFieldToFilter('attribute_set_name', 'ACUMULADORES_AGUA')
+                                ->getFirstItem()
+                                ->toArray();
+                            $attributeSetId = (int)$attributeSet['attribute_set_id'];
+                            return $attributeSetId;
                         default:
-                            return 4;//Default
-
+                            return 4;
+                    }
+                case 'VENTILAÇÃO':
+                    switch ($subfamilia) {
+                        case 'VENTOINHAS':
+                            $attributeSet = $this->attributeSetCollection->create()
+                                ->addFieldToSelect('attribute_set_id')
+                                ->addFieldToFilter('attribute_set_name', 'VENTOINHAS')
+                                ->getFirstItem()
+                                ->toArray();
+                            $attributeSetId = (int)$attributeSet['attribute_set_id'];
+                            return $attributeSetId;
+                        default:
+                            return 4;
                     }
                 //CAR AUDIO
                 case 'AUTO-RADIOS':
@@ -1017,5 +1026,10 @@ class Attribute
             case 'IMAGEM E SOM':
 
         }
+    }
+
+    private function getClasseEnergetica($text){
+        print_r("classe energetica text: ".$text."\n");
+        return 'A';
     }
 }

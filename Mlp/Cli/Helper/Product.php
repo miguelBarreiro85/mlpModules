@@ -84,6 +84,7 @@ class Product
         $this->productRepositoryInterface = $productRepositoryInterface;
     }
 
+
     public function add_product($categories, $logger, $imgName) {
                 $product = $this->productFactory->create();
                 $product->setSku($this->sku);
@@ -104,7 +105,13 @@ class Product
                 $product->setCustomAttribute('tax_class_id', 2); //taxable goods id
                 $product->setWeight($this->weight);
                 $product->setWebsiteIds([1]);
-                $attributeSetId = $this->attributeManager->getAttributeSetId($pCategories['familia'], $pCategories['subfamilia']);
+                if(isset($pCategories['familia']) && isset($pCategories['subfamilia'])){
+                    $attributeSetId = $this->attributeManager->getAttributeSetId($pCategories['familia'], $pCategories['subfamilia']);
+                }else {
+                    $logger->info("Sem atributos: " . $this->sku ." : " . $this->name. "\n");
+                    print_r("Sem atributos: " . $this->sku ." : " . $this->name. "\n");
+                    $attributeSetId = 4;
+                }
                 $product->setAttributeSetId($attributeSetId); // Attribute set id
                 $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
                 $product->setTaxClassId(2); // Tax class id
@@ -153,7 +160,6 @@ class Product
 
         protected function setImages($product, $logger, $ImgName)
         {
-            print_r($product->getSku());
             $baseMediaPath = $this->config->getBaseMediaPath();
             try {
                 $images = $product->getMediaGalleryImages();

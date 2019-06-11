@@ -29,7 +29,7 @@ class Category
         $this->categoryLinkManagement = $categoryLinkManagement;
     }
 
-    public function createCategory($gama,$familia,$subfamlia,$categorias)
+    public function createCategory($gama,$familia,$subfamlia = null,$categorias)
     {
         try{
             $gamaId = $categorias[$gama];
@@ -50,16 +50,17 @@ class Category
             $familiaId = $this->categoryRepositoryInterface->save($newFamilia)->getId();
         }
         //Se deu erro é porque este tem de ser adicionado
-        try{
-            $newSubFamilia = $this->categoryFactory->create();
-            $newSubFamilia->setName($subfamlia);
-            $newSubFamilia->setParentId($familiaId);
-            $newSubFamilia->setIsActive(true);
-            $subfamliaId = $this->categoryRepositoryInterface->save($newSubFamilia)->getId();
-        } catch (\Exception $ex){
-            print_r($ex->getMessage());
+        if ($subfamlia != null){
+            try{
+                $newSubFamilia = $this->categoryFactory->create();
+                $newSubFamilia->setName($subfamlia);
+                $newSubFamilia->setParentId($familiaId);
+                $newSubFamilia->setIsActive(true);
+                $subfamliaId = $this->categoryRepositoryInterface->save($newSubFamilia)->getId();
+            } catch (\Exception $ex){
+                print_r($ex->getMessage());
+            }
         }
-
     }
 
     public function getCategoriesArray(){
@@ -186,13 +187,15 @@ class Category
         //Especifico para alguns artigos que tem categorias totalmente diferentes
         //Informatica Acessorios Acessorios de som
         if (preg_match('/^COLUNA/', $name) == 1) {
-            $categories[$gama] = 'IMAGEM E SOM';
-            $categories[$familia] = 'COLUNAS';
+            $categories['gama'] = 'IMAGEM E SOM';
+            $categories['familia'] = 'COLUNAS';
+            $categories['subfamilia'] = null;
             return $categories;
         }
         if (preg_match('/^AUSC/', $name) == 1) {
-            $categories[$gama] = 'IMAGEM E SOM';
-            $categories[$familia] = 'AUSCULTADORES';
+            $categories['gama'] = 'IMAGEM E SOM';
+            $categories['familia'] = 'AUSCULTADORES';
+            $categories['subfamilia'] = null;
             return $categories;
         }
         $categories['gama'] = $this->setGamaSorefoz($gama);
