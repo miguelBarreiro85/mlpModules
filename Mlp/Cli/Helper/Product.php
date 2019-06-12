@@ -173,16 +173,29 @@ class Product
         protected function setImages($product, $logger, $ImgName)
         {
             $baseMediaPath = $this->config->getBaseMediaPath();
-            try {
-                $images = $product->getMediaGalleryImages();
-                if (!$images || $images->getSize() == 0) {
-                    $product->addImageToMediaGallery($baseMediaPath . "/" . $ImgName, ['image', 'small_image', 'thumbnail'], false, false);
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            try{
+                $type = finfo_file($finfo, "/var/www/html/pub/media/".$baseMediaPath. "/" . $ImgName);
+            }catch (\Exception $exception){
+                //finfo exception
+            }
+            if (isset($type) && in_array($type, array("image/png", "image/jpeg", "image/gif"))) {
+                //this is a image
+                try {
+                    $images = $product->getMediaGalleryImages();
+                    if (!$images || $images->getSize() == 0) {
+                        $product->addImageToMediaGallery($baseMediaPath . "/" . $ImgName, ['image', 'small_image', 'thumbnail'], false, false);
+                    }
+                } catch (\RuntimeException $exception) {
+                    print_r("run time exception" . $exception->getMessage() . "\n");
+                } catch (\Exception $localizedException) {
+                    $logger->info($product->getName() . "Image name" . $ImgName . "  Sem Imagem");
                 }
-            } catch (\RuntimeException $exception) {
-                print_r("run time exception" . $exception->getMessage() . "\n");
-            } catch (\Exception $localizedException) {
+            } else {
+                //not a image
                 $logger->info($product->getName() . "Image name" . $ImgName . "  Sem Imagem");
             }
+
         }
 
 

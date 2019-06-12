@@ -597,8 +597,8 @@ class Products extends Command
                 $fp = fopen("/var/www/html/pub/media/catalog/product/" . $sku. '_e.jpeg', 'wb');
                 curl_setopt($ch, CURLOPT_FILE, $fp);
                 curl_setopt($ch, CURLOPT_HEADER, 0);
-                curl_setopt($ch,CURLOPT_TIMEOUT,100);
-                curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,100);
+                curl_setopt($ch,CURLOPT_TIMEOUT,2);
+                curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,3);
                 curl_exec($ch);
                 curl_close($ch);
                 fclose($fp);
@@ -613,11 +613,16 @@ class Products extends Command
                 $fp = fopen("/var/www/html/pub/media/catalog/product/" . $sku . ".jpeg", 'wb');
                 curl_setopt($ch, CURLOPT_FILE, $fp);
                 curl_setopt($ch, CURLOPT_HEADER, 0);
-                curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,1);
-                curl_setopt($ch,CURLOPT_TIMEOUT,1);
-                curl_exec($ch);
-                curl_close($ch);
-                fclose($fp);
+                curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,2);
+                curl_setopt($ch,CURLOPT_TIMEOUT,3);
+                if (curl_exec($ch)){
+                    curl_close($ch);
+                    fclose($fp);
+                }else {
+                    unlink("/var/www/html/pub/media/catalog/product/" . $sku . ".jpeg");
+                }
+
+
             }
 
         } catch (\Exception $ex) {
