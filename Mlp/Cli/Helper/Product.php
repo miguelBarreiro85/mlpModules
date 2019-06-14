@@ -86,89 +86,89 @@ class Product
 
 
     public function add_product($categories, $logger, $imgName) {
-                $product = $this->productFactory->create();
-                $product->setSku($this->sku);
-                $product->setName($this->name);
-                $product->setTypeId(\Magento\Catalog\Model\Product\Type::TYPE_SIMPLE);
-                //Set Categories
-                $pCategories = $this->categoryManager->setCategories($this->gama, $this->familia, $this->subfamilia, $this->name);
-                //$subfamilia = $this->categoryManager->setSubFamiliaSorefoz($this->subfamilia);
-                //$familia = $this->categoryManager->setFamiliaSorefoz($this->familia);
-                //$gama = $this->categoryManager->setGamaSorefoz($this->gama);
-                $product->setCustomAttribute('description', $this->description);
-                $product->setCustomAttribute('meta_description', $this->meta_description);
-                $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', $this->manufacter);
-                $product->setCustomAttribute('manufacturer', $optionId);
-                $product->setCustomAttribute('ts_dimensions_length', $this->length / 10);
-                $product->setCustomAttribute('ts_dimensions_width', $this->width / 10);
-                $product->setCustomAttribute('ts_dimensions_height', $this->height / 10);
-                $product->setCustomAttribute('tax_class_id', 2); //taxable goods id
-                $product->setWeight($this->weight);
-                $product->setWebsiteIds([1]);
-                if(isset($pCategories['familia']) && isset($pCategories['subfamilia'])){
-                    $attributeSetId = $this->attributeManager->getAttributeSetId($pCategories['familia'], $pCategories['subfamilia']);
-                }else {
-                    $logger->info("Sem atributos: " . $this->sku ." : " . $this->name. "\n");
-                    print_r("Sem atributos: " . $this->sku ." : " . $this->name. "\n");
-                    $attributeSetId = 4;
-                }
-                $product->setAttributeSetId($attributeSetId); // Attribute set id
-                $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
-                $product->setTaxClassId(2); // Tax class id
-                $product->setTypeId('simple'); // type of product (simple/virtual/downloadable/configurable)
-                $product->setCreatedAt(date("Y/m/d"));
-                $product->setCustomAttribute('news_from_date', date("Y/m/d"));
-                try {
-                    if (isset($pCategories['subfamilia'])){
-                        $product->setCategoryIds([$categories[$pCategories['gama']],
-                            $categories[$pCategories['familia']], $categories[$pCategories['subfamilia']]]);
-                    }else {
-                        $product->setCategoryIds([$categories[$pCategories['gama']],
-                            $categories[$pCategories['familia']]]);
-                    }
-
-                } catch (\Exception $ex) { //Adicionar nova categoria
-                    try{
-                        $this->categoryManager->createCategory($pCategories['gama'], $pCategories['familia'], $pCategories['subfamilia'], $categories);
-                        $categories = $this->categoryManager->getCategoriesArray();
-                        if (isset($pCategories['subfamilia'])){
-                            $product->setCategoryIds([$categories[$pCategories['gama']],
-                                $categories[$pCategories['familia']], $categories[$pCategories['subfamilia']]]);
-                        }else {
-                            $product->setCategoryIds([$categories[$pCategories['gama']],
-                                $categories[$pCategories['familia']]]);
-                        }
-                    }catch (\Exception $ex){
-                        print_r("\nErro ao adicionar nova categtoria ". $ex->getMessage() .
-                            " ". $product->getSku() ."\n");
-                    }
-
-                }
-                $this->setImages($product, $logger, $imgName . "_e.jpeg");
-                $this->setImages($product, $logger, $imgName . ".jpeg");
-                $product->setStatus(\Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED);
-                //Preço
-                $product->setPrice($this->price);
-                $attributes = $this->attributeManager->getSpecialAttributes($this->gama, $this->familia, $this->subfamilia, $this->description, $this->name);
-                if (isset($attributes)){
-                    foreach ($attributes as $attribute) {
-                        $product->setCustomAttribute($attribute['code'], $attribute['value']);
-                    }
-                }
-                //Salvar produto
-                try {
-                    $product->save();
-                    print_r($this->sku . " - added" . "  -  ");
-                } catch (\Exception $exception) {
-                    $logger->info(" - " . $this->sku . " Save product: Exception:  " . $exception->getMessage());
-                    print_r("- " . $exception->getMessage() . " Save product exception" . "\n");
-                }
-                $this->add_warranty_option($product,$pCategories['gama'], $pCategories['familia'], $pCategories['subfamilia']);
-                $value = $this->getInstallationValue($pCategories['familia']);
-                if ($value > 0){
-                    $this->add_installation_option($product,$value);
-                }
+        $product = $this->productFactory->create();
+        $product->setSku($this->sku);
+        $product->setName($this->name);
+        $product->setTypeId(\Magento\Catalog\Model\Product\Type::TYPE_SIMPLE);
+        //Set Categories
+        $pCategories = $this->categoryManager->setCategories($this->gama, $this->familia, $this->subfamilia, $this->name);
+        //$subfamilia = $this->categoryManager->setSubFamiliaSorefoz($this->subfamilia);
+        //$familia = $this->categoryManager->setFamiliaSorefoz($this->familia);
+        //$gama = $this->categoryManager->setGamaSorefoz($this->gama);
+        $product->setCustomAttribute('description', $this->description);
+        $product->setCustomAttribute('meta_description', $this->meta_description);
+        $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', $this->manufacter);
+        $product->setCustomAttribute('manufacturer', $optionId);
+        $product->setCustomAttribute('ts_dimensions_length', $this->length / 10);
+        $product->setCustomAttribute('ts_dimensions_width', $this->width / 10);
+        $product->setCustomAttribute('ts_dimensions_height', $this->height / 10);
+        $product->setCustomAttribute('tax_class_id', 2); //taxable goods id
+        $product->setWeight($this->weight);
+        $product->setWebsiteIds([1]);
+        if(isset($pCategories['familia']) && isset($pCategories['subfamilia'])){
+            $attributeSetId = $this->attributeManager->getAttributeSetId($pCategories['familia'], $pCategories['subfamilia']);
+        }else {
+            $logger->info("Sem atributos: " . $this->sku ." : " . $this->name. "\n");
+            print_r("Sem atributos: " . $this->sku ." : " . $this->name. "\n");
+            $attributeSetId = 4;
+        }
+        $product->setAttributeSetId($attributeSetId); // Attribute set id
+        $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
+        $product->setTaxClassId(2); // Tax class id
+        $product->setTypeId('simple'); // type of product (simple/virtual/downloadable/configurable)
+        $product->setCreatedAt(date("Y/m/d"));
+        $product->setCustomAttribute('news_from_date', date("Y/m/d"));
+        try {
+            if (isset($pCategories['subfamilia'])){
+                $product->setCategoryIds([$categories[$pCategories['gama']],
+                    $categories[$pCategories['familia']], $categories[$pCategories['subfamilia']]]);
+            }else {
+                $product->setCategoryIds([$categories[$pCategories['gama']],
+                    $categories[$pCategories['familia']]]);
             }
+
+        } catch (\Exception $ex) { //Adicionar nova categoria
+            try{
+                $this->categoryManager->createCategory($pCategories['gama'], $pCategories['familia'], $pCategories['subfamilia'], $categories);
+                $categories = $this->categoryManager->getCategoriesArray();
+                if (isset($pCategories['subfamilia'])){
+                    $product->setCategoryIds([$categories[$pCategories['gama']],
+                        $categories[$pCategories['familia']], $categories[$pCategories['subfamilia']]]);
+                }else {
+                    $product->setCategoryIds([$categories[$pCategories['gama']],
+                        $categories[$pCategories['familia']]]);
+                }
+            }catch (\Exception $ex){
+                print_r("\nErro ao adicionar nova categtoria ". $ex->getMessage() .
+                    " ". $product->getSku() ."\n");
+            }
+
+        }
+        $this->setImages($product, $logger, $imgName . "_e.jpeg");
+        $this->setImages($product, $logger, $imgName . ".jpeg");
+        $product->setStatus(\Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED);
+        //Preço
+        $product->setPrice($this->price);
+        $attributes = $this->attributeManager->getSpecialAttributes($this->gama, $this->familia, $this->subfamilia, $this->description, $this->name);
+        if (isset($attributes)){
+            foreach ($attributes as $attribute) {
+                $product->setCustomAttribute($attribute['code'], $attribute['value']);
+            }
+        }
+        //Salvar produto
+        try {
+            $product->save();
+            print_r($this->sku . " - added" . "  -  ");
+        } catch (\Exception $exception) {
+            $logger->info(" - " . $this->sku . " Save product: Exception:  " . $exception->getMessage());
+            print_r("- " . $exception->getMessage() . " Save product exception" . "\n");
+        }
+        $this->add_warranty_option($product,$pCategories['gama'], $pCategories['familia'], $pCategories['subfamilia']);
+        $value = $this->getInstallationValue($pCategories['familia']);
+        if ($value > 0){
+            $this->add_installation_option($product,$value);
+        }
+    }
 
         protected function setImages($product, $logger, $ImgName)
         {

@@ -7,6 +7,7 @@
                 <item name="check_active_status_command" xsi:type="object">Mlp\Cli\Console\Command\CheckActiveModulesCommand</item>
                 <item name="attributes" xsi:type="object">Mlp\Cli\Console\Command\Attributes</item>
                 <item name="attributeSet" xsi:type="object">Mlp\Cli\Console\Command\MlpAttributeSet</item>
+                <item name="productAttributes" xsi:type="object">Mlp\Cli\Console\Command\ProductAttributes</item>
                 <item name="products" xsi:type="object">Mlp\Cli\Console\Command\Products</item>
             </argument>
         </arguments>
