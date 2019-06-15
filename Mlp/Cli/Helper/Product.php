@@ -105,13 +105,7 @@ class Product
         $product->setCustomAttribute('tax_class_id', 2); //taxable goods id
         $product->setWeight($this->weight);
         $product->setWebsiteIds([1]);
-        if(isset($pCategories['familia']) && isset($pCategories['subfamilia'])){
-            $attributeSetId = $this->attributeManager->getAttributeSetId($pCategories['familia'], $pCategories['subfamilia']);
-        }else {
-            $logger->info("Sem atributos: " . $this->sku ." : " . $this->name. "\n");
-            print_r("Sem atributos: " . $this->sku ." : " . $this->name. "\n");
-            $attributeSetId = 4;
-        }
+        $attributeSetId = $this->attributeManager->getAttributeSetId($pCategories['familia'], $pCategories['subfamilia']);
         $product->setAttributeSetId($attributeSetId); // Attribute set id
         $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
         $product->setTaxClassId(2); // Tax class id

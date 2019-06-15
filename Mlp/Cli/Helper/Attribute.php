@@ -741,6 +741,7 @@ class Attribute
             return 4;
 
         }
+        return 4;
 
     }
 
@@ -748,6 +749,16 @@ class Attribute
     {
         $attributes = [];
         switch ($gama) {
+            case 'IMAGEM E SOM':
+                switch ($familia){
+                    case 'AUSCULTADORES':
+                        $attribute['code'] = 'conectividade_auscultadores';
+                        if (preg_match('/BT/', $name) || preg_match('/BLUETOOHT/', $name)) {
+                            $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('conectividade_auscultadores', 'bluetooth');
+                        }else {
+                            $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('conectividade_auscultadores', 'cabo jack');
+                        }
+                }
             case 'GRANDES DOMÉSTICOS':
                 switch ($familia) {
                     case 'ENCASTRE - MESAS':

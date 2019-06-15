@@ -1,6 +1,7 @@
 <?php
 namespace Mlp\Cli\Console\Command;
 
+//use False\True;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -30,24 +31,27 @@ class ProductAttributes extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $pAttributes = [
-                        ["nome" => "tipo_placa_encastre", "attributeSet" => ["PLACAS"]],
-                        ["nome" => "rotacao_mlr", "attributeSet" => ["MLR"] ],
-                        ["nome" => "eficiencia_energetica", "attributeSet" => ["Default"]],
-                        ["nome" => "capacidade_kg", "attributeSet" => ["MLR","MSR"]],
-                        ["nome" => "capacidade_mll", "attributeSet" => ["MLL"]],
-                        ["nome" => "programas_mll", "attributeSet" => ["MLL"]],
-                        ["nome" => "medidas_fogao", "attributeSet" => ["FOGÕES"]],
-                        ["nome" => "tipo_forno", "attributeSet" => ["FOGÕES","FORNOS"]],
-                        ["nome" => "medidas", "attributeSet" => ["CONGELADORES"]],
-                        ["nome" => "largura", "attributeSet" => ["FRIGORIFICOS"]],
-                        ["nome" => "profundidade", "attributeSet" => ["FRIGORIFICOS"]],
-                        ["nome" => "altura", "attributeSet" => ["FRIGORIFICOS"]],
-                        ["nome" => "capacidade_forno", "attributeSet" => ["FORNOS"]],
-                        ["nome" => "tipo_exaustor", "attributeSet" => ["EXAUSTORES"]],
-                        ["nome" => "potencia_ac_int", "attributeSet" => ["AC"]],
-                        ["nome" => "potencia_ac_ext", "attributeSet" => ["AC"]],
-                        ["nome" => "potencia_ac_conj", "attributeSet" => ["AC"]],
-                        ["nome" => "tamanho_ecra", "attributeSet" => ["TV"]],
+                        ["nome" => "tipo_placa_encastre", "label" => "Tipo", "attributeSet" => ["PLACAS"]],
+                        ["nome" => "rotacao_mlr", "label" => "Rotação", "attributeSet" => ["MLR"] ],
+                        ["nome" => "eficiencia_energetica", "label" => "Eficiencia", "attributeSet" => ["Default"]],
+                        ["nome" => "capacidade_kg", "label" => "Capacidade", "attributeSet" => ["MLR","MSR"]],
+                        ["nome" => "capacidade_mll", "label" => "Capacidade", "attributeSet" => ["MLL"]],
+                        ["nome" => "programas_mll", "label" => "Programas", "attributeSet" => ["MLL"]],
+                        ["nome" => "medidas_fogao", "label" => "Medidas", "attributeSet" => ["FOGÕES"]],
+                        ["nome" => "tipo_forno", "label" => "Forno", "attributeSet" => ["FOGÕES","FORNOS"]],
+                        ["nome" => "medidas", "label" => "Medidas", "attributeSet" => ["CONGELADORES"]],
+                        ["nome" => "largura", "label" => "Largura", "attributeSet" => ["FRIGORIFICOS"]],
+                        ["nome" => "profundidade", "label" => "Profundidade", "attributeSet" => ["FRIGORIFICOS"]],
+                        ["nome" => "altura", "label" => "Altura","attributeSet" => ["FRIGORIFICOS"]],
+                        ["nome" => "capacidade_forno", "label" => "Capacidade", "attributeSet" => ["FORNOS"]],
+                        ["nome" => "tipo_exaustor", "label" => "Tipo Exaustor", "attributeSet" => ["EXAUSTORES"]],
+                        ["nome" => "potencia_ac_int", "label" => "Potencia", "attributeSet" => ["AC"]],
+                        ["nome" => "potencia_ac_ext", "label" => "Potencia", "attributeSet" => ["AC"]],
+                        ["nome" => "potencia_ac_conj", "label" => "Potencia", "attributeSet" => ["AC"]],
+                        ["nome" => "tamanho_ecra", "label" => "Ecra", "attributeSet" => ["TV"]],
+
+                        ["nome" => "tipo_auscultadores", "label" => "Tipo","attributeSet"=>["AUSCULTADORES"]],
+                        ["nome" => "conectividade_auscultadores", "label" => "Conectividade","attributeSet"=>["AUSCULTADORES"]],
 
         ];
         /*
@@ -61,31 +65,30 @@ class ProductAttributes extends Command
             //continue;
 
             try{
-                print_r($attribute."\n");
+                print_r($attribute["nome"]."\n");
                 $eavSetup->addAttribute(
                     \Magento\Catalog\Model\Product::ENTITY,
-                    $attribute,
+                    $attribute["nome"],
                     [
-                        'type' => 'text',
+                        'type' => 'int',
                         'backend' => '',
                         'frontend' => '',
-                        'label' => $attribute,
+                        'label' => $attribute["label"],
                         'input' => 'select',
                         'class' => '',
-                        'source' => '',
+                        //'source' => '',
                         'global' => \Magento\Eav\Model\Entity\Attribute\ScopedAttributeInterface::SCOPE_GLOBAL,
                         'visible' => true,
                         'required' => false,
-                        'user_defined' => false,
+                        'user_defined' => true,
                         'default' => '',
                         'searchable' => false,
-                        'filterable' => false,
+                        'filterable' => true,
                         'comparable' => false,
-                        'visible_on_front' => false,
+                        'visible_on_front' => true,
                         'used_in_product_listing' => false,
                         'unique' => false,
-                        'apply_to' => '',
-                        'attribute_set_id' => '1'
+                        'apply_to' => ''
                     ]
                 );
             }catch (\Exception $ex){
