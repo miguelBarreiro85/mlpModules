@@ -33,7 +33,8 @@ class ProductAttributes extends Command
         $pAttributes = [
                         ["nome" => "tipo_placa_encastre", "label" => "Tipo", "attributeSet" => ["PLACAS"]],
                         ["nome" => "rotacao_mlr", "label" => "Rotação", "attributeSet" => ["MLR"] ],
-                        ["nome" => "eficiencia_energetica", "label" => "Eficiencia", "attributeSet" => ["Default"]],
+                        ["nome" => "eficiencia_energetica", "label" => "Eficiencia", "attributeSet" =>
+                            ["MLR","MLL","MSR","FORNOS","EXAUSTORES","AC","FRIGORIFICOS","CONGELADORES","TV"]],
                         ["nome" => "capacidade_kg", "label" => "Capacidade", "attributeSet" => ["MLR","MSR"]],
                         ["nome" => "capacidade_mll", "label" => "Capacidade", "attributeSet" => ["MLL"]],
                         ["nome" => "programas_mll", "label" => "Programas", "attributeSet" => ["MLL"]],
@@ -49,7 +50,10 @@ class ProductAttributes extends Command
                         ["nome" => "potencia_ac_ext", "label" => "Potencia", "attributeSet" => ["AC"]],
                         ["nome" => "potencia_ac_conj", "label" => "Potencia", "attributeSet" => ["AC"]],
                         ["nome" => "tamanho_ecra", "label" => "Ecra", "attributeSet" => ["TV"]],
-
+                        ["nome" => "color", "label" => "Cor", "attributeSet" => ["MLR","MLL","MSR",
+                            "FORNOS","EXAUSTORES","AC","FRIGORIFICOS","CONGELADORES","TV"]],
+                        ["nome" => "manufacturer", "label" => "marca", "attributeSet" => ["MLR","MLL","MSR",
+                            "FORNOS","EXAUSTORES","AC","FRIGORIFICOS","CONGELADORES","TV"]],
                         ["nome" => "tipo_auscultadores", "label" => "Tipo","attributeSet"=>["AUSCULTADORES"]],
                         ["nome" => "conectividade_auscultadores", "label" => "Conectividade","attributeSet"=>["AUSCULTADORES"]],
 

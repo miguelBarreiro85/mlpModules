@@ -38,6 +38,7 @@ class Category
             $newGama->setName($gama);
             $newGama->setParentId(2);
             $newGama->setIsActive(true);
+            $newGama->setIsAnchor(false);
             $gamaId = $this->categoryRepositoryInterface->save($newGama)->getId();
         }
         try{
@@ -47,6 +48,7 @@ class Category
             $newFamilia->setName($familia);
             $newFamilia->setParentId($gamaId);
             $newFamilia->setIsActive(true);
+            $newGama->setIsAnchor(false);
             $familiaId = $this->categoryRepositoryInterface->save($newFamilia)->getId();
         }
         //Se deu erro é porque este tem de ser adicionado
@@ -56,6 +58,7 @@ class Category
                 $newSubFamilia->setName($subfamlia);
                 $newSubFamilia->setParentId($familiaId);
                 $newSubFamilia->setIsActive(true);
+                $newSubFamilia->setIsAnchor(true);
                 $subfamliaId = $this->categoryRepositoryInterface->save($newSubFamilia)->getId();
             } catch (\Exception $ex){
                 print_r($ex->getMessage());
