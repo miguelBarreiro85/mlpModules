@@ -48,7 +48,7 @@ class Category
             $newFamilia->setName($familia);
             $newFamilia->setParentId($gamaId);
             $newFamilia->setIsActive(true);
-            $newGama->setIsAnchor(false);
+            $newFamilia->setIsAnchor(false);
             $familiaId = $this->categoryRepositoryInterface->save($newFamilia)->getId();
         }
         //Se deu erro é porque este tem de ser adicionado

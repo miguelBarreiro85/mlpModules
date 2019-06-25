@@ -31,32 +31,49 @@ class ProductAttributes extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $pAttributes = [
+            //Placas
                         ["nome" => "tipo_placa_encastre", "label" => "Tipo", "attributeSet" => ["PLACAS"]],
+            //M Roupa
                         ["nome" => "rotacao_mlr", "label" => "Rotação", "attributeSet" => ["MLR"] ],
-                        ["nome" => "eficiencia_energetica", "label" => "Eficiencia", "attributeSet" =>
-                            ["MLR","MLL","MSR","FORNOS","EXAUSTORES","AC","FRIGORIFICOS","CONGELADORES","TV"]],
                         ["nome" => "capacidade_kg", "label" => "Capacidade", "attributeSet" => ["MLR","MSR"]],
+            //Congeladores
+                        ["nome" => "capacidade_congelador", "label" => "Litragem", "attributeSet" => ["CONGELADORES"]],
+                        ["nome" => "capacidade_de_congelacao", "label" => "Capacidade de congelação", "attributeSet" => ["CONGELADORES"]],
+            //MLL
                         ["nome" => "capacidade_mll", "label" => "Capacidade", "attributeSet" => ["MLL"]],
                         ["nome" => "programas_mll", "label" => "Programas", "attributeSet" => ["MLL"]],
+            //FOGAO FORNO
                         ["nome" => "medidas_fogao", "label" => "Medidas", "attributeSet" => ["FOGÕES"]],
                         ["nome" => "tipo_forno", "label" => "Forno", "attributeSet" => ["FOGÕES","FORNOS"]],
-                        ["nome" => "medidas", "label" => "Medidas", "attributeSet" => ["CONGELADORES"]],
-                        ["nome" => "largura", "label" => "Largura", "attributeSet" => ["FRIGORIFICOS"]],
-                        ["nome" => "profundidade", "label" => "Profundidade", "attributeSet" => ["FRIGORIFICOS"]],
-                        ["nome" => "altura", "label" => "Altura","attributeSet" => ["FRIGORIFICOS"]],
                         ["nome" => "capacidade_forno", "label" => "Capacidade", "attributeSet" => ["FORNOS"]],
-                        ["nome" => "tipo_exaustor", "label" => "Tipo Exaustor", "attributeSet" => ["EXAUSTORES"]],
-                        ["nome" => "potencia_ac_int", "label" => "Potencia", "attributeSet" => ["AC"]],
-                        ["nome" => "potencia_ac_ext", "label" => "Potencia", "attributeSet" => ["AC"]],
-                        ["nome" => "potencia_ac_conj", "label" => "Potencia", "attributeSet" => ["AC"]],
-                        ["nome" => "tamanho_ecra", "label" => "Ecra", "attributeSet" => ["TV"]],
+            // Diversos
+                        ["nome" => "medidas", "label" => "Medidas", "attributeSet" => ["CONGELADORES"]],
+                        ["nome" => "largura", "label" => "Largura", "attributeSet" => ["FRIGORIFICOS","MICROONDAS","CONGELADORES"]],
+                        ["nome" => "profundidade", "label" => "Profundidade", "attributeSet" => ["FRIGORIFICOS","MICROONDAS","CONGELADORES"]],
+                        ["nome" => "altura", "label" => "Altura","attributeSet" => ["FRIGORIFICOS","MICROONDAS","CONGELADORES"]],
                         ["nome" => "color", "label" => "Cor", "attributeSet" => ["MLR","MLL","MSR",
                             "FORNOS","EXAUSTORES","AC","FRIGORIFICOS","CONGELADORES","TV"]],
                         ["nome" => "manufacturer", "label" => "marca", "attributeSet" => ["MLR","MLL","MSR",
-                            "FORNOS","EXAUSTORES","AC","FRIGORIFICOS","CONGELADORES","TV"]],
+                            "FORNOS","EXAUSTORES","AC","FRIGORIFICOS","CONGELADORES","TV","MICROONDAS"]],
+                        ["nome" => "eficiencia_energetica", "label" => "Eficiencia", "attributeSet" =>
+                            ["MLR","MLL","MSR","FORNOS","EXAUSTORES","AC","FRIGORIFICOS","CONGELADORES","TV"]],
+            //Exaustores
+                        ["nome" => "tipo_exaustor", "label" => "Tipo Exaustor", "attributeSet" => ["EXAUSTORES"]],
+
+            //AC
+                        ["nome" => "potencia_ac_int", "label" => "Potencia", "attributeSet" => ["AC"]],
+                        ["nome" => "potencia_ac_ext", "label" => "Potencia", "attributeSet" => ["AC"]],
+                        ["nome" => "potencia_ac_conj", "label" => "Potencia", "attributeSet" => ["AC"]],
+
+            //TV
+                        ["nome" => "tamanho_ecra", "label" => "Ecra", "attributeSet" => ["TV"]],
+
+
+            //Auscultadores
                         ["nome" => "tipo_auscultadores", "label" => "Tipo","attributeSet"=>["AUSCULTADORES"]],
                         ["nome" => "conectividade_auscultadores", "label" => "Conectividade","attributeSet"=>["AUSCULTADORES"]],
-
+                        ["nome" => "mo_litros", "label" => "Litros","attributeSet"=>["MICROONDAS"]],
+                        ["nome" => "mo_potencia", "label" => "Potencia","attributeSet"=>["MICROONDAS"]]
         ];
         /*
                         ","profundidade", "altura", "capacidade_forno",

@@ -274,7 +274,7 @@ class Products extends Command
                             else {
                                 try{
                                     $row++;
-                                    if (strcmp($data[7], "MAQUINAS LAVAR ROUPA")!=0){
+                                    if (strcmp($data[7], "CONGELADORES")!=0){
                                         continue;
                                     }
                                     if ($row == 1 || strcmp($data[5], "ACESSÓRIOS E BATERIAS") == 0 || strcmp($data[7], "MAT. PROMOCIONAL / PUBLICIDADE") == 0
