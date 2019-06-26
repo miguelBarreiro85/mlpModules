@@ -105,6 +105,8 @@ class Products extends Command
 
     private $productManager;
 
+    private $directory;
+
     public function __construct(EavSetupFactory $eavSetupFactory,
                                 AttributeSetFactory $attributeSetFactory,
                                 Attribute $entityAttribute,
@@ -122,8 +124,10 @@ class Products extends Command
                                 \Magento\CatalogInventory\Api\StockStateInterface $stockStateInterface,
                                 \Magento\CatalogInventory\Api\StockRegistryInterface $stockRegistry,
                                 \Magento\Catalog\Model\Product\OptionFactory $optionFactory,
-                                \Magento\Catalog\Api\ProductRepositoryInterface $productRepositoryInterface)
+                                \Magento\Catalog\Api\ProductRepositoryInterface $productRepositoryInterface,
+                                \Magento\Framework\Filesystem\DirectoryList $directory)
     {
+        $this->directory = $directory;
         $this->productRepositoryInterface = $productRepositoryInterface;
         $this->eavSetupFactory = $eavSetupFactory;
         $this->attributeSetFactory = $attributeSetFactory;
@@ -247,12 +251,12 @@ class Products extends Command
         $this->state->emulateAreaCode(
             'adminhtml',
             function () {
-                $writer = new \Zend\Log\Writer\Stream('/var/www/html/var/log/Sorefoz.log');
+                $writer = new \Zend\Log\Writer\Stream($this->directory->getRoot().'/var/log/Sorefoz.log');
                 $logger = new \Zend\Log\Logger();
                 $logger->addWriter($writer);
                 print_r("Adding Sorefoz products" . "\n");
                 $row = 0;
-                if (($handle = fopen("/var/www/html/app/code/Mlp/Cli/Console/Command/tot_jlcb_utf.csv", "r")) !== FALSE) {
+                if (($handle = fopen($this->directory->getRoot()."/app/code/Mlp/Cli/Console/Command/tot_jlcb_utf.csv", "r")) !== FALSE) {
                     while (!feof($handle)) {
                         if (($data = fgetcsv($handle, 4000, ";")) !== FALSE) {
                             if($data == "\n" || $data == "\r\n" || $data == "")
@@ -274,7 +278,7 @@ class Products extends Command
                             else {
                                 try{
                                     $row++;
-                                    if (strcmp($data[7], "CONGELADORES")!=0){
+                                    if (strcmp($data[7], "ESQUENTADORES/CALDEIRAS")!=0){
                                         continue;
                                     }
                                     if ($row == 1 || strcmp($data[5], "ACESSÓRIOS E BATERIAS") == 0 || strcmp($data[7], "MAT. PROMOCIONAL / PUBLICIDADE") == 0
@@ -342,12 +346,12 @@ class Products extends Command
     }
 
     protected function updateSorefozPrices(){
-        $writer = new \Zend\Log\Writer\Stream('/var/www/html/var/log/Sorefoz.log');
+        $writer = new \Zend\Log\Writer\Stream($this->directory->getRoot().'/var/log/Sorefoz.log');
         $logger = new \Zend\Log\Logger();
         $logger->addWriter($writer);
         print_r("Adding Sorefoz products" . "\n");
         $row = 0;
-        if (($handle = fopen("/var/www/html/app/code/Mlp/Cli/Console/Command/tot_jlcb_utf.csv", "r")) !== FALSE) {
+        if (($handle = fopen($this->directory->getRoot()."/app/code/Mlp/Cli/Console/Command/tot_jlcb_utf.csv", "r")) !== FALSE) {
             while (!feof($handle)) {
                 if (($data = fgetcsv($handle, 4000, ";")) !== FALSE) {
                     try{
@@ -374,12 +378,12 @@ class Products extends Command
         $this->state->emulateAreaCode(
             'adminhtml',
             function () {
-                $writer = new \Zend\Log\Writer\Stream('/var/www/html/var/log/Sorefoz.log');
+                $writer = new \Zend\Log\Writer\Stream($this->directory->getRoot().'/var/log/Sorefoz.log');
                 $logger = new \Zend\Log\Logger();
                 $logger->addWriter($writer);
                 print_r("Disable Sorefoz products" . "\n");
                 $row = 0;
-                if (($handle = fopen("/var/www/html/app/code/Mlp/Cli/Console/Command/tot_jlcb_utf.csv", "r")) !== FALSE) {
+                if (($handle = fopen($this->directory->getRoot()."/app/code/Mlp/Cli/Console/Command/tot_jlcb_utf.csv", "r")) !== FALSE) {
                     print_r("abri ficheiro\n");
                     while (!feof($handle)) {
                         if (($data = fgetcsv($handle, 4000, ";")) !== FALSE) {
@@ -438,12 +442,12 @@ class Products extends Command
 
 
         $categories = $this->categoryManager->getCategoriesArray();
-        $writer = new \Zend\Log\Writer\Stream('/var/www/html/var/log/Auferma.log');
+        $writer = new \Zend\Log\Writer\Stream($this->directory->getRoot().'/var/log/Auferma.log');
         $logger = new \Zend\Log\Logger();
         $logger->addWriter($writer);
         print_r("Adding Auferma products" . "\n");
         $row = 0;
-        if (($handle = fopen("/var/www/html/app/code/Mlp/Cli/Console/Command/aufermaInterno.csv", "r")) !== FALSE) {
+        if (($handle = fopen($this->directory->getRoot()."/app/code/Mlp/Cli/Console/Command/aufermaInterno.csv", "r")) !== FALSE) {
             while (!feof($handle)) {
                 $row++;
                 if (($data = fgetcsv($handle, 4000, ",")) !== FALSE) {
@@ -501,12 +505,12 @@ class Products extends Command
          * 10 - sub familia
          */
         $categories = $this->categoryManager->getCategoriesArray();
-        $writer = new \Zend\Log\Writer\Stream('/var/www/html/var/log/Telefac.log');
+        $writer = new \Zend\Log\Writer\Stream($this->directory->getRoot().'/var/log/Telefac.log');
         $logger = new \Zend\Log\Logger();
         $logger->addWriter($writer);
         print_r("Adding Telefac products" . "\n");
         $row = 0;
-        if (($handle = fopen("/var/www/html/app/code/Mlp/Cli/Console/Command/telefac_interno.csv", "r")) !== FALSE) {
+        if (($handle = fopen($this->directory->getRoot()."/app/code/Mlp/Cli/Console/Command/telefac_interno.csv", "r")) !== FALSE) {
             print_r("abri ficheiro\n");
             while (!feof($handle)) {
                 if (($data = fgetcsv($handle, 4000, ",", '"')) !== FALSE) {
@@ -597,7 +601,7 @@ class Products extends Command
         try {
             if (preg_match('/^http/', (string)$data[28]) == 1) {
                 $ch = curl_init($data[28]);
-                $fp = fopen("/var/www/html/pub/media/catalog/product/" . $sku. '_e.jpeg', 'wb');
+                $fp = fopen($this->directory->getRoot()."/pub/media/catalog/product/" . $sku. '_e.jpeg', 'wb');
                 curl_setopt($ch, CURLOPT_FILE, $fp);
                 curl_setopt($ch, CURLOPT_HEADER, 0);
                 curl_setopt($ch,CURLOPT_TIMEOUT,1);
@@ -606,7 +610,7 @@ class Products extends Command
                     curl_close($ch);
                     fclose($fp);
                 }else {
-                    unlink("/var/www/html/pub/media/catalog/product/" . $sku . "_e.jpeg");
+                    unlink($this->directory->getRoot()."/pub/media/catalog/product/" . $sku . "_e.jpeg");
                 }
             }
 
@@ -616,7 +620,7 @@ class Products extends Command
         try {
             if (preg_match('/^http/', $data[24]) == 1) {
                 $ch = curl_init($data[24]);
-                $fp = fopen("/var/www/html/pub/media/catalog/product/" . $sku . ".jpeg", 'wb');
+                $fp = fopen($this->directory->getRoot()."/pub/media/catalog/product/" . $sku . ".jpeg", 'wb');
                 curl_setopt($ch, CURLOPT_FILE, $fp);
                 curl_setopt($ch, CURLOPT_HEADER, 0);
                 curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,1);
@@ -625,7 +629,7 @@ class Products extends Command
                     curl_close($ch);
                     fclose($fp);
                 }else {
-                    unlink("/var/www/html/pub/media/catalog/product/" . $sku . ".jpeg");
+                    unlink($this->directory->getRoot()."/pub/media/catalog/product/" . $sku . ".jpeg");
                 }
 
 

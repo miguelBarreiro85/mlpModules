@@ -46,6 +46,9 @@ class ProductAttributes extends Command
                         ["nome" => "medidas_fogao", "label" => "Medidas", "attributeSet" => ["FOGÕES"]],
                         ["nome" => "tipo_forno", "label" => "Forno", "attributeSet" => ["FOGÕES","FORNOS"]],
                         ["nome" => "capacidade_forno", "label" => "Capacidade", "attributeSet" => ["FORNOS"]],
+            //ESquentador
+                        ["nome" => "esquentador_capacidade", "label" => "Capacidade", "attributeSet" => ["ESQUENTADORES"]],
+                        ["nome" => "esquentador_ignicao", "label" => "Ignição", "attributeSet" => ["ESQUENTADORES"]],
             // Diversos
                         ["nome" => "medidas", "label" => "Medidas", "attributeSet" => ["CONGELADORES"]],
                         ["nome" => "largura", "label" => "Largura", "attributeSet" => ["FRIGORIFICOS","MICROONDAS","CONGELADORES"]],

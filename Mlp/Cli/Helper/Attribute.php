@@ -750,16 +750,36 @@ class Attribute
         $attributes = [];
         switch ($gama) {
             case 'IMAGEM E SOM':
-                switch ($familia){
+                switch ($familia) {
                     case 'AUSCULTADORES':
                         $attribute['code'] = 'conectividade_auscultadores';
                         if (preg_match('/BT/', $name) || preg_match('/BLUETOOHT/', $name)) {
                             $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('conectividade_auscultadores', 'bluetooth');
-                        }else {
+                        } else {
                             $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('conectividade_auscultadores', 'cabo jack');
                         }
                 }
             case 'GRANDES DOMÉSTICOS':
+                if (preg_match('/Largura:\s*(\d*,*\d*\s*cm)/', strip_tags($description), $mLargura) == 1) {
+                    $largura['code'] = 'largura';
+                    $largura['value'] = $this->dataAttributeOptions->createOrGetId('largura', $mLargura[1]);
+                    array_push($attributes, $largura);
+                }
+                if (preg_match('/Profundidade:\s*(\d*,*\d*\s*cm)/', strip_tags($description), $mProfundidade) == 1) {
+                    $profundidade['code'] = 'profundidade';
+                    $profundidade['value'] = $this->dataAttributeOptions->createOrGetId('profundidade', $mProfundidade[1]);
+                    array_push($attributes, $profundidade);
+                }
+                if (preg_match('/Altura:\s*(\d*,*\d*\s*cm)/', strip_tags($description), $mAltura) == 1) {
+                    $altura['code'] = 'altura';
+                    $altura['value'] = $this->dataAttributeOptions->createOrGetId('altura', $mAltura[1]);
+                    array_push($attributes, $altura);
+                }
+                if (preg_match('/Cor: (\w+)/ui', strip_tags($description), $mCor) == 1) {
+                    $cor['code'] = 'color';
+                    $cor['value'] = $this->dataAttributeOptions->createOrGetId('color', trim($mCor[1]));
+                    array_push($attributes, $cor);
+                }
                 switch ($familia) {
                     case 'ENCASTRE - MESAS':
                         $attribute['code'] = 'tipo_placa_encastre';
@@ -890,14 +910,14 @@ class Attribute
                         }
                         if (preg_match('/Largura:\s*(\d*,*\d*\s*cm)/', strip_tags($description), $matches4) == 1) {
                             $attribute4['code'] = 'largura';
-                            $attribute4['value'] = $this->dataAttributeOptions->createOrGetId('largura', $matches4[1] );
+                            $attribute4['value'] = $this->dataAttributeOptions->createOrGetId('largura', $matches4[1]);
                             array_push($attributes, $attribute1);
                         }
                         return $attributes;
                     case 'CONGELADORES':
                         if (preg_match('/Largura:\s*(\d*,*\d*\s*cm)/', strip_tags($description), $matches1) == 1) {
                             $attribute1['code'] = 'largura';
-                            $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('largura', $matches1[1] );
+                            $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('largura', $matches1[1]);
                             array_push($attributes, $attribute1);
                         }
                         if (preg_match('/Profundidade:\s*(\d*,*\d*\s*cm)/', strip_tags($description), $matches2) == 1) {
@@ -939,7 +959,7 @@ class Attribute
                     case 'FRIGORIFICOS/COMBINADOS':
                         if (preg_match('/Largura:\s*(\d*,*\d*\s*cm)/', strip_tags($description), $matches1) == 1) {
                             $attribute1['code'] = 'largura';
-                            $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('largura', $matches1[1] );
+                            $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('largura', $matches1[1]);
                             array_push($attributes, $attribute1);
                         }
                         if (preg_match('/Profundidade:\s*(\d*,*\d*\s*cm)/', strip_tags($description), $matches2) == 1) {
@@ -999,7 +1019,7 @@ class Attribute
                         }
                         if (preg_match('/Largura:\s*(\d*,*\d*\s*cm)/', strip_tags($description), $matches6) == 1) {
                             $attribute6['code'] = 'largura';
-                            $attribute6['value'] = $this->dataAttributeOptions->createOrGetId('largura', $matches6[1] );
+                            $attribute6['value'] = $this->dataAttributeOptions->createOrGetId('largura', $matches6[1]);
                             array_push($attributes, $attribute6);
                         }
                         if (preg_match('/Profundidade:\s*(\d*,*\d*\s*cm)/', strip_tags($description), $matches7) == 1) {
@@ -1014,11 +1034,11 @@ class Attribute
                         }
                         return $attributes;
                     case 'ENCASTRE - EXAUSTOR/EXTRATORES':
-                        if (strcmp($subfamilia, 'EXAUST.DE CHAMINÉ') == 0){
+                        if (strcmp($subfamilia, 'EXAUST.DE CHAMINÉ') == 0) {
                             $attribute1['code'] = 'tipo_exaustor';
                             $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('tipo_exaustor', 'chaminé');
                             array_push($attributes, $attribute1);
-                        }elseif (strcmp($subfamilia, 'EXAUST.TELESCÓPICOS') == 0){
+                        } elseif (strcmp($subfamilia, 'EXAUST.TELESCÓPICOS') == 0) {
 
                         }
                     case 'MICROONDAS':
@@ -1040,7 +1060,7 @@ class Attribute
                         }
                         if (preg_match('/Largura:\s*(\d*,*\d*\s*cm)/', strip_tags($description), $matches4) == 1) {
                             $attribute4['code'] = 'largura';
-                            $attribute4['value'] = $this->dataAttributeOptions->createOrGetId('largura', $matches4[1] );
+                            $attribute4['value'] = $this->dataAttributeOptions->createOrGetId('largura', $matches4[1]);
                             array_push($attributes, $attribute4);
                         }
                         if (preg_match('/Profundidade:\s*(\d*,*\d*\s*cm)/', strip_tags($description), $matches5) == 1) {
@@ -1055,55 +1075,67 @@ class Attribute
                         }
                         return $attributes;
                     case 'ESQUENTADORES/CALDEIRAS':
-                        switch ($subfamilia){
-                            case  '':
-                        }
-                }
-            case 'IMAGEM E SOM':
-            case 'CLIMATIZAÇÃO':
-                $attributes = [];
-                switch ($familia) {
-                    case 'AR CONDICIONADO':
                         switch ($subfamilia) {
-                            case 'AR COND.INVERTER':
-                            case 'AR COND.MULTI-SPLIT':
-                                //$attribute1['code'] = 'tipo_ac';
-                                if (preg_match('/UNID.INT/', $name) == 1) {
-                                    if (preg_match('/Arrefecimento: (\d+)./', $description, $matches) == 1) {
-                                        $potencia = $this->getPotencia((int)$matches[1]);
-                                        if ($potencia != null) {
-                                            $attribute2['code'] = 'potencia_ac_int';
-                                            $attribute2['value'] = $this->dataAttributeOptions->createOrGetId('potencia_ac_int',
-                                                $potencia);
-                                            array_push($attributes, $attribute2);
-                                        }
+                            case  'ESQUENTADORES C/GÁS':
+                                if (preg_match('/Capacidade:\s*(\d+)\s*Li/', $description, $matches) == 1) {
+                                    $attribute1['code'] = 'esquentador_capacidade';
+                                    $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('esquentador_capacidade', $matches[1]);
+                                    array_push($attributes, $attribute1);
+                                }
+                                if (preg_match('/Ignição:\s*(\w+)/', $description, $matches) == 1) {
+                                    $attribute1['code'] = 'esquentador_ignicao';
+                                    $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('esquentador_ignicao', $matches[1]);
+                                    array_push($attributes, $attribute1);
+                                }
+                                return $attributes;
 
-                                    }
-                                    return $attributes;
-                                } elseif (preg_match('/UNID.EXT/', $name) == 1) {
-                                    if (preg_match('/Arrefecimento: (\d+)./', $description, $matches) == 1) {
-                                        $potencia = $this->getPotencia((int)$matches[1]);
-                                        if ($potencia != null) {
-                                            $attribute2['code'] = 'potencia_ac_ext';
-                                            $attribute2['value'] = $this->dataAttributeOptions->createOrGetId('potencia_ac_ext',
-                                                $potencia);
-                                            array_push($attributes, $attribute2);
-                                        }
+                        }
+                    case 'IMAGEM E SOM':
+                    case 'CLIMATIZAÇÃO':
+                        $attributes = [];
+                        switch ($familia) {
+                            case 'AR CONDICIONADO':
+                                switch ($subfamilia) {
+                                    case 'AR COND.INVERTER':
+                                    case 'AR COND.MULTI-SPLIT':
+                                        //$attribute1['code'] = 'tipo_ac';
+                                        if (preg_match('/UNID.INT/', $name) == 1) {
+                                            if (preg_match('/Arrefecimento: (\d+)./', $description, $matches) == 1) {
+                                                $potencia = $this->getPotencia((int)$matches[1]);
+                                                if ($potencia != null) {
+                                                    $attribute2['code'] = 'potencia_ac_int';
+                                                    $attribute2['value'] = $this->dataAttributeOptions->createOrGetId('potencia_ac_int',
+                                                        $potencia);
+                                                    array_push($attributes, $attribute2);
+                                                }
 
-                                    }
-                                    return $attributes;
-                                } else {
-                                    if (preg_match('/Arrefecimento: (\d+)./', $description, $matches) == 1) {
-                                        $potencia = $this->getPotencia((int)$matches[1]);
-                                        if ($potencia != null) {
-                                            $attribute2['code'] = 'potencia_ac_conj';
-                                            $attribute2['value'] = $this->dataAttributeOptions->createOrGetId('potencia_ac_conj',
-                                                $potencia);
-                                            array_push($attributes, $attribute2);
-                                        }
+                                            }
+                                            return $attributes;
+                                        } elseif (preg_match('/UNID.EXT/', $name) == 1) {
+                                            if (preg_match('/Arrefecimento: (\d+)./', $description, $matches) == 1) {
+                                                $potencia = $this->getPotencia((int)$matches[1]);
+                                                if ($potencia != null) {
+                                                    $attribute2['code'] = 'potencia_ac_ext';
+                                                    $attribute2['value'] = $this->dataAttributeOptions->createOrGetId('potencia_ac_ext',
+                                                        $potencia);
+                                                    array_push($attributes, $attribute2);
+                                                }
 
-                                    }
-                                    return $attributes;
+                                            }
+                                            return $attributes;
+                                        } else {
+                                            if (preg_match('/Arrefecimento: (\d+)./', $description, $matches) == 1) {
+                                                $potencia = $this->getPotencia((int)$matches[1]);
+                                                if ($potencia != null) {
+                                                    $attribute2['code'] = 'potencia_ac_conj';
+                                                    $attribute2['value'] = $this->dataAttributeOptions->createOrGetId('potencia_ac_conj',
+                                                        $potencia);
+                                                    array_push($attributes, $attribute2);
+                                                }
+
+                                            }
+                                            return $attributes;
+                                        }
                                 }
                         }
                 }
