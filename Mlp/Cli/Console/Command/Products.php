@@ -278,9 +278,9 @@ class Products extends Command
                             else {
                                 try{
                                     $row++;
-                                    if (strcmp($data[7], "ESQUENTADORES/CALDEIRAS")!=0){
-                                        continue;
-                                    }
+                                    //if (strcmp($data[7], "ESQUENTADORES/CALDEIRAS")!=0){
+                                      //  continue;
+                                    //}
                                     if ($row == 1 || strcmp($data[5], "ACESSÓRIOS E BATERIAS") == 0 || strcmp($data[7], "MAT. PROMOCIONAL / PUBLICIDADE") == 0
                                         || strcmp($data[7], "FERRAMENTAS") == 0 || strcmp(trim($data[16]), "sim") == 0) {
                                         continue;
