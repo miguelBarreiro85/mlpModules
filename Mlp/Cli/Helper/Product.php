@@ -172,6 +172,7 @@ class Product
                 $type = finfo_file($finfo, "/var/www/html/pub/media/".$baseMediaPath. "/" . $ImgName);
             }catch (\Exception $exception){
                 //finfo exception
+                print_r("Product.php setImages: ". $exception );
             }
             if (isset($type) && in_array($type, array("image/png", "image/jpeg", "image/gif"))) {
                 //this is a image
