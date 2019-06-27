@@ -45,6 +45,7 @@ class Product
     private $config;
     private $optionFactory;
     private $productRepositoryInterface;
+    private $directory;
 
     public function __construct($sku, $name, $gama, $familia, $subfamilia,
                                 $description, $meta_description, $manufacter,
@@ -57,7 +58,8 @@ class Product
                                 StockRegistryInterface $stockRegistry,
                                 Config $config,
                                 OptionFactory $optionFactory,
-                                ProductRepositoryInterface $productRepositoryInterface)
+                                ProductRepositoryInterface $productRepositoryInterface,
+                                \Magento\Framework\Filesystem\DirectoryList $directory)
     {
         $this->sku = $sku;
         $this->name = $name;
@@ -73,6 +75,7 @@ class Product
         $this->weight = $weight;
         $this->price = $price;
 
+        $this->directory = $directory;
         $this->productRepository = $productRepository;
         $this->productFactory = $productFactory;
         $this->categoryManager = $categoryManager;
@@ -169,7 +172,7 @@ class Product
             $baseMediaPath = $this->config->getBaseMediaPath();
             $finfo = finfo_open(FILEINFO_MIME_TYPE);
             try{
-                $type = finfo_file($finfo, "/var/www/html/pub/media/".$baseMediaPath. "/" . $ImgName);
+                $type = finfo_file($finfo, $this->directory->getRoot()."/pub/media/".$baseMediaPath. "/" . $ImgName);
             }catch (\Exception $exception){
                 //finfo exception
                 print_r("Product.php setImages: ". $exception );
