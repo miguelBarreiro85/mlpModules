@@ -179,7 +179,7 @@ class Products extends Command
                     InputOption::VALUE_NONE,
                     'update sorefoz prices'
                 )
-            ]);
+            ])->addArgument('categories', InputArgument::OPTIONAL, 'Categories?');
         parent::configure();
     }
 
@@ -191,8 +191,9 @@ class Products extends Command
         $this->state->setAreaCode(\Magento\Framework\App\Area::AREA_FRONTEND); // or \Magento\Framework\App\Area::AREA_ADMINHTML, depending on your needs
 
         $addSorefozOption = $input->getOption(self::ADD_SOREFOZ_PRODUCTS);
+        $categories = $input->getArgument('categories');
         if ($addSorefozOption) {
-            $this->addSorefozProdCSV();
+            $this->addSorefozProdCSV($categories);
             $output->writeln('<info>ACABEI DE ADICIONAR OS PRODUTOS SOREFOZ!</info>');
         }
         $addTelefacOption = $input->getOption(self::ADD_TELEFAC_PRODUCTS);
@@ -214,8 +215,9 @@ class Products extends Command
 
     }
 
-    protected function addSorefozProdCSV()
+    protected function addSorefozProdCSV($categoriesFilter)
     {
+        print_r($categoriesFilter);
         /*
         Referencia - 0
         Descrição 1
@@ -250,7 +252,7 @@ class Products extends Command
         */
         $this->state->emulateAreaCode(
             'adminhtml',
-            function () {
+            function () use ($categoriesFilter) {
                 $writer = new \Zend\Log\Writer\Stream($this->directory->getRoot().'/var/log/Sorefoz.log');
                 $logger = new \Zend\Log\Logger();
                 $logger->addWriter($writer);
@@ -278,9 +280,11 @@ class Products extends Command
                             else {
                                 try{
                                     $row++;
-                                    //if (strcmp($data[7], "ESQUENTADORES/CALDEIRAS")!=0){
-                                      //  continue;
-                                    //}
+                                    if (!is_null($categoriesFilter)){
+                                        if (strcmp($data[7], $categoriesFilter)!=0){
+                                            continue;
+                                        }
+                                    }
                                     if ($row == 1 || strcmp($data[5], "ACESSÓRIOS E BATERIAS") == 0 || strcmp($data[7], "MAT. PROMOCIONAL / PUBLICIDADE") == 0
                                         || strcmp($data[7], "FERRAMENTAS") == 0 || strcmp(trim($data[16]), "sim") == 0) {
                                         continue;
