@@ -336,7 +336,7 @@ class Products extends Command
                     $meta_description,$manufacter,$length,$width,$height,$weight,$price,
                     $this->productRepository,$this->productFactory, $this->categoryManager,
                     $this->dataAttributeOptions, $this->attributeManager, $this->stockRegistry,
-                    $this->config, $this->optionFactory, $this->productRepositoryInterface);
+                    $this->config, $this->optionFactory, $this->productRepositoryInterface,$this->directory);
 
                 $productInterno->add_product($categories,$logger, $sku);
             }

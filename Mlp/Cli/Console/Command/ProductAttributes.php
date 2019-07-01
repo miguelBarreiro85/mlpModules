@@ -51,9 +51,9 @@ class ProductAttributes extends Command
                         ["nome" => "esquentador_ignicao", "label" => "Ignição", "attributeSet" => ["ESQUENTADORES"]],
             // Diversos
                         ["nome" => "medidas", "label" => "Medidas", "attributeSet" => ["CONGELADORES"]],
-                        ["nome" => "largura", "label" => "Largura", "attributeSet" => ["FRIGORIFICOS","MICROONDAS","CONGELADORES"]],
-                        ["nome" => "profundidade", "label" => "Profundidade", "attributeSet" => ["FRIGORIFICOS","MICROONDAS","CONGELADORES"]],
-                        ["nome" => "altura", "label" => "Altura","attributeSet" => ["FRIGORIFICOS","MICROONDAS","CONGELADORES"]],
+                        ["nome" => "largura", "label" => "Largura", "attributeSet" => ["FRIGORIFICOS","MICROONDAS","CONGELADORES","ESQUENTADORES"]],
+                        ["nome" => "profundidade", "label" => "Profundidade", "attributeSet" => ["FRIGORIFICOS","MICROONDAS","CONGELADORES","ESQUENTADORES"]],
+                        ["nome" => "altura", "label" => "Altura","attributeSet" => ["FRIGORIFICOS","MICROONDAS","CONGELADORES","ESQUENTADORES"]],
                         ["nome" => "color", "label" => "Cor", "attributeSet" => ["MLR","MLL","MSR",
                             "FORNOS","EXAUSTORES","AC","FRIGORIFICOS","CONGELADORES","TV"]],
                         ["nome" => "manufacturer", "label" => "marca", "attributeSet" => ["MLR","MLL","MSR",
