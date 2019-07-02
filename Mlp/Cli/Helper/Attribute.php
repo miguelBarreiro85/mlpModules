@@ -745,7 +745,16 @@ class Attribute
 
     }
 
-    public function getSpecialAttributes($gama,$familia,$subfamilia, $description, $name)
+    /**
+     * @param $gama
+     * @param $familia
+     * @param $subfamilia
+     * @param $description
+     * @param $name
+     * @return array
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    public function getSpecialAttributes($gama, $familia, $subfamilia, $description, $name)
     {
         $attributes = [];
         switch ($gama) {
@@ -761,18 +770,21 @@ class Attribute
                 }
             case 'GRANDES DOMÉSTICOS':
                 if (preg_match('/Largura:\s*(\d*,*\d*\s*cm)/', strip_tags($description), $mLargura) == 1) {
+                    $getLargura = $this->getLargura($mLargura[1]);
                     $largura['code'] = 'largura';
-                    $largura['value'] = $this->dataAttributeOptions->createOrGetId('largura', $mLargura[1]);
+                    $largura['value'] = $this->dataAttributeOptions->createOrGetId('largura', $getLargura);
                     array_push($attributes, $largura);
                 }
                 if (preg_match('/Profundidade:\s*(\d*,*\d*\s*cm)/', strip_tags($description), $mProfundidade) == 1) {
+                    $getProfundidade = $this->getProfundidade($mProfundidade[1]);
                     $profundidade['code'] = 'profundidade';
-                    $profundidade['value'] = $this->dataAttributeOptions->createOrGetId('profundidade', $mProfundidade[1]);
+                    $profundidade['value'] = $this->dataAttributeOptions->createOrGetId('profundidade', $getProfundidade);
                     array_push($attributes, $profundidade);
                 }
                 if (preg_match('/Altura:\s*(\d*,*\d*\s*cm)/', strip_tags($description), $mAltura) == 1) {
+                    $getAltura = $this->getAltura($mAltura[1]);
                     $altura['code'] = 'altura';
-                    $altura['value'] = $this->dataAttributeOptions->createOrGetId('altura', $mAltura[1]);
+                    $altura['value'] = $this->dataAttributeOptions->createOrGetId('altura', $getAltura);
                     array_push($attributes, $altura);
                 }
                 if (preg_match('/Cor: (\w+)/ui', strip_tags($description), $mCor) == 1) {
@@ -915,23 +927,6 @@ class Attribute
                         }
                         return $attributes;
                     case 'CONGELADORES':
-                        if (preg_match('/Largura:\s*(\d*,*\d*\s*cm)/', strip_tags($description), $matches1) == 1) {
-                            $attribute1['code'] = 'largura';
-                            $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('largura', $matches1[1]);
-                            array_push($attributes, $attribute1);
-                        }
-                        if (preg_match('/Profundidade:\s*(\d*,*\d*\s*cm)/', strip_tags($description), $matches2) == 1) {
-                            $attribute2['code'] = 'profundidade';
-                            $profundidade = $this->getProfundidadeFrigorificos($matches2[1]);
-                            $attribute2['value'] = $this->dataAttributeOptions->createOrGetId('profundidade', $profundidade);
-                            array_push($attributes, $attribute2);
-                        }
-                        if (preg_match('/Altura:\s*(\d*,*\d*\s*)cm/', strip_tags($description), $matches3) == 1) {
-                            $attribute3['code'] = 'altura';
-                            $altura = $this->getAltura($matches3[1]);
-                            $attribute3['value'] = $this->dataAttributeOptions->createOrGetId('altura', $altura);
-                            array_push($attributes, $attribute3);
-                        }
                         if (preg_match('/Cor:\s*(\w+\s*\w*)/ui', strip_tags($description), $matches4) == 1) {
                             $attribute4['code'] = 'color';
                             $cor = $this->getCor($matches4[1]);
@@ -964,7 +959,7 @@ class Attribute
                         }
                         if (preg_match('/Profundidade:\s*(\d*,*\d*\s*cm)/', strip_tags($description), $matches2) == 1) {
                             $attribute2['code'] = 'profundidade';
-                            $profundidade = $this->getProfundidadeFrigorificos($matches2[1]);
+                            $profundidade = $this->getProfundidade($matches2[1]);
                             $attribute2['value'] = $this->dataAttributeOptions->createOrGetId('profundidade', $profundidade);
                             array_push($attributes, $attribute2);
                         }
@@ -1039,7 +1034,19 @@ class Attribute
                             $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('tipo_exaustor', 'chaminé');
                             array_push($attributes, $attribute1);
                         } elseif (strcmp($subfamilia, 'EXAUST.TELESCÓPICOS') == 0) {
-
+                            $attribute1['code'] = 'tipo_exaustor';
+                            $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('tipo_exaustor', 'telescópio');
+                            array_push($attributes, $attribute1);
+                        } elseif (strcmp($subfamilia, 'EXAUST.CONVENCIONAIS') == 0) {
+                            $attribute1['code'] = 'tipo_exaustor';
+                            $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('tipo_exaustor', 'tradicional');
+                            array_push($attributes, $attribute1);
+                        }
+                        if (preg_match('/Extracção:\s*(\d+)\s*m3/', $description, $mExtracao) == 1) {
+                            $getExtracao = $this->getExtracao($mExtracao[1]);
+                            $extracao['code'] = 'termoacumulador_potencia';
+                            $extracao['value'] = $this->dataAttributeOptions->createOrGetId('termoacumulador_potencia', $mPotencia[1]);
+                            array_push($attributes, $potencia);
                         }
                     case 'MICROONDAS':
                         //print_r("description: ".$description."\n");
@@ -1090,9 +1097,21 @@ class Attribute
                                 return $attributes;
 
                         }
+                    case 'TERMOACUMULADORES':
+                        if (preg_match('/Capacidade:\s*(\d+)\s*Li/', $description, $mCapacidade) == 1) {
+                            $getCapacidade = $this->getLitragem($mCapacidade[1]);
+                            $capacidade['code'] = 'termoacumulador_capacidade';
+                            $capacidade['value'] = $this->dataAttributeOptions->createOrGetId('termoacumulador_capacidade', $getCapacidade);
+                            array_push($attributes, $capacidade);
+                        }
+                        if (preg_match('/Potencia:\s*(\d+)\s*W/', $description, $mPotencia) == 1) {
+                            $potencia['code'] = 'termoacumulador_potencia';
+                            $potencia['value'] = $this->dataAttributeOptions->createOrGetId('termoacumulador_potencia', $mPotencia[1]);
+                            array_push($attributes, $potencia);
+                        }
+                        return $attributes;
                     case 'IMAGEM E SOM':
                     case 'CLIMATIZAÇÃO':
-                        $attributes = [];
                         switch ($familia) {
                             case 'AR CONDICIONADO':
                                 switch ($subfamilia) {
@@ -1227,10 +1246,40 @@ class Attribute
             return 'Superior a 200 cm';
         }
     }
-    private function getProfundidadeFrigorificos($text){
+    private function getProfundidade($text){
         $profundidade = intval($text);
+        if ($profundidade <= 5){
+            return 'Inferior a 5 cm';
+        }
+        if ($profundidade <= 10){
+            return '5.1 a 10 cm';
+        }
+        if ($profundidade <= 15){
+            return '10.1 a 15 cm';
+        }
+        if ($profundidade <= 20){
+            return '15.1 a 20 cm';
+        }
+        if ($profundidade <= 25){
+            return '20.1 a 25 cm';
+        }
+        if ($profundidade <= 30){
+            return '25.1 a 30 cm';
+        }
+        if ($profundidade <= 35){
+            return '30.1 a 35 cm';
+        }
+        if ($profundidade <= 40){
+            return '35.1 a 40 cm';
+        }
+        if ($profundidade <= 45){
+            return '40.1 a 45 cm';
+        }
+        if ($profundidade <= 50){
+            return '45.1 a 50 cm';
+        }
         if ($profundidade <= 55){
-            return 'Inferior a 55 cm';
+            return '50.1 a 55 cm';
         }
         if ($profundidade <= 60){
             return '55.1 a 60 cm';
@@ -1243,6 +1292,68 @@ class Attribute
         }
         else {
             return 'superior a 70 cm';
+        }
+    }
+
+    private function getLargura($text)
+    {
+        $largura = intval($text);
+        if ($largura <= 5) {
+            return 'Inferior a 5 cm';
+        }
+        if ($largura <= 10) {
+            return '5.1 a 10 cm';
+        }
+        if ($largura <= 15) {
+            return '10.1 a 15 cm';
+        }
+        if ($largura <= 20) {
+            return '15.1 a 20 cm';
+        }
+        if ($largura <= 25) {
+            return '20.1 a 25 cm';
+        }
+        if ($largura <= 30) {
+            return '25.1 a 30 cm';
+        }
+        if ($largura <= 35) {
+            return '30.1 a 35 cm';
+        }
+        if ($largura <= 40) {
+            return '35.1 a 40 cm';
+        }
+        if ($largura <= 45) {
+            return '40.1 a 45 cm';
+        }
+        if ($largura <= 50) {
+            return '45.1 a 50 cm';
+        }
+        if ($largura <= 55) {
+            return '50.1 a 55 cm';
+        }
+        if ($largura <= 60) {
+            return '55.1 a 60 cm';
+        }
+        if ($largura <= 65) {
+            return '60.1 a 65 cm';
+        }
+        if ($largura <= 70) {
+            return '65.1 a 70 cm';
+        }
+        if ($largura <= 75) {
+            return '70.1 a 75 cm';
+        }
+        if ($largura <= 80) {
+            return '75.1 a 80 cm';
+        }
+        if ($largura <= 85) {
+            return '80.1 a 85 cm';
+        }
+        if ($largura <= 90) {
+            return '85.1 a 90 cm';
+        }
+        else {
+            return 'superior a 90 cm';
         }
     }
 
@@ -1275,11 +1386,14 @@ class Attribute
     private function getLitragem($text)
     {
         $litragem = intval($text);
-        if ($litragem < 50){
-            return 'Inferior a 50 Litros';
+        if ($litragem < 20){
+            return 'Inferior a 20 Litros';
+        }
+        if ($litragem <= 50){
+            return '20.1 a 50 Litros';
         }
         if ($litragem <= 100){
-            return '50 a 100 Litros';
+            return '50.1 a 100 Litros';
         }
         if ($litragem <= 150){
             return '100.1 a 150 Litros';
@@ -1308,4 +1422,11 @@ class Attribute
             return 'Superior a 500 Litros';
         }
     }
+
+    private function getExtracao($int)
+    {
+        return '700 m3';
+    }
+
+
 }

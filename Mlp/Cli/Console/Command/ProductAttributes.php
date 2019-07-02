@@ -49,17 +49,23 @@ class ProductAttributes extends Command
             //ESquentador
                         ["nome" => "esquentador_capacidade", "label" => "Capacidade", "attributeSet" => ["ESQUENTADORES"]],
                         ["nome" => "esquentador_ignicao", "label" => "Ignição", "attributeSet" => ["ESQUENTADORES"]],
+            //ESquentador
+                        ["nome" => "termoacumulador_capacidade", "label" => "Capacidade", "attributeSet" => ["TERMOACUMULADORES_ELETRICOS"]],
+                        ["nome" => "termoacumulador_potencia", "label" => "Potência", "attributeSet" => ["TERMOACUMULADORES_ELETRICOS"]],
             // Diversos
                         ["nome" => "medidas", "label" => "Medidas", "attributeSet" => ["CONGELADORES"]],
-                        ["nome" => "largura", "label" => "Largura", "attributeSet" => ["FRIGORIFICOS","MICROONDAS","CONGELADORES","ESQUENTADORES"]],
-                        ["nome" => "profundidade", "label" => "Profundidade", "attributeSet" => ["FRIGORIFICOS","MICROONDAS","CONGELADORES","ESQUENTADORES"]],
-                        ["nome" => "altura", "label" => "Altura","attributeSet" => ["FRIGORIFICOS","MICROONDAS","CONGELADORES","ESQUENTADORES"]],
-                        ["nome" => "color", "label" => "Cor", "attributeSet" => ["MLR","MLL","MSR",
-                            "FORNOS","EXAUSTORES","AC","FRIGORIFICOS","CONGELADORES","TV"]],
-                        ["nome" => "manufacturer", "label" => "marca", "attributeSet" => ["MLR","MLL","MSR",
-                            "FORNOS","EXAUSTORES","AC","FRIGORIFICOS","CONGELADORES","TV","MICROONDAS"]],
+                        ["nome" => "largura", "label" => "Largura", "attributeSet" => ["FRIGORIFICOS","MICROONDAS","CONGELADORES",
+                            "ESQUENTADORES","TERMOACUMULADORES_ELETRICOS","PLACAS"]],
+                        ["nome" => "profundidade", "label" => "Profundidade", "attributeSet" => ["FRIGORIFICOS","MICROONDAS","CONGELADORES",
+                            "ESQUENTADORES","TERMOACUMULADORES_ELETRICOS","PLACAS"]],
+                        ["nome" => "altura", "label" => "Altura","attributeSet" => ["FRIGORIFICOS","MICROONDAS","CONGELADORES",
+                            "ESQUENTADORES","TERMOACUMULADORES_ELETRICOS","PLACAS"]],
+                        ["nome" => "color", "label" => "Cor", "attributeSet" => ["MLR","MLL","MSR", "FORNOS","EXAUSTORES","AC",
+                            "FRIGORIFICOS","CONGELADORES","TV","TERMOACUMULADORES_ELETRICOS","ESQUENTADORES","PLACAS"]],
+                        ["nome" => "manufacturer", "label" => "marca", "attributeSet" => ["MLR","MLL","MSR", "ESQUENTADORES",
+                            "FORNOS","EXAUSTORES","AC","FRIGORIFICOS","CONGELADORES","TV","MICROONDAS","TERMOACUMULADORES_ELETRICOS"]],
                         ["nome" => "eficiencia_energetica", "label" => "Eficiencia", "attributeSet" =>
-                            ["MLR","MLL","MSR","FORNOS","EXAUSTORES","AC","FRIGORIFICOS","CONGELADORES","TV"]],
+                            ["MLR","MLL","MSR","FORNOS","EXAUSTORES","AC","FRIGORIFICOS","CONGELADORES","TV","TERMOACUMULADORES_ELETRICOS","ESQUENTADORES"]],
             //Exaustores
                         ["nome" => "tipo_exaustor", "label" => "Tipo Exaustor", "attributeSet" => ["EXAUSTORES"]],
 
