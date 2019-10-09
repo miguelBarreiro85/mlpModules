@@ -37,6 +37,8 @@ use Magento\Eav\Setup\EavSetupFactory;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Csv;
+
+use Mlp\Cli\Helper\splitFile;
 /**
  * Class GreetingCommand
  */
@@ -258,51 +260,58 @@ class Products extends Command
                 $logger->addWriter($writer);
                 print_r("Adding Sorefoz products" . "\n");
                 $row = 0;
-                if (($handle = fopen($this->directory->getRoot()."/app/code/Mlp/Cli/Console/Command/tot_jlcb_utf.csv", "r")) !== FALSE) {
-                    while (!feof($handle)) {
-                        if (($data = fgetcsv($handle, 4000, ";")) !== FALSE) {
-                            if($data == "\n" || $data == "\r\n" || $data == "")
-                            {
-                                throw new Exception("Empty line found.");
-                            }
-                            if($data === false && !feof($handle))
-                            {
-                                echo "Error reading file besides EOF";
-                            }
-                            elseif($data === false && feof($handle))
-                            {
-                                echo "We are at the end of the file.\n";
 
-                                //check status of the stream
-                                $meta = stream_get_meta_data($handle);
-                                var_dump($meta);
-                            }
-                            else {
-                                try{
-                                    $row++;
-                                    if (!is_null($categoriesFilter)){
-                                        if (strcmp($data[7], $categoriesFilter)!=0){
+                $fileUrl = $this->directory->getRoot()."/app/code/Mlp/Cli/Console/Command/tot_jlcb_utf.csv";
+                $fileCount = splitFile::split_file($fileUrl, $this->directory->getRoot()."/app/code/Mlp/Cli/fileChunks/");
+
+                for ($i = 1; $i < $fileCount; $i++) {
+                    if (($handle = fopen($this->directory->getRoot()."/app/code/Mlp/Cli/fileChunks/output".$i.".csv", "r")) !== FALSE) {
+                        while (!feof($handle)) {
+                            if (($data = fgetcsv($handle, 4000, ",")) !== FALSE) {
+                                if($data == "\n" || $data == "\r\n" || $data == "")
+                                {
+                                    throw new Exception("Empty line found.\n");
+                                }
+                                if($data === false && !feof($handle))
+                                {
+                                    print_r("Error reading file besides EOF\n");
+                                }
+                                elseif($data === false && feof($handle))
+                                {
+                                    print_r("We are at the end of the file.\n");
+
+                                    //check status of the stream
+                                    $meta = stream_get_meta_data($handle);
+                                    var_dump($meta);
+                                }
+                                else {
+                                    try{
+                                        $row++;
+                                        if (!is_null($categoriesFilter)){
+                                            if (strcmp($data[7], $categoriesFilter)!=0){
+                                                continue;
+                                            }
+                                        }
+                                        if ($row == 1 || strcmp($data[5], "ACESSÓRIOS E BATERIAS") == 0 || strcmp($data[7], "MAT. PROMOCIONAL / PUBLICIDADE") == 0
+                                            || strcmp($data[7], "FERRAMENTAS") == 0 || strcmp(trim($data[16]), "sim") == 0) {
                                             continue;
                                         }
+                                        print_r($row . " - ");
+                                        $categories = $this->categoryManager->getCategoriesArray();
+                                        $this->addSorefozProduct($data, $logger, $categories);
+                                    }catch (\Exception $ex){
+                                        print_r(" - " . $ex->getMessage() . " - ");
                                     }
-                                    if ($row == 1 || strcmp($data[5], "ACESSÓRIOS E BATERIAS") == 0 || strcmp($data[7], "MAT. PROMOCIONAL / PUBLICIDADE") == 0
-                                        || strcmp($data[7], "FERRAMENTAS") == 0 || strcmp(trim($data[16]), "sim") == 0) {
-                                        continue;
-                                    }
-                                    print_r($row . " - ");
-                                    $categories = $this->categoryManager->getCategoriesArray();
-                                    $this->addSorefozProduct($data, $logger, $categories);
-                                }catch (\Exception $ex){
-                                    print_r(" - " . $ex->getMessage() . " - ");
-                                }
 
+                                }
                             }
                         }
+                        fclose($handle);
+                    } else {
+                        print_r("Não abriu o ficheiro\n");
                     }
-                    fclose($handle);
-                } else {
-                    print_r("Não abriu o ficheiro\n");
                 }
+
             }
         );
     }
@@ -338,10 +347,10 @@ class Products extends Command
                     $this->dataAttributeOptions, $this->attributeManager, $this->stockRegistry,
                     $this->config, $this->optionFactory, $this->productRepositoryInterface,$this->directory);
 
-                $productInterno->add_product($categories,$logger, $sku);
+                $product = $productInterno->add_product($categories,$logger, $sku);
             }
             try{
-                $this->updateStock($sku, $data[29]);
+                $this->updateStock($product, $data[29]);
             }catch (\Exception $ex){
                 print_r("Update stock exception - ".$ex->getMessage() . "\n");
             }
@@ -560,10 +569,9 @@ class Products extends Command
             }
     }
 
-    protected function updateStock($sku, $stock){
+    protected function updateStock($product, $stock){
         //STOCK
         try {
-            $product = $this->productRepository->get($sku, true, null, true);
             $stockItem = $this->stockRegistry->getStockItem($product->getId()); // load stock of that product
             switch ($stock) {
                 case 'Sim':
@@ -574,7 +582,6 @@ class Products extends Command
                     $stockItem->setUseConfigNotifyStockQty(false);
                     break;
                 default:
-                    $stockItem = $this->stockRegistry->getStockItem($product->getId()); // load stock of that product
                     $stockItem->setIsInStock(false); //set updated data as your requirement
                     $stockItem->setQty(0); //set updated quantity
                     $stockItem->setManageStock(false);

@@ -87,7 +87,6 @@ class Product
         $this->productRepositoryInterface = $productRepositoryInterface;
     }
 
-
     public function add_product($categories, $logger, $imgName) {
         $product = $this->productFactory->create();
         $product->setSku($this->sku);
@@ -100,7 +99,7 @@ class Product
         //$gama = $this->categoryManager->setGamaSorefoz($this->gama);
         $product->setCustomAttribute('description', $this->description);
         $product->setCustomAttribute('meta_description', $this->meta_description);
-        $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', $this->manufacter);
+        $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', strval($this->manufacter));
         $product->setCustomAttribute('manufacturer', $optionId);
         $product->setCustomAttribute('ts_dimensions_length', $this->length / 10);
         $product->setCustomAttribute('ts_dimensions_width', $this->width / 10);
@@ -165,6 +164,8 @@ class Product
         if ($value > 0){
             $this->add_installation_option($product,$value);
         }
+
+        return $product;
     }
 
         protected function setImages($product, $logger, $ImgName)
