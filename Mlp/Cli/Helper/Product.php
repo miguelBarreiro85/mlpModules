@@ -87,6 +87,21 @@ class Product
         $this->productRepositoryInterface = $productRepositoryInterface;
     }
 
+    public function addSpecialAttributesSorefoz($product,$logger){
+        $attributes = $this->attributeManager->getSpecialAttributes($this->gama, $this->familia, $this->subfamilia, $this->description, $this->name);
+        if (isset($attributes)){
+            foreach ($attributes as $attribute) {
+                $product->setCustomAttribute($attribute['code'], $attribute['value']);
+            }
+        }
+        try {
+            $product->save();
+            print_r($this->sku . " - added" . "  -  ");
+        } catch (\Exception $exception) {
+            $logger->info(" - " . $this->sku . " Save product: Exception:  " . $exception->getMessage());
+            print_r("- " . $exception->getMessage() . " Save product exception" . "\n");
+        }
+    }
     public function add_product($categories, $logger, $imgName) {
         $product = $this->productFactory->create();
         $product->setSku($this->sku);
@@ -145,12 +160,7 @@ class Product
         $product->setStatus(\Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED);
         //Preço
         $product->setPrice($this->price);
-        $attributes = $this->attributeManager->getSpecialAttributes($this->gama, $this->familia, $this->subfamilia, $this->description, $this->name);
-        if (isset($attributes)){
-            foreach ($attributes as $attribute) {
-                $product->setCustomAttribute($attribute['code'], $attribute['value']);
-            }
-        }
+
         //Salvar produto
         try {
             $product->save();

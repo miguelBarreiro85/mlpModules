@@ -338,7 +338,7 @@ class Products extends Command
                 $width = trim($data[22]);
                 $height = trim($data[23]);
                 $weight = trim ($data[19]);
-                $price = (int)str_replace(".", "", $data[12]);
+                $price = (int)str_replace(".", "", $data[12]) * 1.23 * 1.30;
 
                 $this->getImages($sku, $data );
                 $productInterno = new \Mlp\Cli\Helper\Product($sku, $name, $gama, $familia,$subfamilia,$description,
@@ -348,6 +348,7 @@ class Products extends Command
                     $this->config, $this->optionFactory, $this->productRepositoryInterface,$this->directory);
 
                 $product = $productInterno->add_product($categories,$logger, $sku);
+                $productInterno->addSpecialAttributesSorefoz($product,$logger);
             }
             try{
                 $this->updateStock($product, $data[29]);
@@ -488,15 +489,19 @@ class Products extends Command
                         $weight = trim($data[4]);
                         $price = (int)trim($data[3]);
 
-                        $productInterno = new \Mlp\Cli\Helper\Product($sku, $name, $gama, $familia, $subfamilia, $description,
-                            $meta_description, $manufacter, $length, $width, $height, $weight, $price,
-                            $this->productRepository, $this->productFactory, $this->categoryManager,
-                            $this->dataAttributeOptions, $this->attributeManager, $this->stockRegistry,
-                            $this->config, $this->optionFactory, $this->productRepositoryInterface);
+                        try{
+                            $productInterno = new \Mlp\Cli\Helper\Product($sku, $name, $gama, $familia, $subfamilia, $description,
+                                $meta_description, $manufacter, $length, $width, $height, $weight, $price,
+                                $this->productRepository, $this->productFactory, $this->categoryManager,
+                                $this->dataAttributeOptions, $this->attributeManager, $this->stockRegistry,
+                                $this->config, $this->optionFactory, $this->productRepositoryInterface, $this->directory);
 
-                        $productInterno->add_product($categories, $logger, $data[2]);
+                            $product = $productInterno->add_product($categories, $logger, $data[2]);
+                        }catch (\Exception $e){
+                            continue;
+                        }
                     }
-                    $this->updateStock($sku, $data[11]);
+                    $this->updateStock($product, $data[11]);
                 }
             }
             fclose($handle);
