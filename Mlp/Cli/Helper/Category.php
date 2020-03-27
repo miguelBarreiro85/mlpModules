@@ -346,44 +346,6 @@ class Category
         return $categories;
     }
 
-    public  function setGamaOrima($gama){
-        switch ($gama){
-            case 'QUEIMA':
-            case 'ENCASTRE':
-            case 'FRIO':
-            case 'AGUAS QUENTES':
-            case 'MAQUINAS LOUÇA':
-                return self::GRANDES_DOMESTICOS;
-
-            case 'PEQUENOS DOMESTICOS':
-                return 'PEQUENOS DOMÉSTICOS';
-
-            case 'CLIMATIZAÇAO':
-                return 'CLIMATIZAÇÃO';
-
-            case 'SOM & IMAGEM':
-                return 'IMAGEM E SOM';
-
-
-        }
-    }
-
-    public function setFamiliaOrima($gama,$familia){
-        switch ($familia){
-            case 'FOGOES':
-                return 'FOGÕES';
-            case 'FORNOS':
-                return 'ENCASTRE';
-            case 'FRIGORIFICOS 2 PORTAS':
-                return 'FRIGORIFICOS/COMBINADOS';
-            case 'MAQUINAS LAVAR ROUPA':
-                return 'MAQUINAS LAVAR ROUPA';
-            case 'CONGELADORES HORIZONTAIS':
-                return 'CONGELADORES':
-
-        }
-    }
-
     public function setCategoriesOrima($gama, $familia, $subFamilia){
         switch ($gama){
             case 'QUEIMA':
@@ -393,6 +355,7 @@ class Category
                         $gama = self::PEQUENOS_DOMESTICOS;
                         $familia = self::APARELHOS_DE_COZINHA;
                         $subFamilia = self::FOGAREIROS;
+                        return ([$gama,$familia,$subFamilia]);
                     case 'FOGOES':
                         $familia = self::FOGOES;
                         switch ($subFamilia) {
@@ -404,8 +367,10 @@ class Category
                             case 'FOGOES MONOBLOCO 60CM':
                             case 'FOGOES PORTA GARRAFA':
                                 $subFamilia = self::FOGÕES_C_GÁS;
+                                return ([$gama,$familia,$subFamilia]);
                             case 'FOGOES VITROCERAMICOS':
                                 $subFamilia = self::FOGOES_ELECTRICOS;
+                                return ([$gama,$familia,$subFamilia]);
 
 
 
@@ -415,92 +380,113 @@ class Category
 
             case 'MAQUINAS LAVAR ROUPA':
                 $gama = self::GRANDES_DOMESTICOS;
-                $familia = self::MAQUINAS_LAVAR_ROUPA;
-                $subFamilia = self::MAQUINAS_LAVAR_ROUPA_CARGA_FRONTAL;
                 switch ($familia) {
                     case 'MAQUINAS LAVAR ROUPA':
+                        $familia = self::MAQUINAS_LAVAR_ROUPA;
                         switch ($subFamilia) {
                             case 'MAQUINAS LAVAR ROUPA CARGA SUPERIOR':
                                 $subFamilia = self::MAQUINAS_LAVAR_ROUPA_CARGA_SUPERIOR;
-
+                                return ([$gama,$familia,$subFamilia]);
+                            default:
+                                $subFamilia = self::MAQUINAS_LAVAR_ROUPA_CARGA_FRONTAL;
+                                return ([$gama,$familia,$subFamilia]);
                         }
                     case 'MAQUINAS LAVAR SECAR ROUPA':
                         switch ($subFamilia) {
                             case 'MAQUINAS LAVAR SECAR':
                                 $subFamilia = self::MAQUINAS_LAVAR_SECAR_ROUPA;
+                                return ([$gama,$familia,$subFamilia]);
                         }
                     case 'SECADORES ROUPA BOMBA CALOR':
                         $familia = self::MAQUINAS_SECAR_ROUPA;
                         $subFamilia = self::MAQUINAS_SECAR_ROUPA_BC;
+                        return ([$gama,$familia,$subFamilia]);
                     case 'SECADORES ROUPA CONDENSAÇAO':
                         $familia = self::MAQUINAS_SECAR_ROUPA;
                         $subFamilia = self::MAQUINAS_SECAR_ROUPA_COND;
+                        return ([$gama,$familia,$subFamilia]);
                     case 'SECADORES ROUPA VENTILAÇAO':
                         $familia = self::MAQUINAS_SECAR_ROUPA;
                         $subFamilia = self::MAQUINAS_SECAR_ROUPA_VENT;
-
-
+                        return ([$gama,$familia,$subFamilia]);
                 }
 
             case 'ENCASTRE':
                 $gama = self::GRANDES_DOMESTICOS;
-                $familia = self::ENCASTRE;
 
                 switch ($familia) {
+                    case 'CHAMINES':
+                    case 'EXAUSTORES':
+                        $subFamilia = self::EXAUSTORES;
+                        return([$gama,self::ENCASTRE,$subFamilia]);
+
+                    case 'COMBINADOS ENCASTRE':
+                        $subFamilia = self::COMBINADOS_ENCASTRE;
+                        return([$gama,self::ENCASTRE,$subFamilia]);
+
+                    case 'CONGELADORES VERTICAIS ENCASTRE':
+                        $subFamilia = self::CONGELADORES_ENCASTRE;
+                        return([$gama,self::ENCASTRE,$subFamilia]);
+
+                    case 'MAQUINAS DE CAFE ENCASTRE':
+                        $subFamilia = self::MAQUINAS_CAFE_ENCASTRE;
+                        return([$gama,self::ENCASTRE,$subFamilia]);
+
                     case 'FRIGORIFICOS 1 PORTA ENCASTRE':
                     case 'FRIGORIFICOS 2 PORTAS ENCASTRE':
+                        $familia = self::ENCASTRE;
                         $subFamilia = self::FRIGORIFICOS_ENCASTRE;
-
+                        return ([$gama,$familia,$subFamilia]);
                     case 'FORNOS':
+                        $familia = self::ENCASTRE;
                         $subFamilia = self::FORNOS;
-
+                        return ([$gama,$familia,$subFamilia]);
                     case 'MAQUINAS LAVAR LOUÇA ENCASTRE':
                         $subFamilia = self::MAQUINAS_DE_LOUCA_ENCASTRE;
+                        return([$gama,self::ENCASTRE,$subFamilia]);
 
                     case 'MAQUINAS LAVAR ROUPA ENCASTRE':
                         $subFamilia = self::MAQ_LAVAR_ROUPA_ENCASTRE;
+                        return([$gama,self::ENCASTRE,$subFamilia]);
 
                     case 'MAQUINAS LAVAR SECAR ENCASTRE':
                         $subFamilia = self::MAQ_LAVAR_SECAR_ROUPA_ENCASTRE;
-
+                        return([$gama,self::ENCASTRE,$subFamilia]);
                     case 'MICRO ONDAS ENCASTRE':
                         $subFamilia = self::MICROONDAS_ENCASTRE;
+                        return([$gama,self::ENCASTRE,$subFamilia]);
 
                     case 'PLACAS A GAS':
                     case 'PLACAS CRISTAL GAS':
                     case 'PLACAS DOMINO':
-                    case 'PLACAS DOMINO':
+                    case 'PLACAS DOMINO ELECTRICAS':
                     case 'PLACAS MISTAS':
                     case 'PLACAS VITROCERAMICAS':
                         $subFamilia = self::PLACAS;
-
+                        return([$gama,self::ENCASTRE,$subFamilia]);
                     case 'TAMPOS':
                         $subFamilia = self::ACESSORIOS_ENCASTRE;
+                        return([$gama,self::ENCASTRE,$subFamilia]);
 
 
-
+                    default:
+                        print_r("Não encontrei nada Category.php line 454");
                 }
 
 
                 switch ($subFamilia) {
                     case 'CHAMINES':
                         $subFamilia = self::EXAUSTORES;
-                    case 'COMBINADOS ENCASTRE':
-                        $subFamilia = self::COMBINADOS_ENCASTRE;
-                    case 'CONGELADORES VERTICAIS ENCASTRE':
-                        $subFamilia = self::CONGELADORES_ENCASTRE;
-                    case 'MAQUINAS DE CAFE ENCASTRE':
-                        $subFamilia = self::MAQUINAS_CAFE_ENCASTRE;
+
 
 
 
 
                 }
 
-
             case 'FRIO':
                 $gama = self::GRANDES_DOMESTICOS;
-                $familia = self::FRIGORIFICOS_COMBINADOS;
+                //$familia = self::FRIGORIFICOS_COMBINADOS;
                 switch ($familia){
                     case 'COMBINADOS':
                         $result = preg_match("NF", $subFamilia);
@@ -511,12 +497,12 @@ class Category
                         }else {
                             $subFamilia = '';
                         }
+                        return([$gama,self::FRIGORIFICOS_COMBINADOS,$subFamilia]);
                     case 'FRIGORIFICOS 1 PORTA':
-
                         $subFamilia = self::FRIGORIF_1_PORTA;
+                        return([$gama,self::FRIGORIFICOS_COMBINADOS,$subFamilia]);
 
                     case 'FRIGORIFICOS 2 PORTAS':
-
                         $result = preg_match("NF",$subFamilia);
                         if($result == 1) {
                             $subFamilia = self::FRIGORIF_2P_NO_FROST;
@@ -524,22 +510,23 @@ class Category
                             $subFamilia = self::FRIGORIF_2_PORTAS;
                         }else{
                             //ERRO
+                            print_r("ERRO CATEGORY.PHP 514\n");
                             $subFamilia = '';
                         }
+                        return([$gama,self::FRIGORIFICOS_COMBINADOS,$subFamilia]);
 
                     case 'FRIGORIFICOS SIDE BY SIDE':
                         $subFamilia = self::FRIGORIF_AMERICANOS;
+                        return([$gama,self::FRIGORIFICOS_COMBINADOS,$subFamilia]);
                     case 'CONGELADORES HORIZONTAIS':
                         $familia = self::CONGELADORES;
                         $subFamilia = self::CONGELADORES_HORIZONTAIS;
+                        return([$gama,$familia,$subFamilia]);
                     case 'CONGELADORES VERTICAIS':
                         $familia = self::CONGELADORES;
                         $subFamilia = self::CONGELADORES_VERTICAIS;
-
-
-
+                        return([$gama,$familia,$subFamilia]);
                 }
-
 
             case 'AGUAS QUENTES':
                 $gama = self::GRANDES_DOMESTICOS;
@@ -863,6 +850,7 @@ class Category
 
         }
 
+        /*
         switch ($subFamilia){
             case 'FOGOES MONOBLOCO 60CM':
             case 'FOGOES MONOBLOCO 50/55CM':
@@ -981,6 +969,6 @@ class Category
             case 'MAQUINAS DE CAFE';
 
         }
-
+        */
     }
 }
