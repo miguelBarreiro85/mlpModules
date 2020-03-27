@@ -57,7 +57,6 @@ class Category
     const FRIGORIFICOS_ENCASTRE = 'FRIGORIFICOS';
     const MAQUINAS_DE_LOUCA_ENCASTRE = 'MÁQUINAS DE LOIÇA';
     const MAQ_LAVAR_ROUPA_ENCASTRE = 'MAQ.LAVAR ROUPA';
-    const FERROS_A_VAPOR = 'FERROS A VAPOR';
     const MAQ_LAVAR_SECAR_ROUPA_ENCASTRE = 'MAQ.LAVAR/SECAR ROUPA';
     const ACESSORIOS_ENCASTRE = 'ACESSORIOS ENCASTRE';
     const CONGELADORES_HORIZONTAIS = 'HORIZONTAIS';
@@ -123,6 +122,22 @@ class Category
     const CAFETEIRAS = 'CAFETEIRAS';
     const JARROS_E_FERV_PURIF_ÁGUA = 'JARROS E FERV./PURIF. ÁGUA ';
     const MAQUINAS_CAFE = 'MAQ.CAFE EXPRESSO';
+    const MOINHOS_DE_CAFE = 'MOINHOS DE CAFE';
+    const SANDWICHEIRAS = 'SANDWICHEIRAS';
+    const TERMOS = 'TERMOS';
+    const TORRADEIRAS = 'TORRADEIRAS';
+    const FERROS_CALDEIRA = 'FERROS COM CALDEIRA';
+    const FERROS_A_SECO = 'FERROS SECOS';
+    const FERROS_A_VAPOR = 'FERROS A VAPOR';
+    const TABUAS_PASSAR_FERRO = 'TÁBUAS DE PASSAR';
+    const FERRO_VIAGEM = 'FERRO DE VIAGEM';
+    const FOGAREIROS = 'FOGAREIROS';
+    const TELEVISAO = 'TELEVISÃO';
+    const EQUIPAMENTOS_AUDIO = 'EQUIPAMENTOS AUDIO';
+    const BARRAS_SOM = 'BARRAS DE SOM';
+    const APARELHAGENS_MICROS = 'APARELHAGENS MICROS';
+    const DVD_BLURAY_TDT = 'DVD /BLURAY /TDT';
+
 
 
     private $storeManager;
@@ -374,7 +389,28 @@ class Category
             case 'QUEIMA':
                 $gama = self::GRANDES_DOMESTICOS;
                 switch ($familia){
-                    case ''
+                    case 'FOGAREIROS':
+                        $gama = self::PEQUENOS_DOMESTICOS;
+                        $familia = self::APARELHOS_DE_COZINHA;
+                        $subFamilia = self::FOGAREIROS;
+                    case 'FOGOES':
+                        $familia = self::FOGOES;
+                        switch ($subFamilia) {
+                            case 'FOGÃO MONOBLOCO 50X60':
+                            case 'FOGAO MONOBLOCO 53,5X56,5':
+                            case 'FOGOES BAIXOS 50X55':
+                            case 'FOGOES MAXI FORNO':
+                            case 'FOGOES MONOBLOCO 50/55CM':
+                            case 'FOGOES MONOBLOCO 60CM':
+                            case 'FOGOES PORTA GARRAFA':
+                                $subFamilia = self::FOGÕES_C_GÁS;
+                            case 'FOGOES VITROCERAMICOS':
+                                $subFamilia = self::FOGOES_ELECTRICOS;
+
+
+
+                        }
+
                 }
 
             case 'MAQUINAS LAVAR ROUPA':
@@ -687,6 +723,29 @@ class Category
                             case 'MAQUINAS DE CAFE':
                                 $subFamilia = self::MAQUINAS_CAFE;
                             case 'MOINHOS DE CAFE':
+                                $subFamilia = self::MOINHOS_DE_CAFE;
+                            case 'SANDWICHEIRAS':
+                                $subFamilia = self::SANDWICHEIRAS;
+                            case 'TERMOS':
+                                $familia = self::ARTIGOS_DE_MENAGE;
+                                $subFamilia = self::TERMOS;
+                            case 'TORRADEIRAS':
+                                $subFamilia = self::TORRADEIRAS;
+                        }
+
+                    case 'ROUPA':
+                        $familia = self::CUIDADO_DE_ROUPA;
+                        switch ($subFamilia) {
+                            case 'FERROS COM CALDEIRA':
+                                $subFamilia = self::FERROS_CALDEIRA;
+                            case 'FERROS DE ENGOMAR A SECO';
+                                $subFamilia = self::FERROS_A_SECO;
+                            case 'FERROS DE ENGOMAR A VAPOR':
+                                $subFamilia = self::FERROS_A_VAPOR;
+                            case 'FERROS DE ENGOMAR DE VIAGEM':
+                                $subFamilia = self::FERRO_VIAGEM;
+                            case 'TABUAS DE ENGOMAR':
+                                $subFamilia = self::TABUAS_PASSAR_FERRO;
 
                         }
 
@@ -748,7 +807,28 @@ class Category
                 }
 
             case 'SOM & IMAGEM':
-                return 'IMAGEM E SOM';
+                $gama = self::IMAGEM_E_SOM;
+                switch ($familia) {
+                    case 'LED´S':
+                        $familia = self::TELEVISAO;
+                        $subFamilia = '';
+                    case 'SOM & VIDEO':
+                        switch ($subFamilia) {
+                            case 'BARRA DE SOM':
+                                $familia = self::EQUIPAMENTOS_AUDIO;
+                                $subFamilia = self::BARRAS_SOM;
+                            case 'HI-FI':
+                                $familia = self::APARELHAGENS_MICROS;
+                            case 'LEITOR BLU RAY':
+                                $familia = self::DVD_BLURAY_TDT;
+                                $subFamilia = '';
+                            case 'SUPORTES TV/LED/PLASMA':
+                                $familia = self::ACESSORIOS_IMAGEM_E_SOM;
+                                $subFamilia = self::MOVEIS_SUPORTES;
+
+
+                        }
+                }
 
             case 'INDUSTRIAL':
                 $gama = self::INDUSTRIAL;
