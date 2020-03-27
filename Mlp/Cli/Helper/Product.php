@@ -109,9 +109,7 @@ class Product
         $product->setTypeId(\Magento\Catalog\Model\Product\Type::TYPE_SIMPLE);
         //Set Categories
         $pCategories = $this->categoryManager->setCategories($this->gama, $this->familia, $this->subfamilia, $this->name);
-        //$subfamilia = $this->categoryManager->setSubFamiliaSorefoz($this->subfamilia);
-        //$familia = $this->categoryManager->setFamiliaSorefoz($this->familia);
-        //$gama = $this->categoryManager->setGamaSorefoz($this->gama);
+
         $product->setCustomAttribute('description', $this->description);
         $product->setCustomAttribute('meta_description', $this->meta_description);
         $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', strval($this->manufacter));
@@ -178,7 +176,7 @@ class Product
         return $product;
     }
 
-        protected function setImages($product, $logger, $ImgName)
+    protected function setImages($product, $logger, $ImgName)
         {
             $baseMediaPath = $this->config->getBaseMediaPath();
             $finfo = finfo_open(FILEINFO_MIME_TYPE);
@@ -209,7 +207,7 @@ class Product
 
 
 
-        protected function getClasseEnergetica($eficiencia){
+    protected function getClasseEnergetica($eficiencia){
         print_r(  " - ".$eficiencia." - ");
             if (strcmp(trim($eficiencia), 'A&#43 &#43') == 0 ){
                 return 'A++';
@@ -221,7 +219,7 @@ class Product
                 return trim($eficiencia);
             }
         }
-        protected function getPotencia($matches){
+    protected function getPotencia($matches){
             if ($matches < 9) {
                 return 'De 5KBTU a 7KBTU';
             } elseif ( 8 < $matches && $matches < 13){
@@ -244,7 +242,7 @@ class Product
 
 
         }
-        protected function add_warranty_option($product, $gama, $familia, $subfamilia){
+    protected function add_warranty_option($product, $gama, $familia, $subfamilia){
         $one_year = $this->get_one_year_warranty_price((int)$product->getPrice(), $gama, $familia, $subfamilia);
         $three_years = $this->get_three_years_warranty_price((int)$product->getPrice(), $gama);
         //Se os valores forem 0 não adiciona
@@ -306,7 +304,7 @@ class Product
         $this->productRepositoryInterface->save($product);
 
     }
-        protected function get_one_year_warranty_price($preco, $gama, $familia, $subfamilia)
+    protected function get_one_year_warranty_price($preco, $gama, $familia, $subfamilia)
     {
         switch ($gama) {
             case 'GRANDES DOMÉSTICOS':
@@ -429,7 +427,7 @@ class Product
                 return 0;
         }
     }
-        protected function get_three_years_warranty_price($preco, $gama){
+    protected function get_three_years_warranty_price($preco, $gama){
         switch ($gama) {
             case 'GRANDES DOMÉSTICOS':
                 if ($preco <= 200) {
@@ -465,7 +463,7 @@ class Product
                 return 0;
         }
     }
-        protected function getInstallationValue($familia)
+    protected function getInstallationValue($familia)
     {
         switch ($familia){
             case 'ENCASTRE':
@@ -482,7 +480,7 @@ class Product
                 return 0;
         }
     }
-        protected function add_installation_option($product, $value){
+    protected function add_installation_option($product, $value){
         $options = [
             [
                 'title' => 'Serviço de instalação',

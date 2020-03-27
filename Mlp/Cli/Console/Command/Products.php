@@ -340,7 +340,7 @@ class Products extends Command
                 $weight = trim ($data[19]);
                 $price = (int)str_replace(".", "", $data[12]) * 1.23 * 1.30;
 
-                $this->getImages($sku, $data );
+                $this->getImages($sku, $data[24], $data[28] );
                 $productInterno = new \Mlp\Cli\Helper\Product($sku, $name, $gama, $familia,$subfamilia,$description,
                     $meta_description,$manufacter,$length,$width,$height,$weight,$price,
                     $this->productRepository,$this->productFactory, $this->categoryManager,
@@ -574,6 +574,79 @@ class Products extends Command
             }
     }
 
+    protected function addOrimaProdCSV(){
+        /*
+         * 0 - Nome
+         * 1 - ref orima
+         * 2 - preço liquido
+         * 3 - stock
+         * 4 - gama
+         * 5 - familia
+         * 6 - subfamilia
+         * 7 - marca
+         * 8 - EAN
+         * 9 - Detalhes
+         * 10 - Imagem
+         * 11 - etiqueta energetica
+         * 12 - manual de instruções
+         * 13 - esquema tecnico
+         */
+        $categories = $this->categoryManager->getCategoriesArray();
+        $writer = new \Zend\Log\Writer\Stream($this->directory->getRoot().'/var/log/Orima.log');
+        $logger = new \Zend\Log\Logger();
+        $logger->addWriter($writer);
+        print_r("Adding Orima products" . "\n");
+        $row = 0;
+        if (($handle = fopen($this->directory->getRoot()."/app/code/Mlp/Cli/Console/Command/Orima.csv", "r")) !== FALSE) {
+            print_r("abri ficheiro\n");
+            while (!feof($handle)) {
+                if (($data = fgetcsv($handle, 4000, ",", '"')) !== FALSE) {
+                    $row++;
+                    $sku = trim($data[8]);
+                    if (strlen($sku) == 13) {
+                        try {
+                            $product = $this->productRepository->get($sku, true, null, true);
+                            if ($product->getStatus() == 2) {
+                                print_r($sku . "\n");
+                                continue;
+                            }
+                        } catch (NoSuchEntityException $exception) {
+                            $name = trim($data[0]);
+                            $gama = trim($data[4]);
+                            $familia = trim($data[5]);
+                            $subfamilia = trim($data[6]);
+                            $description = trim($data[9]);
+                            $meta_description = "";
+                            $manufacter = trim($data[7]);
+                            $length = 0;
+                            $width = 0;
+                            $height = 0;
+                            $weight = trim($data[4]);
+                            $price = (int)trim($data[2]) * 1.23 * 1.20;
+                            $imagem = trim($data[10]); //ref Orima
+                            $etiquetaEner = trim($data[11]);// EAN
+
+                            $productInterno = new \Mlp\Cli\Helper\Product($sku, $name, $gama, $familia, $subfamilia, $description,
+                                $meta_description, $manufacter, $length, $width, $height, $weight, $price,
+                                $this->productRepository, $this->productFactory, $this->categoryManager,
+                                $this->dataAttributeOptions, $this->attributeManager, $this->stockRegistry,
+                                $this->config, $this->optionFactory, $this->productRepositoryInterface);
+
+
+                            $this->getImagesOrima($sku, $imagem, $etiquetaEner);
+                            $productInterno->add_product($categories, $logger, $sku);
+                        }
+                        $this->updateStock($sku, $data[6]);
+
+                    }
+                }
+            }
+            fclose($handle);
+        }else {
+            print_r("Não abriu o ficheiro");
+        }
+    }
+
     protected function updateStock($product, $stock){
         //STOCK
         try {
@@ -612,11 +685,11 @@ class Products extends Command
         }
     }
 
-    protected function getImages($sku, $data)
-    {
+
+    protected  function getImages($sku, $img, $etiqueta){
         try {
-            if (preg_match('/^http/', (string)$data[28]) == 1) {
-                $ch = curl_init($data[28]);
+            if (preg_match('/^http/', (string)$etiqueta) == 1) {
+                $ch = curl_init($etiqueta);
                 $fp = fopen($this->directory->getRoot()."/pub/media/catalog/product/" . $sku. '_e.jpeg', 'wb');
                 curl_setopt($ch, CURLOPT_FILE, $fp);
                 curl_setopt($ch, CURLOPT_HEADER, 0);
@@ -634,8 +707,8 @@ class Products extends Command
             print_r($ex->getMessage());
         }
         try {
-            if (preg_match('/^http/', $data[24]) == 1) {
-                $ch = curl_init($data[24]);
+            if (preg_match('/^http/', $img) == 1) {
+                $ch = curl_init($img);
                 $fp = fopen($this->directory->getRoot()."/pub/media/catalog/product/" . $sku . ".jpeg", 'wb');
                 curl_setopt($ch, CURLOPT_FILE, $fp);
                 curl_setopt($ch, CURLOPT_HEADER, 0);
