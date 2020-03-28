@@ -137,6 +137,8 @@ class Product
             }
 
         } catch (\Exception $ex) { //Adicionar nova categoria
+            print_r($ex->getMessage());
+            print_r($pCategories);
             try{
                 $this->categoryManager->createCategory($pCategories['gama'], $pCategories['familia'], $pCategories['subfamilia'], $categories);
                 $categories = $this->categoryManager->getCategoriesArray();
@@ -205,6 +207,13 @@ class Product
 
         }
 
+    public function setOrimaCategories()
+    {
+        [$mlpGama,$mlpFamilia,$mlpSubFamilia] = $this->categoryManager->setCategoriesOrima($this->gama,$this->familia,$this->subfamilia);
+        $this->gama = $mlpGama;
+        $this->familia = $mlpFamilia;
+        $this->subfamilia = $mlpSubFamilia;
+    }
 
 
     protected function getClasseEnergetica($eficiencia){

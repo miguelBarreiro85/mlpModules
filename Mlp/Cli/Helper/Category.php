@@ -18,7 +18,7 @@ class Category
     const FRIGORIFICOS_COMBINADOS = 'FRIGORIFICOS/COMBINADOS';
     const MAQUINAS_LAVAR_ROUPA = 'MAQUINAS LAVAR ROUPA';
     const MAQUINAS_SECAR_ROUPA = 'MAQUINAS SECAR ROUPA';
-    const PEQUENOS_DOMESTICOS = 'PEQUENOS DOMESTICOS';
+    const PEQUENOS_DOMESTICOS = 'PEQUENOS DOMÉSTICOS';
     const CUIDADO_DE_ROUPA = 'CUIDADO DE ROUPA';
     const APARELHOS_DE_COZINHA = 'APARELHOS DE COZINHA';
     const ESPREMEDORES = 'ESPREMEDORES';
@@ -150,6 +150,8 @@ class Category
     const RECUPERADORES = 'RECUPERADORES';
     const SALAMANDRAS = 'SALAMANDRAS';
     const FOGOES_LENHA = 'FOGÕES A LENHA';
+    const FRIGOBAR = 'FRIGOBAR';
+    const BALANÇAS_DE_COZINHA = 'BALANÇAS DE COZINHA';
 
 
     private $storeManager;
@@ -399,7 +401,7 @@ class Category
                         return([$gama,'','']);
                 }
 
-            case 'MAQUINAS LAVAR ROUPA':
+            case 'MAQUINAS ROUPA':
                 $gama = self::GRANDES_DOMESTICOS;
                 switch ($familia) {
                     case 'MAQUINAS LAVAR ROUPA':
@@ -483,6 +485,7 @@ class Category
                     case 'PLACAS DOMINO ELECTRICAS':
                     case 'PLACAS MISTAS':
                     case 'PLACAS VITROCERAMICAS':
+                    case 'PLACAS INDUÇAO':
                         $subFamilia = self::PLACAS;
                         return ([$gama, self::ENCASTRE, $subFamilia]);
                     case 'TAMPOS':
@@ -499,7 +502,7 @@ class Category
                 //$familia = self::FRIGORIFICOS_COMBINADOS;
                 switch ($familia) {
                     case 'COMBINADOS':
-                        $result = preg_match("NF", $subFamilia);
+                        $result = preg_match("/NF/", $subFamilia);
                         if ($result == 1) {
                             $subFamilia = self::COMBINADOS_NO_FROST;
                         } elseif ($result == 0) {
@@ -513,7 +516,7 @@ class Category
                         return ([$gama, self::FRIGORIFICOS_COMBINADOS, $subFamilia]);
 
                     case 'FRIGORIFICOS 2 PORTAS':
-                        $result = preg_match("NF", $subFamilia);
+                        $result = preg_match("/NF/", $subFamilia);
                         if ($result == 1) {
                             $subFamilia = self::FRIGORIF_2P_NO_FROST;
                         } elseif ($result == 0) {
@@ -536,6 +539,8 @@ class Category
                         $familia = self::CONGELADORES;
                         $subFamilia = self::CONGELADORES_VERTICAIS;
                         return ([$gama, $familia, $subFamilia]);
+                    case 'FRIGORIFICOS MINI-BAR':
+                        return ([$gama,self::FRIGORIFICOS_COMBINADOS,self::FRIGOBAR]);
                     default:
                         print_r("Family not found!");
                         return ([$gama,'','']);
@@ -596,6 +601,41 @@ class Category
                         return ([$gama, $familia, $subFamilia]);
                 }
 
+            case 'SOM & IMAGEM':
+                $gama = self::IMAGEM_E_SOM;
+                switch ($familia) {
+                    case 'LED´S':
+                        $familia = self::TELEVISAO;
+                        $subFamilia = '';
+                        return ([$gama, $familia, $subFamilia]);
+                    case 'SOM & VIDEO':
+                        switch ($subFamilia) {
+                            case 'BARRA DE SOM':
+                                $familia = self::EQUIPAMENTOS_AUDIO;
+                                $subFamilia = self::BARRAS_SOM;
+                                return ([$gama, $familia, $subFamilia]);
+                            case 'HI-FI':
+                                $familia = self::EQUIPAMENTOS_AUDIO;
+                                $subFamilia = self::APARELHAGENS_MICROS;
+                                return ([$gama, $familia, $subFamilia]);
+                            case 'LEITOR BLU RAY':
+                                $familia = self::DVD_BLURAY_TDT;
+                                $subFamilia = '';
+                                return ([$gama, $familia, $subFamilia]);
+                            case 'SUPORTES TV/LED/PLASMA':
+                                $familia = self::ACESSORIOS_IMAGEM_E_SOM;
+                                $subFamilia = self::MOVEIS_SUPORTES;
+                                return ([$gama, $familia, $subFamilia]);
+                            default:
+                                $familia = '';
+                                $subFamilia = '';
+                                return ([$gama, $familia, $subFamilia]);
+                        }
+                    default:
+                        $familia = '';
+                        $subFamilia = '';
+                        return ([$gama, $familia, $subFamilia]);
+                }
 
             case 'PEQUENOS DOMESTICOS':
                 $gama = self::PEQUENOS_DOMESTICOS;
@@ -651,62 +691,79 @@ class Category
                             case 'ARTIGOS MANUAIS':
                                 $familia = self::ARTIGOS_DE_MENAGE;
                                 $subFamilia = self::PEQ_APARELHOS_COZINHA;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'BALANÇAS COZINHA':
                                 $subFamilia = self::BALANÇAS_DE_COZINHA;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'BATEDEIRAS':
                                 $subFamilia = self::BATEDEIRAS;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'CAÇAROLAS':
                                 $familia = self::ARTIGOS_DE_MENAGE;
                                 $subFamilia = self::CACAROLAS;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'CAIXA HERMETICA PLASTICO':
                             case 'CAIXA HERMETICA VIDRO':
                                 $familia = self::ARTIGOS_DE_MENAGE;
                                 $subFamilia = self::CAIXA_HERMETICA;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'CENTRIFUGADORAS':
                                 $subFamilia = self::CENTRIFUGADORAS;
-                            case 'COZEDURA A VAPOR':
-                                $subFamilia = self::MAQUINAS_DE_COZINHA;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'ESPREMEDORES DE CITRINOS':
                                 $subFamilia = self::ESPREMEDORES;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'FACAS ELECTRICAS':
                                 $subFamilia = self::ABRE_LATAS_FACAS;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'FIAMBREIRAS':
                                 $subFamilia = self::FIAMBREIRAS;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'FORNOS ELETRICOS DE BANCADA':
                                 $subFamilia = self::FORNOS_DE_BANCADA;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'FRIGIDEIRAS':
                                 $familia = self::ARTIGOS_DE_MENAGE;
                                 $subFamilia = self::FRIGIDEIRAS;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'FRITADEIRAS':
                                 $subFamilia = self::FRITADEIRAS;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'GRELHADORES':
                             case 'GRELHADORES DE PLACAS':
                                 $subFamilia = self::GRELHADORES;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'LIQUIDIFICADORES':
                                 $subFamilia = self::LIQUIDIFICADORAS;
+                                return ([$gama, $familia, $subFamilia]);
+                            case 'PICADORAS':
+                            case 'QUEIMADORES LEITE CREME':
                             case 'MAQUINAS DE MOER CARNE':
+                            case 'SELADORES DE SACOS':
+                            case 'COZEDURA A VAPOR':
                                 $subFamilia = self::MAQUINAS_DE_COZINHA;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'PANELAS DE PRESSAO':
                                 $familia = self::ARTIGOS_DE_MENAGE;
                                 $subFamilia = self::PANELAS_DE_PRESSAO;
-                            case 'PICADORAS':
-                                $subFamilia = self::MAQUINAS_DE_COZINHA;
-                            case 'QUEIMADORES LEITE CREME':
-                                $subFamilia = self::MAQUINAS_DE_COZINHA;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'ROBOTS DE COZINHA':
                                 $subFamilia = self::ROBOTS_DE_COZINHA;
-                            case 'SELADORES DE SACOS':
-                                $subFamilia = self::MAQUINAS_DE_COZINHA;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'TACHOS':
                                 $familia = self::ARTIGOS_DE_MENAGE;
                                 $subFamilia = self::TACHOS;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'TREM DE COZINHA':
                                 $familia = self::ARTIGOS_DE_MENAGE;
                                 $subFamilia = self::TRENS_COZINHA;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'VARINHAS':
                                 $subFamilia = self::VARINHAS_MAGICAS;
-
-
+                                return ([$gama, $familia, $subFamilia]);
+                            default:
+                                print_r("subfamilia not found".$subFamilia);
+                                return([$gama,$familia,'']);
                         }
 
                     case 'CUIDADOS PESSOAIS':
@@ -714,10 +771,13 @@ class Category
                         switch ($subFamilia) {
                             case 'BALANÇAS WC':
                                 $subFamilia = self::BALANÇAS_DE_WC;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'MODELADORES DE CABELO':
                                 $subFamilia = self::MODELADORES;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'SECADORES DE CABELO':
                                 $subFamilia = self::SECADORES_DE_CABELO;
+                                return ([$gama, $familia, $subFamilia]);
                         }
 
                     case 'MICRO ONDAS':
@@ -729,10 +789,14 @@ class Category
                             case 'MICRO ONDAS C/GRILL ATÉ 20L':
                             case 'MICRO ONDAS C/GRILL ATÉ 20L':
                                 $subFamilia = self::MO_COM_GRILL;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'MICRO ONDAS S/GRILL 21 A 29L':
                             case 'MICRO ONDAS S/GRILL ATÉ 20L':
                                 $subFamilia = self::MO_SEM_GRILL;
-
+                                return ([$gama, $familia, $subFamilia]);
+                            default:
+                                print_r("subFamilia not found".$subFamilia);
+                                return([$gama,$familia,'']);
                         }
 
                     case 'PEQUENO-ALMOÇO':
@@ -764,6 +828,7 @@ class Category
                         switch ($subFamilia) {
                             case 'FERROS COM CALDEIRA':
                                 $subFamilia = self::FERROS_CALDEIRA;
+
                             case 'FERROS DE ENGOMAR A SECO';
                                 $subFamilia = self::FERROS_A_SECO;
                             case 'FERROS DE ENGOMAR A VAPOR':
@@ -778,6 +843,44 @@ class Category
 
                 }
                 return 'PEQUENOS DOMÉSTICOS';
+
+            case 'INDUSTRIAL':
+                $gama = self::INDUSTRIAL;
+                $familia = self::FRIO_INDUSTRIAL;
+                switch ($subFamilia) {
+                    case 'ARREFECEDORES HORIZONTAIS':
+                        $subFamilia = self::ARREFECEDORES_HORIZONTAIS_INDUSTRIAIS;
+                        return ([$gama, $familia, $subFamilia]);
+                    case 'CONGELADORES HORIZONTAIS INDUSTRIAIS':
+                        $subFamilia = self::CONGELADORES_HORIZONTAIS_INDUSTRIAIS;
+                        return ([$gama, $familia, $subFamilia]);
+                    case 'CONGELADORES ILHA':
+                        $subFamilia = self::CONGELADORES_ILHA_INDUSTRIAIS;
+                        return ([$gama, $familia, $subFamilia]);
+                    case 'VITRINES CONGELADORAS':
+                        $subFamilia = self::CONGELADORES_VERTICAIS_INDUSTRIAIS;
+                        return ([$gama, $familia, $subFamilia]);
+                    case 'VITRINES ARREFECEDORAS':
+                    case 'VITRINES ARREFECEDORAS ENCASTRE':
+                        $subFamilia = self::ARREFECEDORES_VERTICAIS_INDUSTRIAIS;
+                        return ([$gama, $familia, $subFamilia]);
+                    case 'ELECTROCUTORES DE INSETOS':
+                        $familia = self::ELECTROCUTORES_INSECTOS;
+                        $subFamilia = '';
+                        return ([$gama, $familia, $subFamilia]);
+                    case 'FOGOES GAMA INDUSTRIAL':
+                    case 'TREMPES':
+                        $familia = self::FOGOES_INDUSTRIAIS;
+                        $subFamilia = '';
+                        return ([$gama, $familia, $subFamilia]);
+                    case 'VARINHAS GAMA HOTELEIRA':
+                        $familia = self::EQUIPAMENTOS_COZINHA_INDUSTRIAIS;
+                        $subFamilia = self::VARINHAS_INDUSTRIAIS;
+                        return ([$gama, $familia, $subFamilia]);
+                    default:
+                        $subFamilia = '';
+                        return ([$gama, $familia, $subFamilia]);
+                }
 
             case 'CLIMATIZAÇAO':
                 $gama = self::CLIMATIZACAO;
@@ -854,80 +957,6 @@ class Category
                                 $subFamilia = '';
                                 return ([$gama, $familia, $subFamilia]);
 
-                        }
-
-                    case 'SOM & IMAGEM':
-                        $gama = self::IMAGEM_E_SOM;
-                        switch ($familia) {
-                            case 'LED´S':
-                                $familia = self::TELEVISAO;
-                                $subFamilia = '';
-                                return ([$gama, $familia, $subFamilia]);
-                            case 'SOM & VIDEO':
-                                switch ($subFamilia) {
-                                    case 'BARRA DE SOM':
-                                        $familia = self::EQUIPAMENTOS_AUDIO;
-                                        $subFamilia = self::BARRAS_SOM;
-                                        return ([$gama, $familia, $subFamilia]);
-                                    case 'HI-FI':
-                                        $familia = self::EQUIPAMENTOS_AUDIO;
-                                        $subFamilia = self::APARELHAGENS_MICROS;
-                                        return ([$gama, $familia, $subFamilia]);
-                                    case 'LEITOR BLU RAY':
-                                        $familia = self::DVD_BLURAY_TDT;
-                                        $subFamilia = '';
-                                        return ([$gama, $familia, $subFamilia]);
-                                    case 'SUPORTES TV/LED/PLASMA':
-                                        $familia = self::ACESSORIOS_IMAGEM_E_SOM;
-                                        $subFamilia = self::MOVEIS_SUPORTES;
-                                        return ([$gama, $familia, $subFamilia]);
-                                    default:
-                                        $familia = '';
-                                        $subFamilia = '';
-                                        return ([$gama, $familia, $subFamilia]);
-                                }
-                            default:
-                                $familia = '';
-                                $subFamilia = '';
-                                return ([$gama, $familia, $subFamilia]);
-                        }
-
-                    case 'INDUSTRIAL':
-                        $gama = self::INDUSTRIAL;
-                        $familia = self::FRIO_INDUSTRIAL;
-                        switch ($subFamilia) {
-                            case 'ARREFECEDORES HORIZONTAIS':
-                                $subFamilia = self::ARREFECEDORES_HORIZONTAIS_INDUSTRIAIS;
-                                return ([$gama, $familia, $subFamilia]);
-                            case 'CONGELADORES HORIZONTAIS INDUSTRIAIS':
-                                $subFamilia = self::CONGELADORES_HORIZONTAIS_INDUSTRIAIS;
-                                return ([$gama, $familia, $subFamilia]);
-                            case 'CONGELADORES ILHA':
-                                $subFamilia = self::CONGELADORES_ILHA_INDUSTRIAIS;
-                                return ([$gama, $familia, $subFamilia]);
-                            case 'VITRINES CONGELADORAS':
-                                $subFamilia = self::CONGELADORES_VERTICAIS_INDUSTRIAIS;
-                                return ([$gama, $familia, $subFamilia]);
-                            case 'VITRINES ARREFECEDORAS':
-                            case 'VITRINES ARREFECEDORAS ENCASTRE':
-                                $subFamilia = self::ARREFECEDORES_VERTICAIS_INDUSTRIAIS;
-                                return ([$gama, $familia, $subFamilia]);
-                            case 'ELECTROCUTORES DE INSETOS':
-                                $familia = self::ELECTROCUTORES_INSECTOS;
-                                $subFamilia = '';
-                                return ([$gama, $familia, $subFamilia]);
-                            case 'FOGOES GAMA INDUSTRIAL':
-                            case 'TREMPES':
-                                $familia = self::FOGOES_INDUSTRIAIS;
-                                $subFamilia = '';
-                                return ([$gama, $familia, $subFamilia]);
-                            case 'VARINHAS GAMA HOTELEIRA':
-                                $familia = self::EQUIPAMENTOS_COZINHA_INDUSTRIAIS;
-                                $subFamilia = self::VARINHAS_INDUSTRIAIS;
-                                return ([$gama, $familia, $subFamilia]);
-                            default:
-                                $subFamilia = '';
-                                return ([$gama, $familia, $subFamilia]);
                         }
                     default:
                         $familia = '';

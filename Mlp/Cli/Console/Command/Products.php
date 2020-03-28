@@ -58,10 +58,13 @@ class Products extends Command
     const ADD_AUFERMA_PRODUCTS = 'add-auferma-products';
 
     const UPDATE_SOREFOZ_PRICES = 'update-sorefoz-prices';
+
+    const ADD_ORIMA_PRODUCTS = "add-orima-products";
     /**
      * Anonymous name
      */
     const ANONYMOUS_NAME = 'Anonymous';
+
     /**
      * {@inheritdoc}
      */
@@ -176,6 +179,12 @@ class Products extends Command
                     'add Auferma products'
                 ),
                 new InputOption(
+                    self::ADD_ORIMA_PRODUCTS,
+                    '-o',
+                    InputOption::VALUE_NONE,
+                    'add ORIMA products'
+                ),
+                new InputOption(
                     self::UPDATE_SOREFOZ_PRICES,
                     '-u',
                     InputOption::VALUE_NONE,
@@ -210,7 +219,12 @@ class Products extends Command
         if ($input->getOption(self::UPDATE_SOREFOZ_PRICES)){
             $this->updateSorefozPrices();
             $output->writeln('<info>ACABOU DE ATUALIZAR OS PREÇOS SOREFOZ!<info>');
-        }else {
+        }
+        if ($input->getOption(self::ADD_ORIMA_PRODUCTS)){
+            $this->addOrimaProdCSV();
+            $output->writeln('<info>ACABOU DE ADICIONAR OS PRODUTOS ORIMA!<info>');
+        }
+        else {
             throw new \InvalidArgumentException('Option ' . self::ADD_SOREFOZ_PRODUCTS .
                 'OR' . self::ADD_TELEFAC_PRODUCTS . ' is missing.');
         }
@@ -600,8 +614,11 @@ class Products extends Command
         if (($handle = fopen($this->directory->getRoot()."/app/code/Mlp/Cli/Console/Command/Orima.csv", "r")) !== FALSE) {
             print_r("abri ficheiro\n");
             while (!feof($handle)) {
-                if (($data = fgetcsv($handle, 4000, ",", '"')) !== FALSE) {
-                    $row++;
+                $row++;
+                if (($data = fgetcsv($handle, 4000, ";", '"')) !== FALSE) {
+                    if ($row == 1 ) {
+                        continue;
+                    }
                     $sku = trim($data[8]);
                     if (strlen($sku) == 13) {
                         try {
@@ -630,13 +647,15 @@ class Products extends Command
                                 $meta_description, $manufacter, $length, $width, $height, $weight, $price,
                                 $this->productRepository, $this->productFactory, $this->categoryManager,
                                 $this->dataAttributeOptions, $this->attributeManager, $this->stockRegistry,
-                                $this->config, $this->optionFactory, $this->productRepositoryInterface);
+                                $this->config, $this->optionFactory, $this->productRepositoryInterface, $this->directory);
 
-
-                            $this->getImagesOrima($sku, $imagem, $etiquetaEner);
-                            $productInterno->add_product($categories, $logger, $sku);
+                            $productInterno->setOrimaCategories();
+                            $this->getImages($sku, $imagem, $etiquetaEner);
+                            $product = $productInterno->add_product($categories, $logger, $sku);
+                            print_r($row." - ");
                         }
-                        $this->updateStock($sku, $data[6]);
+                        $stock = $this->setOrimaStock($data[3]);
+                        $this->updateStock($product, $stock);
 
                     }
                 }
@@ -693,8 +712,9 @@ class Products extends Command
                 $fp = fopen($this->directory->getRoot()."/pub/media/catalog/product/" . $sku. '_e.jpeg', 'wb');
                 curl_setopt($ch, CURLOPT_FILE, $fp);
                 curl_setopt($ch, CURLOPT_HEADER, 0);
-                curl_setopt($ch,CURLOPT_TIMEOUT,1);
+                curl_setopt($ch,CURLOPT_TIMEOUT,2);
                 curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,1);
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
                 if (curl_exec($ch)){
                     curl_close($ch);
                     fclose($fp);
@@ -713,7 +733,8 @@ class Products extends Command
                 curl_setopt($ch, CURLOPT_FILE, $fp);
                 curl_setopt($ch, CURLOPT_HEADER, 0);
                 curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,1);
-                curl_setopt($ch,CURLOPT_TIMEOUT,1);
+                curl_setopt($ch,CURLOPT_TIMEOUT,2);
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
                 if (curl_exec($ch)){
                     curl_close($ch);
                     fclose($fp);
@@ -733,6 +754,15 @@ class Products extends Command
     {
         $attribute = $this->entityAttribute->loadByCode('catalog_product', $attCode);
         return $attribute->getData();
+    }
+
+    private function setOrimaStock($stock)
+    {
+        if($stock == '0'){
+            return "não";
+        }else{
+            return "sim";
+        }
     }
 
 }
