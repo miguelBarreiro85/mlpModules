@@ -112,11 +112,22 @@ class Products extends Command
 
     private $directory;
 
+    private $sourceItemSaveI;
+
+    private $sourceItemRepositoryI;
+
+    private $searchCriteriaI;
+
+    private $sourceItemI;
+
+    private $filterBuilder;
+
+    private $filterGroup;
+
     public function __construct(EavSetupFactory $eavSetupFactory,
                                 AttributeSetFactory $attributeSetFactory,
                                 Attribute $entityAttribute,
                                 ProductRepository $productRepository,
-                                SearchCriteriaBuilder $searchCriteriaBuilder,
                                 ProductFactory $productFactory,
                                 Config $config,
                                 Filesystem $filesystem,
@@ -130,7 +141,13 @@ class Products extends Command
                                 \Magento\CatalogInventory\Api\StockRegistryInterface $stockRegistry,
                                 \Magento\Catalog\Model\Product\OptionFactory $optionFactory,
                                 \Magento\Catalog\Api\ProductRepositoryInterface $productRepositoryInterface,
-                                \Magento\Framework\Filesystem\DirectoryList $directory)
+                                \Magento\Framework\Filesystem\DirectoryList $directory,
+                                \Magento\InventoryApi\Api\SourceItemsSaveInterface $sourceItemSaveI,
+                                \Magento\InventoryApi\Api\SourceItemRepositoryInterface $sourceItemRepositoryI,
+                                \Magento\InventoryApi\Api\Data\SourceItemInterface $sourceItemI,
+                                SearchCriteriaBuilder $searchCriteriaBuilder,
+                                \Magento\Framework\Api\FilterBuilder  $filterBuilder,
+                                \Magento\Framework\Api\Search\FilterGroup $filterGroup)
     {
         $this->directory = $directory;
         $this->productRepositoryInterface = $productRepositoryInterface;
@@ -150,7 +167,11 @@ class Products extends Command
         $this->stockRegistry = $stockRegistry;
         $this->stockStateInterface = $stockStateInterface;
         $this->optionFactory = $optionFactory;
-        //$this->productManager= $productManager;
+        $this->sourceItemSaveInterface = $sourceItemSaveI;
+        $this->sourceItemRepositoryI = $sourceItemRepositoryI;
+        $this->sourceItemI = $sourceItemI;
+        $this->filterBuilder = $filterBuilder;
+        $this->filterGroup = $filterGroup;
 
         parent::__construct();
     }
@@ -655,7 +676,8 @@ class Products extends Command
                             print_r($row." - ");
                         }
                         $stock = $this->setOrimaStock($data[3]);
-                        $this->updateStock($product, $stock);
+                        //$this->updateStock($product, $stock);
+                        $this->setStock($sku);
 
                     }
                 }
@@ -763,6 +785,19 @@ class Products extends Command
         }else{
             return "sim";
         }
+    }
+
+    private function setStock($sku){
+        $filter = $this->filterBuilder
+            ->setField('sku')
+            ->setValue($sku)
+            ->setConditionType('like')->create();
+        $filterGroup = $this->filterGroup->setFilters([$filter]);
+        $searchCriteria = $this->searchCriteriaBuilder->setFilterGroups([$filterGroup])->create();
+        $items = $this->sourceItemRepositoryI->getList($searchCriteria)->getItems();
+        var_dump($items);
+        exit;
+        //$this->sourceItemSaveInterface->execute();
     }
 
 }
