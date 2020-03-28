@@ -9,13 +9,16 @@
 namespace Mlp\Cli\Helper;
 
 
+use Exception;
+use Magento\Newsletter\Model\SubscriberFactory;
+
 class Category
 {
-    const ENCASTRE = 'ENCASTRE' ;
+    const ENCASTRE = 'ENCASTRE';
     const FRIGORIFICOS_COMBINADOS = 'FRIGORIFICOS/COMBINADOS';
     const MAQUINAS_LAVAR_ROUPA = 'MAQUINAS LAVAR ROUPA';
-    const MAQUINAS_SECAR_ROUPA = 'MAQUINAS SECAR ROUPA' ;
-    const PEQUENOS_DOMESTICOS = 'PEQUENOS DOMESTICOS' ;
+    const MAQUINAS_SECAR_ROUPA = 'MAQUINAS SECAR ROUPA';
+    const PEQUENOS_DOMESTICOS = 'PEQUENOS DOMESTICOS';
     const CUIDADO_DE_ROUPA = 'CUIDADO DE ROUPA';
     const APARELHOS_DE_COZINHA = 'APARELHOS DE COZINHA';
     const ESPREMEDORES = 'ESPREMEDORES';
@@ -102,7 +105,7 @@ class Category
     const BATEDEIRAS = 'BATEDEIRAS';
     const CACAROLAS = 'CAÇAROLAS';
     const CAIXA_HERMETICA = 'CAIXA HERMETICA';
-    const CENTRIFUGADORAS ='CENTRIFUGADORAS' ;
+    const CENTRIFUGADORAS = 'CENTRIFUGADORAS';
     const MAQUINAS_DE_COZINHA = 'MAQUINAS DE COZINHA';
     const ABRE_LATAS_FACAS = 'ABRE-LATAS E FACAS';
     const FIAMBREIRAS = 'FIAMBREIRAS';
@@ -137,7 +140,16 @@ class Category
     const BARRAS_SOM = 'BARRAS DE SOM';
     const APARELHAGENS_MICROS = 'APARELHAGENS MICROS';
     const DVD_BLURAY_TDT = 'DVD /BLURAY /TDT';
-
+    const RADIADORES_A_OLEO = 'RADIADORES A OLEO';
+    const CONVECTORES_TERMOVENT = 'CONVECTORES/TERMOVENT.';
+    const ELECTRICO = 'ELÉCTRICO';
+    const EMISSORES_TERMICOS = 'EMISSORES TÉRMICOS';
+    const VENTILACAO = 'VENTILAÇÃO';
+    const VENTOINHAS = 'VENTOINHAS';
+    const TOALHEIROS = 'TOALHEIROS';
+    const RECUPERADORES = 'RECUPERADORES';
+    const SALAMANDRAS = 'SALAMANDRAS';
+    const FOGOES_LENHA = 'FOGÕES A LENHA';
 
 
     private $storeManager;
@@ -153,78 +165,81 @@ class Category
                                 \Magento\Framework\App\State $state,
                                 \Magento\Catalog\Model\CategoryFactory $categoryFactory,
                                 \Magento\Catalog\Api\CategoryRepositoryInterface $categoryRepositoryInterface,
-                                \Magento\Catalog\Api\CategoryLinkManagementInterface $categoryLinkManagement )
+                                \Magento\Catalog\Api\CategoryLinkManagementInterface $categoryLinkManagement)
     {
-        $this->storeManager = $storeManager;
-        $this->state = $state;
-        $this->categoryFactory = $categoryFactory;
-        $this->categoryRepositoryInterface = $categoryRepositoryInterface;
-        $this->categoryLinkManagement = $categoryLinkManagement;
+        $this -> storeManager = $storeManager;
+        $this -> state = $state;
+        $this -> categoryFactory = $categoryFactory;
+        $this -> categoryRepositoryInterface = $categoryRepositoryInterface;
+        $this -> categoryLinkManagement = $categoryLinkManagement;
     }
 
-    public function createCategory($gama,$familia,$subfamlia = null,$categorias)
+    public function createCategory($gama, $familia, $subfamlia = null, $categorias)
     {
-        try{
+        try {
             $gamaId = $categorias[$gama];
-        }catch (\Exception $ex){
-            $newGama = $this->categoryFactory->create();
-            $newGama->setName($gama);
-            $newGama->setParentId(2);
-            $newGama->setIsActive(true);
-            $newGama->setIsAnchor(false);
-            $gamaId = $this->categoryRepositoryInterface->save($newGama)->getId();
+        } catch (\Exception $ex) {
+            $newGama = $this -> categoryFactory -> create();
+            $newGama -> setName($gama);
+            $newGama -> setParentId(2);
+            $newGama -> setIsActive(true);
+            $newGama -> setIsAnchor(false);
+            $gamaId = $this -> categoryRepositoryInterface -> save($newGama) -> getId();
         }
-        try{
+        try {
             $familiaId = $categorias[$familia];
-        }catch (\Exception $ex){
-            $newFamilia = $this->categoryFactory->create();
-            $newFamilia->setName($familia);
-            $newFamilia->setParentId($gamaId);
-            $newFamilia->setIsActive(true);
-            $newFamilia->setIsAnchor(false);
-            $familiaId = $this->categoryRepositoryInterface->save($newFamilia)->getId();
+        } catch (\Exception $ex) {
+            $newFamilia = $this -> categoryFactory -> create();
+            $newFamilia -> setName($familia);
+            $newFamilia -> setParentId($gamaId);
+            $newFamilia -> setIsActive(true);
+            $newFamilia -> setIsAnchor(false);
+            $familiaId = $this -> categoryRepositoryInterface -> save($newFamilia) -> getId();
         }
         //Se deu erro é porque este tem de ser adicionado
-        if ($subfamlia != null){
-            try{
-                $newSubFamilia = $this->categoryFactory->create();
-                $newSubFamilia->setName($subfamlia);
-                $newSubFamilia->setParentId($familiaId);
-                $newSubFamilia->setIsActive(true);
-                $newSubFamilia->setIsAnchor(true);
-                $subfamliaId = $this->categoryRepositoryInterface->save($newSubFamilia)->getId();
-            } catch (\Exception $ex){
-                print_r($ex->getMessage());
+        if ($subfamlia != null) {
+            try {
+                $newSubFamilia = $this -> categoryFactory -> create();
+                $newSubFamilia -> setName($subfamlia);
+                $newSubFamilia -> setParentId($familiaId);
+                $newSubFamilia -> setIsActive(true);
+                $newSubFamilia -> setIsAnchor(true);
+                $subfamliaId = $this -> categoryRepositoryInterface -> save($newSubFamilia) -> getId();
+            } catch (\Exception $ex) {
+                print_r($ex -> getMessage());
             }
         }
     }
 
-    public function getCategoriesArray(){
+    public function getCategoriesArray()
+    {
         $categories = [];
-        $categoriesCollection = $this->categoryFactory->create()->getCollection();
-        $categoriesCollection->addFieldToSelect('*');
-        foreach ($categoriesCollection as $cat){
-            $categories[$cat->getName()] = $cat->getId();
+        $categoriesCollection = $this -> categoryFactory -> create() -> getCollection();
+        $categoriesCollection -> addFieldToSelect('*');
+        foreach ($categoriesCollection as $cat) {
+            $categories[$cat -> getName()] = $cat -> getId();
         }
         return $categories;
     }
 
 
-    public function setTelefacCategories($subFamilia,$sku,$logger){
+    public function setTelefacCategories($subFamilia, $sku, $logger)
+    {
         $categoryId = [];
-        $subFamilia = $this->categoryFactory->create()->getCollection()->addAttributeToFilter('name',$subFamilia)->setPageSize(1);
-        if ($subFamilia->getSize()) {
-            array_push($categoryId,$subFamilia->getFirstItem()->getId());
+        $subFamilia = $this -> categoryFactory -> create() -> getCollection() -> addAttributeToFilter('name', $subFamilia) -> setPageSize(1);
+        if ($subFamilia -> getSize()) {
+            array_push($categoryId, $subFamilia -> getFirstItem() -> getId());
         }
-        try{
-            $this->categoryLinkManagement->assignProductToCategories($sku,$categoryId);
-        }catch (\Exception $exception){
-            $logger->info("Category Exception: ".$sku);
+        try {
+            $this -> categoryLinkManagement -> assignProductToCategories($sku, $categoryId);
+        } catch (\Exception $exception) {
+            $logger -> info("Category Exception: " . $sku);
         }
     }
 
-    public function setGamaSorefoz($gama){
-        switch ($gama){
+    public function setGamaSorefoz($gama)
+    {
+        switch ($gama) {
             case 'TELEFONES E TELEMÓVEIS':
                 return 'COMUNICAÇÕES';
                 break;
@@ -260,65 +275,68 @@ class Category
         }
     }
 
-    public function setSubFamiliaSorefoz($subFamilia){
-            switch ($subFamilia){
-                case 'INDEPENDENTES - ELÉCTRICOS':
-                    return 'FORNOS';
-                case 'PIROLITICOS':
-                    return 'FORNOS';
-                case 'INDEPENDENTES C/GÁS':
-                    return 'FORNOS';
-                case 'POLIVALENTES':
-                    return 'FORNOS';
+    public function setSubFamiliaSorefoz($subFamilia)
+    {
+        switch ($subFamilia) {
+            case 'INDEPENDENTES - ELÉCTRICOS':
+                return 'FORNOS';
+            case 'PIROLITICOS':
+                return 'FORNOS';
+            case 'INDEPENDENTES C/GÁS':
+                return 'FORNOS';
+            case 'POLIVALENTES':
+                return 'FORNOS';
 
-                case 'CONVENCIONAIS C/GÁS':
-                    return 'PLACAS';
-                case 'DE INDUÇÃO':
-                    return 'PLACAS';
-                case 'VITROCERÂMICAS C/GÁS':
-                    return 'PLACAS';
-                case 'DOMINÓS C/GÁS':
-                    return 'PLACAS';
-                case 'VITROCERÂMICAS - ELÉCTRICAS':
-                    return 'PLACAS';
-                case 'DOMINÓS - ELÉCTRICOS':
-                    return 'PLACAS';
-                case 'CONVENCIONAIS - ELÉCTRICAS':
-                    return 'PLACAS';
+            case 'CONVENCIONAIS C/GÁS':
+                return 'PLACAS';
+            case 'DE INDUÇÃO':
+                return 'PLACAS';
+            case 'VITROCERÂMICAS C/GÁS':
+                return 'PLACAS';
+            case 'DOMINÓS C/GÁS':
+                return 'PLACAS';
+            case 'VITROCERÂMICAS - ELÉCTRICAS':
+                return 'PLACAS';
+            case 'DOMINÓS - ELÉCTRICOS':
+                return 'PLACAS';
+            case 'CONVENCIONAIS - ELÉCTRICAS':
+                return 'PLACAS';
 
-                case 'EXAUST.DE CHAMINÉ':
-                    return 'EXAUSTORES';
-                case 'EXAUST.TELESCÓPICOS':
-                    return 'EXAUSTORES';
-                case 'EXAUST.CONVENCIONAIS':
-                    return 'EXAUSTORES';
-                case 'EXTRACTORES':
-                    return 'EXAUSTORES';
+            case 'EXAUST.DE CHAMINÉ':
+                return 'EXAUSTORES';
+            case 'EXAUST.TELESCÓPICOS':
+                return 'EXAUSTORES';
+            case 'EXAUST.CONVENCIONAIS':
+                return 'EXAUSTORES';
+            case 'EXTRACTORES':
+                return 'EXAUSTORES';
 
-                case 'MAQ.LAVAR LOUÇA 60 Cm':
-                    return 'MÁQUINAS DE LOIÇA';
-                case 'MAQ.LAVAR LOUÇA 45 Cm':
-                    return 'MÁQUINAS DE LOIÇA';
+            case 'MAQ.LAVAR LOUÇA 60 Cm':
+                return 'MÁQUINAS DE LOIÇA';
+            case 'MAQ.LAVAR LOUÇA 45 Cm':
+                return 'MÁQUINAS DE LOIÇA';
 
-                case 'TV LED 46"':
-                    return 'TV LED+46"';
-                case 'TV LED 27"':
-                    return 'TV LED 28"';
-                case 'TV LED 42"':
-                    return 'TV LED+42"';
-                case 'MICROONDAS':
-                    return 'MICROONDAS ENCASTRE';
-                case 'DE SECRETÁRIA':
-                    return 'DESKTOPS';
+            case 'TV LED 46"':
+                return 'TV LED+46"';
+            case 'TV LED 27"':
+                return 'TV LED 28"';
+            case 'TV LED 42"':
+                return 'TV LED+42"';
+            case 'MICROONDAS':
+                return 'MICROONDAS ENCASTRE';
+            case 'DE SECRETÁRIA':
+                return 'DESKTOPS';
 
-                case 'AR COND.INVERTER':
-                case 'AR COND.MULTI-SPLIT':
-                    return 'FIXO';
-                default:
-                    return $subFamilia;
-            }
+            case 'AR COND.INVERTER':
+            case 'AR COND.MULTI-SPLIT':
+                return 'FIXO';
+            default:
+                return $subFamilia;
         }
-    public function setCategories($gama, $familia, $subfamilia, $name){
+    }
+
+    public function setCategories($gama, $familia, $subfamilia, $name)
+    {
         $categories = [];
         //Especifico para alguns artigos que tem categorias totalmente diferentes
         //Informatica Acessorios Acessorios de som
@@ -340,22 +358,23 @@ class Category
             $categories['subfamilia'] = 'CLIMATIZADORES';
             return $categories;
         }
-        $categories['gama'] = $this->setGamaSorefoz($gama);
-        $categories['familia'] = $this->setFamiliaSorefoz($familia);
-        $categories['subfamilia'] = $this->setSubFamiliaSorefoz($subfamilia);
+        $categories['gama'] = $this -> setGamaSorefoz($gama);
+        $categories['familia'] = $this -> setFamiliaSorefoz($familia);
+        $categories['subfamilia'] = $this -> setSubFamiliaSorefoz($subfamilia);
         return $categories;
     }
 
-    public function setCategoriesOrima($gama, $familia, $subFamilia){
-        switch ($gama){
+    public function setCategoriesOrima($gama, $familia, $subFamilia)
+    {
+        switch ($gama) {
             case 'QUEIMA':
                 $gama = self::GRANDES_DOMESTICOS;
-                switch ($familia){
+                switch ($familia) {
                     case 'FOGAREIROS':
                         $gama = self::PEQUENOS_DOMESTICOS;
                         $familia = self::APARELHOS_DE_COZINHA;
                         $subFamilia = self::FOGAREIROS;
-                        return ([$gama,$familia,$subFamilia]);
+                        return ([$gama, $familia, $subFamilia]);
                     case 'FOGOES':
                         $familia = self::FOGOES;
                         switch ($subFamilia) {
@@ -367,15 +386,17 @@ class Category
                             case 'FOGOES MONOBLOCO 60CM':
                             case 'FOGOES PORTA GARRAFA':
                                 $subFamilia = self::FOGÕES_C_GÁS;
-                                return ([$gama,$familia,$subFamilia]);
+                                return ([$gama, $familia, $subFamilia]);
                             case 'FOGOES VITROCERAMICOS':
                                 $subFamilia = self::FOGOES_ELECTRICOS;
-                                return ([$gama,$familia,$subFamilia]);
-
-
-
+                                return ([$gama, $familia, $subFamilia]);
+                            default:
+                                print_r("SubFamilia not found".$subFamilia."\n");
+                                return([$gama,$familia,'']);
                         }
-
+                    default:
+                        print_r("familia not found".$familia."\n");
+                        return([$gama,'','']);
                 }
 
             case 'MAQUINAS LAVAR ROUPA':
@@ -386,29 +407,29 @@ class Category
                         switch ($subFamilia) {
                             case 'MAQUINAS LAVAR ROUPA CARGA SUPERIOR':
                                 $subFamilia = self::MAQUINAS_LAVAR_ROUPA_CARGA_SUPERIOR;
-                                return ([$gama,$familia,$subFamilia]);
+                                return ([$gama, $familia, $subFamilia]);
                             default:
                                 $subFamilia = self::MAQUINAS_LAVAR_ROUPA_CARGA_FRONTAL;
-                                return ([$gama,$familia,$subFamilia]);
+                                return ([$gama, $familia, $subFamilia]);
                         }
                     case 'MAQUINAS LAVAR SECAR ROUPA':
-                        switch ($subFamilia) {
-                            case 'MAQUINAS LAVAR SECAR':
-                                $subFamilia = self::MAQUINAS_LAVAR_SECAR_ROUPA;
-                                return ([$gama,$familia,$subFamilia]);
-                        }
+                        $subFamilia = self::MAQUINAS_LAVAR_SECAR_ROUPA;
+                        return ([$gama, $familia, $subFamilia]);
                     case 'SECADORES ROUPA BOMBA CALOR':
                         $familia = self::MAQUINAS_SECAR_ROUPA;
                         $subFamilia = self::MAQUINAS_SECAR_ROUPA_BC;
-                        return ([$gama,$familia,$subFamilia]);
+                        return ([$gama, $familia, $subFamilia]);
                     case 'SECADORES ROUPA CONDENSAÇAO':
                         $familia = self::MAQUINAS_SECAR_ROUPA;
                         $subFamilia = self::MAQUINAS_SECAR_ROUPA_COND;
-                        return ([$gama,$familia,$subFamilia]);
+                        return ([$gama, $familia, $subFamilia]);
                     case 'SECADORES ROUPA VENTILAÇAO':
                         $familia = self::MAQUINAS_SECAR_ROUPA;
                         $subFamilia = self::MAQUINAS_SECAR_ROUPA_VENT;
-                        return ([$gama,$familia,$subFamilia]);
+                        return ([$gama, $familia, $subFamilia]);
+                    default:
+                        print_r("MAQ ROUPA category not found\n");
+                        return(["$gama,'',''"]);
                 }
 
             case 'ENCASTRE':
@@ -418,43 +439,43 @@ class Category
                     case 'CHAMINES':
                     case 'EXAUSTORES':
                         $subFamilia = self::EXAUSTORES;
-                        return([$gama,self::ENCASTRE,$subFamilia]);
+                        return ([$gama, self::ENCASTRE, $subFamilia]);
 
                     case 'COMBINADOS ENCASTRE':
                         $subFamilia = self::COMBINADOS_ENCASTRE;
-                        return([$gama,self::ENCASTRE,$subFamilia]);
+                        return ([$gama, self::ENCASTRE, $subFamilia]);
 
                     case 'CONGELADORES VERTICAIS ENCASTRE':
                         $subFamilia = self::CONGELADORES_ENCASTRE;
-                        return([$gama,self::ENCASTRE,$subFamilia]);
+                        return ([$gama, self::ENCASTRE, $subFamilia]);
 
                     case 'MAQUINAS DE CAFE ENCASTRE':
                         $subFamilia = self::MAQUINAS_CAFE_ENCASTRE;
-                        return([$gama,self::ENCASTRE,$subFamilia]);
+                        return ([$gama, self::ENCASTRE, $subFamilia]);
 
                     case 'FRIGORIFICOS 1 PORTA ENCASTRE':
                     case 'FRIGORIFICOS 2 PORTAS ENCASTRE':
                         $familia = self::ENCASTRE;
                         $subFamilia = self::FRIGORIFICOS_ENCASTRE;
-                        return ([$gama,$familia,$subFamilia]);
+                        return ([$gama, $familia, $subFamilia]);
                     case 'FORNOS':
                         $familia = self::ENCASTRE;
                         $subFamilia = self::FORNOS;
-                        return ([$gama,$familia,$subFamilia]);
+                        return ([$gama, $familia, $subFamilia]);
                     case 'MAQUINAS LAVAR LOUÇA ENCASTRE':
                         $subFamilia = self::MAQUINAS_DE_LOUCA_ENCASTRE;
-                        return([$gama,self::ENCASTRE,$subFamilia]);
+                        return ([$gama, self::ENCASTRE, $subFamilia]);
 
                     case 'MAQUINAS LAVAR ROUPA ENCASTRE':
                         $subFamilia = self::MAQ_LAVAR_ROUPA_ENCASTRE;
-                        return([$gama,self::ENCASTRE,$subFamilia]);
+                        return ([$gama, self::ENCASTRE, $subFamilia]);
 
                     case 'MAQUINAS LAVAR SECAR ENCASTRE':
                         $subFamilia = self::MAQ_LAVAR_SECAR_ROUPA_ENCASTRE;
-                        return([$gama,self::ENCASTRE,$subFamilia]);
+                        return ([$gama, self::ENCASTRE, $subFamilia]);
                     case 'MICRO ONDAS ENCASTRE':
                         $subFamilia = self::MICROONDAS_ENCASTRE;
-                        return([$gama,self::ENCASTRE,$subFamilia]);
+                        return ([$gama, self::ENCASTRE, $subFamilia]);
 
                     case 'PLACAS A GAS':
                     case 'PLACAS CRISTAL GAS':
@@ -463,96 +484,98 @@ class Category
                     case 'PLACAS MISTAS':
                     case 'PLACAS VITROCERAMICAS':
                         $subFamilia = self::PLACAS;
-                        return([$gama,self::ENCASTRE,$subFamilia]);
+                        return ([$gama, self::ENCASTRE, $subFamilia]);
                     case 'TAMPOS':
                         $subFamilia = self::ACESSORIOS_ENCASTRE;
-                        return([$gama,self::ENCASTRE,$subFamilia]);
-
+                        return ([$gama, self::ENCASTRE, $subFamilia]);
 
                     default:
                         print_r("Não encontrei nada Category.php line 454");
-                }
-
-
-                switch ($subFamilia) {
-                    case 'CHAMINES':
-                        $subFamilia = self::EXAUSTORES;
-
-
-
-
-
+                        return([$gama,'','']);
                 }
 
             case 'FRIO':
                 $gama = self::GRANDES_DOMESTICOS;
                 //$familia = self::FRIGORIFICOS_COMBINADOS;
-                switch ($familia){
+                switch ($familia) {
                     case 'COMBINADOS':
                         $result = preg_match("NF", $subFamilia);
-                        if($result == 1) {
+                        if ($result == 1) {
                             $subFamilia = self::COMBINADOS_NO_FROST;
-                        }elseif ($result == 0) {
+                        } elseif ($result == 0) {
                             $subFamilia = self::COMBINADOS_CONVENCIONAIS;
-                        }else {
+                        } else {
                             $subFamilia = '';
                         }
-                        return([$gama,self::FRIGORIFICOS_COMBINADOS,$subFamilia]);
+                        return ([$gama, self::FRIGORIFICOS_COMBINADOS, $subFamilia]);
                     case 'FRIGORIFICOS 1 PORTA':
                         $subFamilia = self::FRIGORIF_1_PORTA;
-                        return([$gama,self::FRIGORIFICOS_COMBINADOS,$subFamilia]);
+                        return ([$gama, self::FRIGORIFICOS_COMBINADOS, $subFamilia]);
 
                     case 'FRIGORIFICOS 2 PORTAS':
-                        $result = preg_match("NF",$subFamilia);
-                        if($result == 1) {
+                        $result = preg_match("NF", $subFamilia);
+                        if ($result == 1) {
                             $subFamilia = self::FRIGORIF_2P_NO_FROST;
-                        }elseif ($result == 0){
+                        } elseif ($result == 0) {
                             $subFamilia = self::FRIGORIF_2_PORTAS;
-                        }else{
+                        } else {
                             //ERRO
                             print_r("ERRO CATEGORY.PHP 514\n");
                             $subFamilia = '';
                         }
-                        return([$gama,self::FRIGORIFICOS_COMBINADOS,$subFamilia]);
+                        return ([$gama, self::FRIGORIFICOS_COMBINADOS, $subFamilia]);
 
                     case 'FRIGORIFICOS SIDE BY SIDE':
                         $subFamilia = self::FRIGORIF_AMERICANOS;
-                        return([$gama,self::FRIGORIFICOS_COMBINADOS,$subFamilia]);
+                        return ([$gama, self::FRIGORIFICOS_COMBINADOS, $subFamilia]);
                     case 'CONGELADORES HORIZONTAIS':
                         $familia = self::CONGELADORES;
                         $subFamilia = self::CONGELADORES_HORIZONTAIS;
-                        return([$gama,$familia,$subFamilia]);
+                        return ([$gama, $familia, $subFamilia]);
                     case 'CONGELADORES VERTICAIS':
                         $familia = self::CONGELADORES;
                         $subFamilia = self::CONGELADORES_VERTICAIS;
-                        return([$gama,$familia,$subFamilia]);
+                        return ([$gama, $familia, $subFamilia]);
+                    default:
+                        print_r("Family not found!");
+                        return ([$gama,'','']);
                 }
 
             case 'AGUAS QUENTES':
                 $gama = self::GRANDES_DOMESTICOS;
-                    switch ($familia) {
+                switch ($familia) {
+                    case 'TERMOACUMULADORES':
+                        $familia = self::TERMOACUMULADORES;
+                        switch ($subFamilia) {
+                            case 'TERMOACUMULADORES':
+                            case 'TERMOACUMULADORES HORIZONTAIS':
+                                $subFamilia = self::TERMOACUMULADORES_ELECTRICOS;
+                                return ([$gama, $familia, $subFamilia]);
+                            default:
+                                $subFamilia = '';
+                                return ([$gama, $familia, $subFamilia]);
+                        }
 
-                        case 'TERMOACUMULADORES':
-                            $familia = self::TERMOACUMULADORES;
-                            switch ($subFamilia) {
-                                case 'TERMOACUMULADORES':
-                                case 'TERMOACUMULADORES HORIZONTAIS':
-                                    $subFamilia = self::TERMOACUMULADORES_ELECTRICOS;
-                            }
-
-                        case 'ESQUENTADORES':
-                            $familia = self::ESQUENTADORES_CALDEIRAS;
-                            switch ($subFamilia) {
-                                case 'ESQUENTADORES ELETRICOS':
-                                    $subFamilia = self::ESQUENTADORES_ELECTRICOS;
-                                case  'ESQUENTADORES ESTANQUES':
-                                case 'ESQUENTADORES IGNIÇAO MANUAL':
-                                case 'ESQUENTADORES INTELIGENTES':
-                                case 'ESQUENTADORES VENTILADOS':
-                                    $subFamilia = self::ESQUENTADORES_C_GAS;
-
-                            }
-                    }
+                    case 'ESQUENTADORES':
+                        $familia = self::ESQUENTADORES_CALDEIRAS;
+                        switch ($subFamilia) {
+                            case 'ESQUENTADORES ELETRICOS':
+                                $subFamilia = self::ESQUENTADORES_ELECTRICOS;
+                                return ([$gama, $familia, $subFamilia]);
+                            case  'ESQUENTADORES ESTANQUES':
+                            case 'ESQUENTADORES IGNIÇAO MANUAL':
+                            case 'ESQUENTADORES INTELIGENTES':
+                            case 'ESQUENTADORES VENTILADOS':
+                                $subFamilia = self::ESQUENTADORES_C_GAS;
+                                return ([$gama, $familia, $subFamilia]);
+                            default:
+                                print_r("Esquentador not found category.php 556");
+                                $subFamilia = '';
+                                return ([$gama, $familia, $subFamilia]);
+                        }
+                    default:
+                        throw new \Exception('Unexpected value');
+                }
 
             case 'MAQUINAS LOUÇA':
                 $gama = self::GRANDES_DOMESTICOS;
@@ -560,12 +583,17 @@ class Category
                 switch ($subFamilia) {
                     case 'MAQUINAS LAVAR LOUÇA 45CM':
                         $subFamilia = self::MLL_DE_45;
+                        return ([$gama, $familia, $subFamilia]);
                     case 'MAQUINAS LAVAR LOUÇA BRANCAS':
-                    case 'MAQUINAS LAVAR LOUÇA COMPACTAS':
                     case 'MAQUINAS LAVAR LOUÇA OUTRAS CORES':
                         $subFamilia = self::MLL_DE_60;
+                        return ([$gama, $familia, $subFamilia]);
                     case 'MAQUINAS LAVAR LOUÇA COMPACTAS':
                         $subFamilia = self::MLL_COMPACTAS;
+                        return ([$gama, $familia, $subFamilia]);
+                    default:
+                        $subFamilia = '';
+                        return ([$gama, $familia, $subFamilia]);
                 }
 
 
@@ -578,31 +606,43 @@ class Category
                             case 'APARADORES DE BARBA E BIGODE':
                             case 'APARADORES DE CABELO':
                                 $subFamilia = self::APARADORES;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'DEPILADORAS':
                                 $subFamilia = self::DEPILADORAS;
+                                return ([$gama, $familia, $subFamilia]);
+                            default:
+                                $subFamilia = '';
+                                return ([$gama, $familia, $subFamilia]);
                         }
                     case 'CASA':
                         $familia = self::APARELHOS_DE_LIMPEZA;
                         switch ($subFamilia) {
+                            case 'ASPIRADORES MISTOS':
                             case 'ASPIRADORES COM SACO':
                                 $subFamilia = self::ASPIRADOR_COM_SACO;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'ASPIRADORES MINI':
                                 $subFamilia = self::MINI_ASPIRADORES;
-                            case 'ASPIRADORES MISTOS':
-                                $subFamilia = '';
+                                return ([$gama, $familia, $subFamilia]);
                             case 'ASPIRADORES ROBOT':
                                 $subFamilia = self::ASPIRADORES_ROBOT;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'ASPIRADORES SEM SACO':
                                 $subFamilia = self::ASPIRADOR_SEM_SACO;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'ASPIRADORES VERTICAIS':
                                 $subFamilia = self::ASPIRADOR_VERTICAL;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'COFRES':
                                 $familia = self::COFRES;
                                 $subFamilia = '';
+                                return ([$gama, $familia, $subFamilia]);
                             case 'SACOS PARA ASPIRADOR':
                                 $subFamilia = self::SACOS_ASPIRADOR;
-
-
+                                return ([$gama, $familia, $subFamilia]);
+                            default:
+                                $subFamilia = '';
+                                return ([$gama, $familia, $subFamilia]);
                         }
 
                     case 'COZINHA':
@@ -667,7 +707,6 @@ class Category
                                 $subFamilia = self::VARINHAS_MAGICAS;
 
 
-
                         }
 
                     case 'CUIDADOS PESSOAIS':
@@ -684,17 +723,17 @@ class Category
                     case 'MICRO ONDAS':
                         $gama = self::GRANDES_DOMESTICOS;
                         $familia = self::MICROONDAS;
-                       switch ($subFamilia) {
-                           case 'MICRO ONDAS C/GRILL 21 A 29L':
-                           case 'MICRO ONDAS C/GRILL = > 30L':
-                           case 'MICRO ONDAS C/GRILL ATÉ 20L':
-                           case 'MICRO ONDAS C/GRILL ATÉ 20L':
-                               $subFamilia = self::MO_COM_GRILL;
-                           case 'MICRO ONDAS S/GRILL 21 A 29L':
-                           case 'MICRO ONDAS S/GRILL ATÉ 20L':
-                               $subFamilia = self::MO_SEM_GRILL;
+                        switch ($subFamilia) {
+                            case 'MICRO ONDAS C/GRILL 21 A 29L':
+                            case 'MICRO ONDAS C/GRILL = > 30L':
+                            case 'MICRO ONDAS C/GRILL ATÉ 20L':
+                            case 'MICRO ONDAS C/GRILL ATÉ 20L':
+                                $subFamilia = self::MO_COM_GRILL;
+                            case 'MICRO ONDAS S/GRILL 21 A 29L':
+                            case 'MICRO ONDAS S/GRILL ATÉ 20L':
+                                $subFamilia = self::MO_SEM_GRILL;
 
-                       }
+                        }
 
                     case 'PEQUENO-ALMOÇO':
                         $familia = self::APARELHOS_DE_COZINHA;
@@ -705,7 +744,7 @@ class Category
                                 $subFamilia = self::JARROS_E_FERV_PURIF_ÁGUA;
                             case 'JARROS TERMICOS':
                                 $familia = self::ARTIGOS_DE_MENAGE;
-                                $subFamilia = self::PEQ_APARELHOS_COZINHA
+                                $subFamilia = self::PEQ_APARELHOS_COZINHA;
 
                             case 'MAQUINAS DE CAFE':
                                 $subFamilia = self::MAQUINAS_CAFE;
@@ -737,13 +776,11 @@ class Category
                         }
 
 
-
                 }
                 return 'PEQUENOS DOMÉSTICOS';
 
             case 'CLIMATIZAÇAO':
                 $gama = self::CLIMATIZACAO;
-
                 switch ($familia) {
                     case 'AR CONDICIONADO':
                         $familia = self::AR_CONDICIONADO;
@@ -752,223 +789,154 @@ class Category
                             case 'AR CONDICIONADO UNIDADES INTERIORES':
                             case 'AR CONDICIONADO INVERTER':
                                 $subFamilia = self::AC_FIXO;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'AR CONDICIONADO PORTATIL':
                                 $subFamilia = self::AC_PORTATIL;
-                        }
-
-                }
-                // GRANDE CONFUSAO NA ORIMA TEMOS DE IR PRIMEIRO A SUBFAMILIA
-                switch ($subFamilia) {
-                    case 'AQUECEDORES SILICAS':
-                    case 'AQUECEDORES WC PAREDE':
-                    case 'AQUECEDORES WC PAREDE':
-                    case 'COLUNAS DE AR':
-                    case 'CONVECTORES':
-                    case 'EMISSORES TERMICOS':
-                    case 'ESCALFETAS':
-                    case 'IRRADIADORES A OLEO':
-                    case 'IRRADIADORES DE MICA':
-                    case 'TERMOVENTILADORES':
-                    case 'TOALHEIRO':
-                        $familia = self::AQUECIMENTO;
-
-                    case 'FOGOES LENHA LINHA ESMALTADA/INOX':
-                    case 'FOGOES LENHA TRADICIONAIS':
-                    case 'IRRADIADORES DE MICA':
-                    case 'SALAMANDRA A LENHA FUNDIÇÃO':
-                    case 'SALAMANDRAS LENHA C/ VENTILAÇAO':
-                    case 'SALAMANDRAS LENHA REDONDAS':
-                    case 'SALAMANDRAS LENHA S/ VENTILAÇAO':
-                    case 'SALAMANDRAS PELLETS AR QUENTE':
-
-                    case 'VENTOINHAS MESA':
-                    case: 'VENTOINHAS MESA':
-
-
-
-                    case 'DESUMIDIFICADORES':
-                        $familia = self::TRATAMENTO_DE_AR;
-                        $subFamilia = self::DESUMIDIFICADORES;
-
-
-                }
-
-            case 'SOM & IMAGEM':
-                $gama = self::IMAGEM_E_SOM;
-                switch ($familia) {
-                    case 'LED´S':
-                        $familia = self::TELEVISAO;
-                        $subFamilia = '';
-                    case 'SOM & VIDEO':
-                        switch ($subFamilia) {
-                            case 'BARRA DE SOM':
-                                $familia = self::EQUIPAMENTOS_AUDIO;
-                                $subFamilia = self::BARRAS_SOM;
-                            case 'HI-FI':
-                                $familia = self::APARELHAGENS_MICROS;
-                            case 'LEITOR BLU RAY':
-                                $familia = self::DVD_BLURAY_TDT;
+                                return ([$gama, $familia, $subFamilia]);
+                            default:
                                 $subFamilia = '';
-                            case 'SUPORTES TV/LED/PLASMA':
-                                $familia = self::ACESSORIOS_IMAGEM_E_SOM;
-                                $subFamilia = self::MOVEIS_SUPORTES;
+                                return ([$gama, $familia, $subFamilia]);
+                        }
+                    case 'AMBIENTE - PORTATIL, PELLETS E LENHA':
+                        $familia = self::AQUECIMENTO;
+                        switch ($subFamilia) {
+                            case 'AQUECEDORES WC PAREDE':
+                                $subFamilia = self::AQUECEDORES_WC_PAREDE;
+                                return ([$gama, $familia, $subFamilia]);
+                            case 'ESCALFETAS':
+                            case 'BRASEIRAS':
+                            case 'AQUECEDORES SILICAS':
+                                $subFamilia = self::ELECTRICO;
+                                return ([$gama, $familia, $subFamilia]);
 
+                            case 'VENTOINHAS MESA':
+                            case 'VENTOINHAS PE':
+                            case 'COLUNAS DE AR':
+                                $familia = self::VENTILACAO;
+                                $subFamilia = self::VENTOINHAS;
+                                return ([$gama, $familia, $subFamilia]);
+
+                            case 'TERMOVENTILADORES':
+                            case 'CONVECTORES':
+                                $subFamilia = self::CONVECTORES_TERMOVENT;
+                                return ([$gama, $familia, $subFamilia]);
+                            case 'EMISSORES TERMICOS':
+                            case 'IRRADIADORES DE MICA':
+                                $subFamilia = self::EMISSORES_TERMICOS;
+                                return ([$gama, $familia, $subFamilia]);
+                            case 'IRRADIADORES A OLEO':
+                                $subFamilia = self::RADIADORES_A_OLEO;
+                                return ([$gama, $familia, $subFamilia]);
+                            case 'TOALHEIRO':
+                                $subFamilia = self::TOALHEIROS;
+                                return ([$gama, $familia, $subFamilia]);
+
+                            case 'DESUMIDIFICADORES':
+                                $familia = self::TRATAMENTO_DE_AR;
+                                $subFamilia = self::DESUMIDIFICADORES;
+                                return ([$gama, $familia, $subFamilia]);
+
+                            case 'FOGOES LENHA LINHA ESMALTADA/INOX':
+                            case 'FOGOES LENHA TRADICIONAIS':
+                                $subFamilia = self::FOGOES_LENHA;
+                                return ([$gama, $familia, $subFamilia]);
+                            case 'SALAMANDRA A LENHA FUNDIÇÃO':
+                            case 'SALAMANDRAS LENHA C/ VENTILAÇAO':
+                            case 'SALAMANDRAS LENHA REDONDAS':
+                            case 'SALAMANDRAS LENHA S/ VENTILAÇAO':
+                            case 'SALAMANDRAS PELLETS AR QUENTE':
+                                $subFamilia = self::SALAMANDRAS;
+                                return ([$gama, $familia, $subFamilia]);
+                            case 'RECUPERADORES AR QUENTE':
+                                $subFamilia = self::RECUPERADORES;
+                                return ([$gama, $familia, $subFamilia]);
+                            default:
+                                $subFamilia = '';
+                                return ([$gama, $familia, $subFamilia]);
 
                         }
+
+                    case 'SOM & IMAGEM':
+                        $gama = self::IMAGEM_E_SOM;
+                        switch ($familia) {
+                            case 'LED´S':
+                                $familia = self::TELEVISAO;
+                                $subFamilia = '';
+                                return ([$gama, $familia, $subFamilia]);
+                            case 'SOM & VIDEO':
+                                switch ($subFamilia) {
+                                    case 'BARRA DE SOM':
+                                        $familia = self::EQUIPAMENTOS_AUDIO;
+                                        $subFamilia = self::BARRAS_SOM;
+                                        return ([$gama, $familia, $subFamilia]);
+                                    case 'HI-FI':
+                                        $familia = self::EQUIPAMENTOS_AUDIO;
+                                        $subFamilia = self::APARELHAGENS_MICROS;
+                                        return ([$gama, $familia, $subFamilia]);
+                                    case 'LEITOR BLU RAY':
+                                        $familia = self::DVD_BLURAY_TDT;
+                                        $subFamilia = '';
+                                        return ([$gama, $familia, $subFamilia]);
+                                    case 'SUPORTES TV/LED/PLASMA':
+                                        $familia = self::ACESSORIOS_IMAGEM_E_SOM;
+                                        $subFamilia = self::MOVEIS_SUPORTES;
+                                        return ([$gama, $familia, $subFamilia]);
+                                    default:
+                                        $familia = '';
+                                        $subFamilia = '';
+                                        return ([$gama, $familia, $subFamilia]);
+                                }
+                            default:
+                                $familia = '';
+                                $subFamilia = '';
+                                return ([$gama, $familia, $subFamilia]);
+                        }
+
+                    case 'INDUSTRIAL':
+                        $gama = self::INDUSTRIAL;
+                        $familia = self::FRIO_INDUSTRIAL;
+                        switch ($subFamilia) {
+                            case 'ARREFECEDORES HORIZONTAIS':
+                                $subFamilia = self::ARREFECEDORES_HORIZONTAIS_INDUSTRIAIS;
+                                return ([$gama, $familia, $subFamilia]);
+                            case 'CONGELADORES HORIZONTAIS INDUSTRIAIS':
+                                $subFamilia = self::CONGELADORES_HORIZONTAIS_INDUSTRIAIS;
+                                return ([$gama, $familia, $subFamilia]);
+                            case 'CONGELADORES ILHA':
+                                $subFamilia = self::CONGELADORES_ILHA_INDUSTRIAIS;
+                                return ([$gama, $familia, $subFamilia]);
+                            case 'VITRINES CONGELADORAS':
+                                $subFamilia = self::CONGELADORES_VERTICAIS_INDUSTRIAIS;
+                                return ([$gama, $familia, $subFamilia]);
+                            case 'VITRINES ARREFECEDORAS':
+                            case 'VITRINES ARREFECEDORAS ENCASTRE':
+                                $subFamilia = self::ARREFECEDORES_VERTICAIS_INDUSTRIAIS;
+                                return ([$gama, $familia, $subFamilia]);
+                            case 'ELECTROCUTORES DE INSETOS':
+                                $familia = self::ELECTROCUTORES_INSECTOS;
+                                $subFamilia = '';
+                                return ([$gama, $familia, $subFamilia]);
+                            case 'FOGOES GAMA INDUSTRIAL':
+                            case 'TREMPES':
+                                $familia = self::FOGOES_INDUSTRIAIS;
+                                $subFamilia = '';
+                                return ([$gama, $familia, $subFamilia]);
+                            case 'VARINHAS GAMA HOTELEIRA':
+                                $familia = self::EQUIPAMENTOS_COZINHA_INDUSTRIAIS;
+                                $subFamilia = self::VARINHAS_INDUSTRIAIS;
+                                return ([$gama, $familia, $subFamilia]);
+                            default:
+                                $subFamilia = '';
+                                return ([$gama, $familia, $subFamilia]);
+                        }
+                    default:
+                        $familia = '';
+                        $subFamilia = '';
+                        return ([$gama,$familia,$subFamilia]);
                 }
 
-            case 'INDUSTRIAL':
-                $gama = self::INDUSTRIAL;
-                $familia = self::FRIO_INDUSTRIAL;
-                switch ($subFamilia) {
-                    case 'ARREFECEDORES HORIZONTAIS':
-                        $subFamilia = self::ARREFECEDORES_HORIZONTAIS_INDUSTRIAIS;
-                    case 'CONGELADORES HORIZONTAIS INDUSTRIAIS':
-                        $subFamilia = self::CONGELADORES_HORIZONTAIS_INDUSTRIAIS;
-                    case 'CONGELADORES ILHA':
-                        $subFamilia = self::CONGELADORES_ILHA_INDUSTRIAIS;
-                    case 'VITRINES CONGELADORAS':
-                        $subFamilia = self::CONGELADORES_VERTICAIS_INDUSTRIAIS;
-                    case 'VITRINES ARREFECEDORAS':
-                    case 'VITRINES ARREFECEDORAS ENCASTRE':
-                        $subFamilia = self::ARREFECEDORES_VERTICAIS_INDUSTRIAIS;
-                    case 'ELECTROCUTORES DE INSETOS':
-                        $familia = self::ELECTROCUTORES_INSECTOS;
-                        $subFamilia = '';
-                    case 'FOGOES GAMA INDUSTRIAL':
-                    case 'TREMPES':
-                        $familia = self::FOGOES_INDUSTRIAIS;
-                        $subFamilia = '';
-                    case 'VARINHAS GAMA HOTELEIRA':
-                        $familia = self::EQUIPAMENTOS_COZINHA_INDUSTRIAIS;
-                        $subFamilia = self::VARINHAS_INDUSTRIAIS;
-
-
-
-                }
-
-
+            default:
+                print_r("Category Not Found\n");
         }
-
-        /*
-        switch ($subFamilia){
-            case 'FOGOES MONOBLOCO 60CM':
-            case 'FOGOES MONOBLOCO 50/55CM':
-                $Familia = 'FOGÕES';
-                $gama = self::GRANDES_DOMESTICOS;
-
-            case 'FORNOS ESTATICOS':
-                $familia = self::ENCASTRE;
-                $gama = self::GRANDES_DOMESTICOS;
-
-            case 'FRIGORIFICOS 2P 140-149CM':
-            case 'FRIGORIFICOS 2P 160-169CM':
-            case 'FRIGORIFICOS 1P COOLER 140-149CM':
-            case 'FRIGORIFICOS 1P COOLER 160-169CM':
-            case 'FRIGORIFICOS 1P C/CONG <120CM':
-            case 'FRIGORIFICOS MINI-BAR':
-            case 'COMBINADOS NF 180-189CM':
-            case 'COMBINADOS 170-179CM':
-                $gama = self::GRANDES_DOMESTICOS;
-                $familia = self::FRIGORIFICOS_COMBINADOS;
-
-            case 'CONGELADORES VERTICAIS 140-149CM':
-            case 'CONGELADORES VERTICAIS 160-169CM':
-                $gama = self::GRANDES_DOMESTICOS;
-                $familia = self::CONGELADORES;
-                $subFamilia = self::CONGELADORES_VERTICAIS;
-
-            case 'MAQUINAS LAVAR ROUPA 7KG':
-            case 'MAQUINAS LAVAR ROUPA 8KG':
-                $gama = self::GRANDES_DOMESTICOS;
-                $familia = self::MAQUINAS_LAVAR_ROUPA;
-
-            case 'SECADORES ROUPA VENTILAÇAO 7KG':
-                $gama = self::GRANDES_DOMESTICOS;
-                $familia = self::MAQUINAS_SECAR_ROUPA;
-
-            case 'FERROS DE ENGOMAR A VAPOR':
-                $gama = self::PEQUENOS_DOMESTICOS;
-                $Familia = self::CUIDADO_DE_ROUPA;
-                $subFamilia = self::FERROS_A_VAPOR;
-
-            case 'ESPREMEDORES DE CITRINOS':
-                $gama = self::PEQUENOS_DOMESTICOS;
-                $familia = self::APARELHOS_DE_COZINHA;
-                $subFamilia = self::ESPREMEDORES;
-
-            case 'SUPORTES TV/LED/PLASMA':
-                $gama = self::IMAGEM_E_SOM;
-                $familia = self::ACESSORIOS_IMAGEM_E_SOM;
-                $subFamilia = self::MOVEIS_SUPORTES;
-
-            case 'FOGOES VITROCERAMICOS':
-            case 'FOGOES PORTA GARRAFA':
-                $gama = self::GRANDES_DOMESTICOS;
-                $familia = self::FOGOES;
-                $subFamilia = self::FOGÕES_C_GÁS;
-
-            case 'FOGOES VITROCERAMICOS':
-                $gama = self::GRANDES_DOMESTICOS;
-                $familia = self::FOGOES;
-                $subFamilia = self::FOGOES_ELECTRICOS;
-
-
-            case 'FORNOS ELETRICOS DE BANCADA':
-                $gama  = self::PEQUENOS_DOMESTICOS;
-                $familia = self::APARELHOS_DE_COZINHA;
-                $subFamilia = self::FORNOS_DE_BANCADA;
-
-            case 'FORNOS MULTIFUNÇOES':
-                $gama = self::GRANDES_DOMESTICOS;
-                $familia = self::ENCASTRE;
-                $subFamilia = self::FORNOS;
-
-            case 'PLACAS INDUÇAO 60CM':
-            case 'PLACAS A GAS 70CM':
-            case 'PLACAS A GAS 60CM':
-            case 'PLACAS CRISTAL GAS 60CM':
-                $gama = self::GRANDES_DOMESTICOS;
-                $familia = self::ENCASTRE;
-                $subFamilia = self::PLACAS;
-
-            case 'VARINHAS GAMA HOTELEIRA':
-                $gama = self::INDUSTRIAL;
-
-            case 'GRELHADORES':
-                $gama = self::PEQUENOS_DOMESTICOS;
-                $familia = self::APARELHOS_DE_COZINHA;
-                $subFamilia = self::GRELHADORES;
-
-            case 'QUEIMADORES LEITE CREME':
-                $gama = self::PEQUENOS_DOMESTICOS;
-                $familia = self::APARELHOS_DE_COZINHA;
-                $subFamilia = self::MQUINAS_COZINHA;
-
-            case 'TORRADEIRAS':
-                $gama = self::PEQUENOS_DOMESTICOS;
-                $familia = self::APARELHOS_DE_COZINHA;
-                $subFamilia = self::MQUINAS_COZINHA;
-
-            case 'AQUECEDORES WC PAREDE':
-                $subFamilia = self::AQUECEDORES_WC_PAREDE;
-
-            case 'BRASEIRAS':
-                $subFamilia = self::BRASEIRAS;
-
-            case 'ESCALFETAS':
-                $subFamilia = self::ESCALFETAS;
-
-            case 'MICRO ONDAS C/GRILL 21 A 29L':
-            case 'MICRO ONDAS S/GRILL ATÉ 20L':
-                $subFamilia = self::MICROONDAS;
-
-            case 'MICRO ONDAS ENCASTRE C/GRILL ATÉ 20L':
-                $subFamilia = self::MICROONDAS_ENCASTRE;
-
-            case 'MAQUINAS DE CAFE';
-
-        }
-        */
     }
 }
