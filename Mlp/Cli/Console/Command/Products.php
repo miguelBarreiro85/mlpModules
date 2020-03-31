@@ -390,7 +390,8 @@ class Products extends Command
                 $productInterno->addSpecialAttributesSorefoz($product,$logger);
             }
             try{
-                $this->updateStock($product, $data[29]);
+                $this->setSorefozStock($sku,$data[29]);
+                print_r(" stock: ".$data[29]."\n");
             }catch (\Exception $ex){
                 print_r("Update stock exception - ".$ex->getMessage() . "\n");
             }
@@ -402,7 +403,7 @@ class Products extends Command
         $writer = new \Zend\Log\Writer\Stream($this->directory->getRoot().'/var/log/Sorefoz.log');
         $logger = new \Zend\Log\Logger();
         $logger->addWriter($writer);
-        print_r("Adding Sorefoz products" . "\n");
+        print_r("Updating Sorefoz prices" . "\n");
         $row = 0;
         if (($handle = fopen($this->directory->getRoot()."/app/code/Mlp/Cli/Console/Command/tot_jlcb_utf.csv", "r")) !== FALSE) {
             while (!feof($handle)) {
@@ -763,24 +764,45 @@ class Products extends Command
         return (int)filter_var($stock, FILTER_SANITIZE_NUMBER_INT);;
     }
 
-    private function setStock($sku,$source,$quantity){
-        $filterSku = $this->filterBuilder
-            ->setField("sku")
-            ->setValue($sku)
-            ->create();
-        $sourceFilter = $this->filterBuilder
-            ->setField("source_code")
-            ->setValue($source)
-            ->create();
+    private function setStock($sku,$source,$quantity)
+    {
+        $filterSku = $this -> filterBuilder
+            -> setField("sku")
+            -> setValue($sku)
+            -> create();
+        $sourceFilter = $this -> filterBuilder
+            -> setField("source_code")
+            -> setValue($source)
+            -> create();
 
-        $filterGroup1 = $this->filterGroupBuilder->setFilters([$filterSku])->create();
-        $filterGroup2 = $this->filterGroupBuilder->setFilters([$sourceFilter])->create();
-        $searchC = $this->searchCriteriaBuilder->setFilterGroups([$filterGroup1,$filterGroup2])->create();
-        $sourceItem = $this->sourceItemRepositoryI->getList($searchC)->getItems();
-        foreach ($sourceItem as $item) {
-            $item->setQuantity($quantity);
+        $filterGroup1 = $this -> filterGroupBuilder -> setFilters([$filterSku]) -> create();
+        $filterGroup2 = $this -> filterGroupBuilder -> setFilters([$sourceFilter]) -> create();
+        $searchC = $this -> searchCriteriaBuilder -> setFilterGroups([$filterGroup1, $filterGroup2]) -> create();
+        $sourceItem = $this -> sourceItemRepositoryI -> getList($searchC) -> getItems();
+
+        if (empty($sourceItem)) {
+            $item = $this -> sourceItemIF -> create();
+            $item -> setQuantity($quantity);
+            $item -> setStatus(1);
+            $item -> setSku($sku);
+            $item -> setSourceCode($source);
             $this->sourceItemSaveI->execute([$item]);
+        } else {
+            foreach ($sourceItem as $item) {
+                $item -> setQuantity($quantity);
+                $this -> sourceItemSaveI -> execute([$item]);
+            }
         }
+    }
+
+    private function setSorefozStock($sku,$stock)
+    {
+        if(preg_match("/sim/",$stock)==1){
+            $stock = 1;
+        }else{
+            $stock = 0;
+        }
+        $this->setStock($sku,"sorefoz",$stock);
     }
 
 }

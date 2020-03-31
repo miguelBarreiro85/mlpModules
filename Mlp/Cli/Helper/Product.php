@@ -127,33 +127,8 @@ class Product
         $product->setTypeId('simple'); // type of product (simple/virtual/downloadable/configurable)
         $product->setCreatedAt(date("Y/m/d"));
         $product->setCustomAttribute('news_from_date', date("Y/m/d"));
-        try {
-            if (isset($pCategories['subfamilia'])){
-                $product->setCategoryIds([$categories[$pCategories['gama']],
-                    $categories[$pCategories['familia']], $categories[$pCategories['subfamilia']]]);
-            }else {
-                $product->setCategoryIds([$categories[$pCategories['gama']],
-                    $categories[$pCategories['familia']]]);
-            }
+        $this->setCategories($product, $pCategories,$categories);
 
-        } catch (\Exception $ex) { //Adicionar nova categoria
-            try{
-                $this->categoryManager->createCategory($pCategories['gama'], $pCategories['familia'], $pCategories['subfamilia'], $categories);
-                $categories = $this->categoryManager->getCategoriesArray();
-                if (isset($pCategories['subfamilia'])){
-                    $product->setCategoryIds([$categories[$pCategories['gama']],
-                        $categories[$pCategories['familia']], $categories[$pCategories['subfamilia']]]);
-                }else {
-                    $product->setCategoryIds([$categories[$pCategories['gama']],
-                        $categories[$pCategories['familia']]]);
-                }
-            }catch (\Exception $ex){
-                print_r("\nErro ao adicionar nova categtoria ". $ex->getMessage() .
-                    " ". $product->getSku() ."\n");
-                print_r($pCategories);
-            }
-
-        }
         $this->setImages($product, $logger, $imgName . "_e.jpeg");
         $this->setImages($product, $logger, $imgName . ".jpeg");
         $product->setStatus(\Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED);
@@ -516,7 +491,38 @@ class Product
         }
         $this->productRepositoryInterface->save($product);
     }
+
+    private function setCategories($product,array $pCategories, $categories)
+    {
+        try {
+            if (isset($pCategories['subfamilia'])){
+                $product->setCategoryIds([$categories[$pCategories['gama']],
+                    $categories[$pCategories['familia']], $categories[$pCategories['subfamilia']]]);
+            }else {
+                $product->setCategoryIds([$categories[$pCategories['gama']],
+                    $categories[$pCategories['familia']]]);
+            }
+
+        } catch (\Exception $ex) { //Adicionar nova categoria
+            try{
+                $this->categoryManager->createCategory($pCategories['gama'], $pCategories['familia'], $pCategories['subfamilia'], $categories);
+                $categories = $this->categoryManager->getCategoriesArray();
+                if (isset($pCategories['subfamilia'])){
+                    $product->setCategoryIds([$categories[$pCategories['gama']],
+                        $categories[$pCategories['familia']], $categories[$pCategories['subfamilia']]]);
+                }else {
+                    $product->setCategoryIds([$categories[$pCategories['gama']],
+                        $categories[$pCategories['familia']]]);
+                }
+            }catch (\Exception $ex){
+                print_r("\nErro ao adicionar nova categtoria ". $ex->getMessage() .
+                    " ". $product->getSku() ."\n");
+                print_r($pCategories);
+            }
+
+        }
     }
+}
 
 
 
