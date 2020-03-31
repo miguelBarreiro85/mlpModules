@@ -508,7 +508,7 @@ class Category
                         } elseif ($result == 0) {
                             $subFamilia = self::COMBINADOS_CONVENCIONAIS;
                         } else {
-                            $subFamilia = '';
+                            $subFamilia = null;
                         }
                         return ([$gama, self::FRIGORIFICOS_COMBINADOS, $subFamilia]);
                     case 'FRIGORIFICOS 1 PORTA':
@@ -524,7 +524,7 @@ class Category
                         } else {
                             //ERRO
                             print_r("ERRO CATEGORY.PHP 514\n");
-                            $subFamilia = '';
+                            $subFamilia = null;
                         }
                         return ([$gama, self::FRIGORIFICOS_COMBINADOS, $subFamilia]);
 
@@ -557,7 +557,7 @@ class Category
                                 $subFamilia = self::TERMOACUMULADORES_ELECTRICOS;
                                 return ([$gama, $familia, $subFamilia]);
                             default:
-                                $subFamilia = '';
+                                $subFamilia = null;
                                 return ([$gama, $familia, $subFamilia]);
                         }
 
@@ -575,7 +575,7 @@ class Category
                                 return ([$gama, $familia, $subFamilia]);
                             default:
                                 print_r("Esquentador not found category.php 556");
-                                $subFamilia = '';
+                                $subFamilia = null;
                                 return ([$gama, $familia, $subFamilia]);
                         }
                     default:
@@ -597,7 +597,7 @@ class Category
                         $subFamilia = self::MLL_COMPACTAS;
                         return ([$gama, $familia, $subFamilia]);
                     default:
-                        $subFamilia = '';
+                        $subFamilia = null;
                         return ([$gama, $familia, $subFamilia]);
                 }
 
@@ -606,7 +606,7 @@ class Category
                 switch ($familia) {
                     case 'LED´S':
                         $familia = self::TELEVISAO;
-                        $subFamilia = '';
+                        $subFamilia = null;
                         return ([$gama, $familia, $subFamilia]);
                     case 'SOM & VIDEO':
                         switch ($subFamilia) {
@@ -620,20 +620,20 @@ class Category
                                 return ([$gama, $familia, $subFamilia]);
                             case 'LEITOR BLU RAY':
                                 $familia = self::DVD_BLURAY_TDT;
-                                $subFamilia = '';
-                                return ([$gama, $familia, $subFamilia]);
-                            case 'SUPORTES TV/LED/PLASMA':
-                                $familia = self::ACESSORIOS_IMAGEM_E_SOM;
-                                $subFamilia = self::MOVEIS_SUPORTES;
+                                $subFamilia = null;
                                 return ([$gama, $familia, $subFamilia]);
                             default:
-                                $familia = '';
-                                $subFamilia = '';
+                                $familia = null;
+                                $subFamilia = null;
                                 return ([$gama, $familia, $subFamilia]);
                         }
+                    case 'SUPORTES':
+                        $familia = self::ACESSORIOS_IMAGEM_E_SOM;
+                        $subFamilia = self::MOVEIS_SUPORTES;
+                        return ([$gama, $familia, $subFamilia]);
                     default:
-                        $familia = '';
-                        $subFamilia = '';
+                        $familia = null;
+                        $subFamilia = null;
                         return ([$gama, $familia, $subFamilia]);
                 }
 
@@ -651,7 +651,7 @@ class Category
                                 $subFamilia = self::DEPILADORAS;
                                 return ([$gama, $familia, $subFamilia]);
                             default:
-                                $subFamilia = '';
+                                $subFamilia = null;
                                 return ([$gama, $familia, $subFamilia]);
                         }
                     case 'CASA':
@@ -675,13 +675,13 @@ class Category
                                 return ([$gama, $familia, $subFamilia]);
                             case 'COFRES':
                                 $familia = self::COFRES;
-                                $subFamilia = '';
+                                $subFamilia = null;
                                 return ([$gama, $familia, $subFamilia]);
                             case 'SACOS PARA ASPIRADOR':
                                 $subFamilia = self::SACOS_ASPIRADOR;
                                 return ([$gama, $familia, $subFamilia]);
                             default:
-                                $subFamilia = '';
+                                $subFamilia = null;
                                 return ([$gama, $familia, $subFamilia]);
                         }
 
@@ -804,23 +804,31 @@ class Category
                         switch ($subFamilia) {
                             case 'CAFETEIRAS':
                                 $subFamilia = self::CAFETEIRAS;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'JARROS ELECTRICOS':
                                 $subFamilia = self::JARROS_E_FERV_PURIF_ÁGUA;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'JARROS TERMICOS':
                                 $familia = self::ARTIGOS_DE_MENAGE;
                                 $subFamilia = self::PEQ_APARELHOS_COZINHA;
+                                return ([$gama, $familia, $subFamilia]);
 
                             case 'MAQUINAS DE CAFE':
                                 $subFamilia = self::MAQUINAS_CAFE;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'MOINHOS DE CAFE':
                                 $subFamilia = self::MOINHOS_DE_CAFE;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'SANDWICHEIRAS':
                                 $subFamilia = self::SANDWICHEIRAS;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'TERMOS':
                                 $familia = self::ARTIGOS_DE_MENAGE;
                                 $subFamilia = self::TERMOS;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'TORRADEIRAS':
                                 $subFamilia = self::TORRADEIRAS;
+                                return ([$gama, $familia, $subFamilia]);
                         }
 
                     case 'ROUPA':
@@ -828,15 +836,20 @@ class Category
                         switch ($subFamilia) {
                             case 'FERROS COM CALDEIRA':
                                 $subFamilia = self::FERROS_CALDEIRA;
+                                return ([$gama, $familia, $subFamilia]);
 
                             case 'FERROS DE ENGOMAR A SECO';
                                 $subFamilia = self::FERROS_A_SECO;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'FERROS DE ENGOMAR A VAPOR':
                                 $subFamilia = self::FERROS_A_VAPOR;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'FERROS DE ENGOMAR DE VIAGEM':
                                 $subFamilia = self::FERRO_VIAGEM;
+                                return ([$gama, $familia, $subFamilia]);
                             case 'TABUAS DE ENGOMAR':
                                 $subFamilia = self::TABUAS_PASSAR_FERRO;
+                                return ([$gama, $familia, $subFamilia]);
 
                         }
 
@@ -866,19 +879,19 @@ class Category
                         return ([$gama, $familia, $subFamilia]);
                     case 'ELECTROCUTORES DE INSETOS':
                         $familia = self::ELECTROCUTORES_INSECTOS;
-                        $subFamilia = '';
+                        $subFamilia = null;
                         return ([$gama, $familia, $subFamilia]);
                     case 'FOGOES GAMA INDUSTRIAL':
                     case 'TREMPES':
                         $familia = self::FOGOES_INDUSTRIAIS;
-                        $subFamilia = '';
+                        $subFamilia = null;
                         return ([$gama, $familia, $subFamilia]);
                     case 'VARINHAS GAMA HOTELEIRA':
                         $familia = self::EQUIPAMENTOS_COZINHA_INDUSTRIAIS;
                         $subFamilia = self::VARINHAS_INDUSTRIAIS;
                         return ([$gama, $familia, $subFamilia]);
                     default:
-                        $subFamilia = '';
+                        $subFamilia = null;
                         return ([$gama, $familia, $subFamilia]);
                 }
 
@@ -897,7 +910,7 @@ class Category
                                 $subFamilia = self::AC_PORTATIL;
                                 return ([$gama, $familia, $subFamilia]);
                             default:
-                                $subFamilia = '';
+                                $subFamilia = null;
                                 return ([$gama, $familia, $subFamilia]);
                         }
                     case 'AMBIENTE - PORTATIL, PELLETS E LENHA':
@@ -954,13 +967,13 @@ class Category
                                 $subFamilia = self::RECUPERADORES;
                                 return ([$gama, $familia, $subFamilia]);
                             default:
-                                $subFamilia = '';
+                                $subFamilia = null;
                                 return ([$gama, $familia, $subFamilia]);
 
                         }
                     default:
-                        $familia = '';
-                        $subFamilia = '';
+                        $familia = null;
+                        $subFamilia = null;
                         return ([$gama,$familia,$subFamilia]);
                 }
 

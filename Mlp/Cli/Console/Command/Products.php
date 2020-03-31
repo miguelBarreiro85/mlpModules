@@ -6,6 +6,7 @@
 namespace Mlp\Cli\Console\Command;
 
 use Braintree\Exception;
+use Magento\InventoryApi\Api\Data\SourceItemInterfaceFactory;
 use function GuzzleHttp\default_ca_bundle;
 use Magento\Catalog\Model\CategoryFactory;
 use Magento\Catalog\Model\CategoryRepository;
@@ -37,6 +38,9 @@ use Magento\Eav\Setup\EavSetupFactory;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Csv;
+
+use Magento\InventoryApi\Api\Data\SourceItemInterface;
+use Magento\InventoryApi\Api\SourceItemsSaveInterface;
 
 use Mlp\Cli\Helper\splitFile;
 /**
@@ -118,11 +122,11 @@ class Products extends Command
 
     private $searchCriteriaI;
 
-    private $sourceItemI;
+    private $sourceItemIF;
 
     private $filterBuilder;
 
-    private $filterGroup;
+    private $filterGroupBuilder;
 
     public function __construct(EavSetupFactory $eavSetupFactory,
                                 AttributeSetFactory $attributeSetFactory,
@@ -144,10 +148,10 @@ class Products extends Command
                                 \Magento\Framework\Filesystem\DirectoryList $directory,
                                 \Magento\InventoryApi\Api\SourceItemsSaveInterface $sourceItemSaveI,
                                 \Magento\InventoryApi\Api\SourceItemRepositoryInterface $sourceItemRepositoryI,
-                                \Magento\InventoryApi\Api\Data\SourceItemInterface $sourceItemI,
+                                \Magento\InventoryApi\Api\Data\SourceItemInterfaceFactory $sourceItemIF,
                                 SearchCriteriaBuilder $searchCriteriaBuilder,
                                 \Magento\Framework\Api\FilterBuilder  $filterBuilder,
-                                \Magento\Framework\Api\Search\FilterGroup $filterGroup)
+                                \Magento\Framework\Api\Search\FilterGroupBuilder $filterGroupBuilder)
     {
         $this->directory = $directory;
         $this->productRepositoryInterface = $productRepositoryInterface;
@@ -167,11 +171,11 @@ class Products extends Command
         $this->stockRegistry = $stockRegistry;
         $this->stockStateInterface = $stockStateInterface;
         $this->optionFactory = $optionFactory;
-        $this->sourceItemSaveInterface = $sourceItemSaveI;
+        $this->sourceItemSaveI = $sourceItemSaveI;
         $this->sourceItemRepositoryI = $sourceItemRepositoryI;
-        $this->sourceItemI = $sourceItemI;
+        $this->sourceItemIF = $sourceItemIF;
         $this->filterBuilder = $filterBuilder;
-        $this->filterGroup = $filterGroup;
+        $this->filterGroupBuilder = $filterGroupBuilder;
 
         parent::__construct();
     }
@@ -664,6 +668,7 @@ class Products extends Command
                             $imagem = trim($data[10]); //ref Orima
                             $etiquetaEner = trim($data[11]);// EAN
 
+                            $categories = $this->categoryManager->getCategoriesArray();
                             $productInterno = new \Mlp\Cli\Helper\Product($sku, $name, $gama, $familia, $subfamilia, $description,
                                 $meta_description, $manufacter, $length, $width, $height, $weight, $price,
                                 $this->productRepository, $this->productFactory, $this->categoryManager,
@@ -673,13 +678,14 @@ class Products extends Command
                             $productInterno->setOrimaCategories();
                             $this->getImages($sku, $imagem, $etiquetaEner);
                             $product = $productInterno->add_product($categories, $logger, $sku);
-                            print_r($row." - ");
+
                         }
                         $stock = $this->setOrimaStock($data[3]);
-                        //$this->updateStock($product, $stock);
-                        $this->setStock($sku);
+                        $this->setStock($sku,'orima',$stock);
 
                     }
+                    print_r($row." - sku: ".$sku." stock: ".$stock."-".$data[3]."\n");
+                    unset($data);
                 }
             }
             fclose($handle);
@@ -688,32 +694,6 @@ class Products extends Command
         }
     }
 
-    protected function updateStock($product, $stock){
-        //STOCK
-        try {
-            $stockItem = $this->stockRegistry->getStockItem($product->getId()); // load stock of that product
-            switch ($stock) {
-                case 'Sim':
-                case 'sim':
-                    $stockItem->setIsInStock(true); //set updated data as your requirement
-                    $stockItem->setQty(9); //set updated quantity
-                    $stockItem->setManageStock(false);
-                    $stockItem->setUseConfigNotifyStockQty(false);
-                    break;
-                default:
-                    $stockItem->setIsInStock(false); //set updated data as your requirement
-                    $stockItem->setQty(0); //set updated quantity
-                    $stockItem->setManageStock(false);
-                    $stockItem->setUseConfigNotifyStockQty(false);
-                    break;
-            }
-            $stockItem->save(); //save stock of item
-            $this->stockRegistry->updateStockItemBySku($product->getSku(),$stockItem);
-            print_r($product->getSku() . " - stock updated" . "\n");
-        }catch (\Exception $ex) {
-            print_r("\nStock error: " . $ex->getMessage() . "\n");
-        }
-    }
 
     protected function updatePrice($sku, $price){
         try{
@@ -780,24 +760,27 @@ class Products extends Command
 
     private function setOrimaStock($stock)
     {
-        if($stock == '0'){
-            return "não";
-        }else{
-            return "sim";
-        }
+        return (int)filter_var($stock, FILTER_SANITIZE_NUMBER_INT);;
     }
 
-    private function setStock($sku){
-        $filter = $this->filterBuilder
-            ->setField('sku')
+    private function setStock($sku,$source,$quantity){
+        $filterSku = $this->filterBuilder
+            ->setField("sku")
             ->setValue($sku)
-            ->setConditionType('like')->create();
-        $filterGroup = $this->filterGroup->setFilters([$filter]);
-        $searchCriteria = $this->searchCriteriaBuilder->setFilterGroups([$filterGroup])->create();
-        $items = $this->sourceItemRepositoryI->getList($searchCriteria)->getItems();
-        var_dump($items);
-        exit;
-        //$this->sourceItemSaveInterface->execute();
+            ->create();
+        $sourceFilter = $this->filterBuilder
+            ->setField("source_code")
+            ->setValue($source)
+            ->create();
+
+        $filterGroup1 = $this->filterGroupBuilder->setFilters([$filterSku])->create();
+        $filterGroup2 = $this->filterGroupBuilder->setFilters([$sourceFilter])->create();
+        $searchC = $this->searchCriteriaBuilder->setFilterGroups([$filterGroup1,$filterGroup2])->create();
+        $sourceItem = $this->sourceItemRepositoryI->getList($searchC)->getItems();
+        foreach ($sourceItem as $item) {
+            $item->setQuantity($quantity);
+            $this->sourceItemSaveI->execute([$item]);
+        }
     }
 
 }

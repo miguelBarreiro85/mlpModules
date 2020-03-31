@@ -137,8 +137,6 @@ class Product
             }
 
         } catch (\Exception $ex) { //Adicionar nova categoria
-            print_r($ex->getMessage());
-            print_r($pCategories);
             try{
                 $this->categoryManager->createCategory($pCategories['gama'], $pCategories['familia'], $pCategories['subfamilia'], $categories);
                 $categories = $this->categoryManager->getCategoriesArray();
@@ -152,6 +150,7 @@ class Product
             }catch (\Exception $ex){
                 print_r("\nErro ao adicionar nova categtoria ". $ex->getMessage() .
                     " ". $product->getSku() ."\n");
+                print_r($pCategories);
             }
 
         }
