@@ -9,6 +9,8 @@
                 <item name="productAttributes" xsi:type="object">Mlp\Cli\Console\Command\ProductAttributes</item>
                 <item name="products" xsi:type="object">Mlp\Cli\Console\Command\Products</item>
                 <item name="auferma" xsi:type="object">Mlp\Cli\Console\Command\Auferma</item>
+                <item name="orima" xsi:type="object">Mlp\Cli\Console\Command\Orima</item>
+                <item name="sorefoz" xsi:type="object">Mlp\Cli\Console\Command\Sorefoz</item>
             </argument>
         </arguments>
     </type>

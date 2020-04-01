@@ -6,6 +6,9 @@
 namespace Mlp\Cli\Console\Command;
 
 use Braintree\Exception;
+use Magento\Framework\Exception\CouldNotSaveException;
+use Magento\Framework\Exception\InputException;
+use Magento\Framework\Validation\ValidationException;
 use Magento\InventoryApi\Api\Data\SourceItemInterfaceFactory;
 use function GuzzleHttp\default_ca_bundle;
 use Magento\Catalog\Model\CategoryFactory;
@@ -382,8 +385,8 @@ class Products extends Command
                 $this->getImages($sku, $data[24], $data[28] );
                 $productInterno = new \Mlp\Cli\Helper\Product($sku, $name, $gama, $familia,$subfamilia,$description,
                     $meta_description,$manufacter,$length,$width,$height,$weight,$price,
-                    $this->productRepository,$this->productFactory, $this->categoryManager,
-                    $this->dataAttributeOptions, $this->attributeManager, $this->stockRegistry,
+                    $this->productFactory, $this->categoryManager,
+                    $this->dataAttributeOptions, $this->attributeManager,
                     $this->config, $this->optionFactory, $this->productRepositoryInterface,$this->directory);
 
                 $product = $productInterno->add_product($categories,$logger, $sku);
@@ -790,7 +793,15 @@ class Products extends Command
         } else {
             foreach ($sourceItem as $item) {
                 $item -> setQuantity($quantity);
-                $this -> sourceItemSaveI -> execute([$item]);
+                try {
+                    $this -> sourceItemSaveI -> execute([$item]);
+                } catch (CouldNotSaveException $e) {
+                    print_r($e->getMessage());
+                } catch (InputException $e) {
+                    print_r($e->getMessage());
+                } catch (ValidationException $e) {
+                    print_r($e->getMessage());
+                }
             }
         }
     }

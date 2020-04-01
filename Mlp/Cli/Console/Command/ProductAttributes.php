@@ -55,7 +55,7 @@ class ProductAttributes extends Command
             // Diversos
                         ["nome" => "medidas", "label" => "Medidas", "attributeSet" => ["CONGELADORES"]],
                         ["nome" => "largura", "label" => "Largura", "attributeSet" => ["FRIGORIFICOS","MICROONDAS","CONGELADORES",
-                            "ESQUENTADORES","TERMOACUMULADORES_ELETRICOS","PLACAS"]],
+                            "ESQUENTADORES","TERMOACUMULADORES_ELETRICOS","PLACAS","EXAUSTORES"]],
                         ["nome" => "profundidade", "label" => "Profundidade", "attributeSet" => ["FRIGORIFICOS","MICROONDAS","CONGELADORES",
                             "ESQUENTADORES","TERMOACUMULADORES_ELETRICOS","PLACAS"]],
                         ["nome" => "altura", "label" => "Altura","attributeSet" => ["FRIGORIFICOS","MICROONDAS","CONGELADORES",
@@ -68,6 +68,8 @@ class ProductAttributes extends Command
                             ["MLR","MLL","MSR","FORNOS","EXAUSTORES","AC","FRIGORIFICOS","CONGELADORES","TV","TERMOACUMULADORES_ELETRICOS","ESQUENTADORES"]],
             //Exaustores
                         ["nome" => "tipo_exaustor", "label" => "Tipo Exaustor", "attributeSet" => ["EXAUSTORES"]],
+                        ["nome" => "potencia_exaustor", "label" => "Potência Exaustor", "attributeSet" => ["EXAUSTORES"]],
+
 
             //AC
                         ["nome" => "potencia_ac_int", "label" => "Potencia", "attributeSet" => ["AC"]],

@@ -6,18 +6,21 @@
  * Time: 10:10
  */
 
-namespace Mlp\Cli\Helper;
+namespace Mlp\Cli\Model;
 
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product\Media\Config;
 use Magento\Catalog\Model\Product\OptionFactory;
 use Magento\Catalog\Model\ProductFactory as ProductFactory;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
+use Magento\Framework\Exception\CouldNotSaveException;
+use Magento\Framework\Exception\InputException;
+use Magento\Framework\Validation\ValidationException;
 use \Mlp\Cli\Helper\Category as CategoryManager;
 use \Mlp\Cli\Helper\Data as DataAttributeOptions;
 use \Mlp\Cli\Helper\Attribute as Attribute;
 
-class Product
+class ProdutoInterno
 {
     //atributos
     private $sku;
@@ -43,19 +46,48 @@ class Product
     private $optionFactory;
     private $productRepositoryInterface;
     private $directory;
+    private $filterGroupBuilder;
+    private $sourceItemRepositoryI;
+    private $sourceItemIF;
+    private $searchCriteriaBuilder;
+    private $sourceItemSaveI;
+    private $filterBuilder;
 
-    public function __construct($sku, $name, $gama, $familia, $subfamilia,
-                                $description, $meta_description, $manufacter,
-                                $length, $width, $height, $weight, $price,
-                                ProductFactory $productFactory,
+    public function __construct( ProductFactory $productFactory,
                                 CategoryManager $categoryManager,
                                 DataAttributeOptions $dataAttributeOptions,
                                 Attribute $attributeManager,
                                 Config $config,
                                 OptionFactory $optionFactory,
                                 ProductRepositoryInterface $productRepositoryInterface,
-                                \Magento\Framework\Filesystem\DirectoryList $directory)
+                                \Magento\Framework\Filesystem\DirectoryList $directory,
+                                 \Magento\Framework\Api\Search\FilterGroupBuilder $filterGroupBuilder,
+                                 \Magento\InventoryApi\Api\SourceItemRepositoryInterface $sourceItemRepositoryI,
+                                 \Magento\InventoryApi\Api\Data\SourceItemInterfaceFactory $sourceItemIF,
+                                 \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder,
+                                 \Magento\InventoryApi\Api\SourceItemsSaveInterface $sourceItemSaveI,
+                                 \Magento\Framework\Api\FilterBuilder  $filterBuilder)
     {
+
+        $this->directory = $directory;
+        $this->productFactory = $productFactory;
+        $this->categoryManager = $categoryManager;
+        $this->dataAttributeOptions = $dataAttributeOptions;
+        $this->attributeManager = $attributeManager;
+        $this->config = $config;
+        $this->optionFactory = $optionFactory;
+        $this->productRepositoryInterface = $productRepositoryInterface;
+        $this->filterGroupBuilder = $filterGroupBuilder;
+        $this->sourceItemRepositoryI = $sourceItemRepositoryI;
+        $this->sourceItemIF = $sourceItemIF;
+        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
+        $this->sourceItemSaveI = $sourceItemSaveI;
+        $this->filterBuilder = $filterBuilder;
+    }
+
+    public function setData($sku, $name, $gama, $familia, $subfamilia,
+                            $description, $meta_description, $manufacter,
+                            $length, $width, $height, $weight, $price) {
         $this->sku = $sku;
         $this->name = $name;
         $this->gama = $gama;
@@ -70,16 +102,7 @@ class Product
         $this->weight = $weight;
         $this->price = $price;
 
-        $this->directory = $directory;
-        $this->productFactory = $productFactory;
-        $this->categoryManager = $categoryManager;
-        $this->dataAttributeOptions = $dataAttributeOptions;
-        $this->attributeManager = $attributeManager;
-        $this->config = $config;
-        $this->optionFactory = $optionFactory;
-        $this->productRepositoryInterface = $productRepositoryInterface;
     }
-
     public function addSpecialAttributesSorefoz($product,$logger){
         $attributes = $this->attributeManager->getSpecialAttributes($this->gama, $this->familia, $this->subfamilia, $this->description, $this->name);
         if (isset($attributes)){
@@ -130,6 +153,8 @@ class Product
 
         //Salvar produto
         try {
+            $product = $this->productRepositoryInterface->save($product);
+            print_r("saved");
             print_r($this->sku . " - added" . "  -  ");
         } catch (\Exception $exception) {
             $logger->info(" - " . $this->sku . " Save product: Exception:  " . $exception->getMessage());
@@ -140,38 +165,37 @@ class Product
         if ($value > 0){
             $this->add_installation_option($product,$value);
         }
-
         return $product;
     }
 
     protected function setImages($product, $logger, $ImgName)
-        {
-            $baseMediaPath = $this->config->getBaseMediaPath();
-            $finfo = finfo_open(FILEINFO_MIME_TYPE);
-            try{
-                $type = finfo_file($finfo, $this->directory->getRoot()."/pub/media/".$baseMediaPath. "/" . $ImgName);
-            }catch (\Exception $exception){
-                //finfo exception
-                //print_r("Product.php setImages: ". $exception );
-            }
-            if (isset($type) && in_array($type, array("image/png", "image/jpeg", "image/gif"))) {
-                //this is a image
-                try {
-                    $images = $product->getMediaGalleryImages();
-                    if (!$images || $images->getSize() == 0) {
-                        $product->addImageToMediaGallery($baseMediaPath . "/" . $ImgName, ['image', 'small_image', 'thumbnail'], false, false);
-                    }
-                } catch (\RuntimeException $exception) {
-                    print_r("run time exception" . $exception->getMessage() . "\n");
-                } catch (\Exception $localizedException) {
-                    $logger->info($product->getName() . "Image name" . $ImgName . "  Sem Imagem");
+    {
+        $baseMediaPath = $this->config->getBaseMediaPath();
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        try{
+            $type = finfo_file($finfo, $this->directory->getRoot()."/pub/media/".$baseMediaPath. "/" . $ImgName);
+        }catch (\Exception $exception){
+            //finfo exception
+            //print_r("Product.php setImages: ". $exception );
+        }
+        if (isset($type) && in_array($type, array("image/png", "image/jpeg", "image/gif"))) {
+            //this is a image
+            try {
+                $images = $product->getMediaGalleryImages();
+                if (!$images || $images->getSize() == 0) {
+                    $product->addImageToMediaGallery($baseMediaPath . "/" . $ImgName, ['image', 'small_image', 'thumbnail'], false, false);
                 }
-            } else {
-                //not a image
+            } catch (\RuntimeException $exception) {
+                print_r("run time exception" . $exception->getMessage() . "\n");
+            } catch (\Exception $localizedException) {
                 $logger->info($product->getName() . "Image name" . $ImgName . "  Sem Imagem");
             }
-
+        } else {
+            //not a image
+            $logger->info($product->getName() . "Image name" . $ImgName . "  Sem Imagem");
         }
+
+    }
 
     public function setOrimaCategories()
     {
@@ -181,43 +205,8 @@ class Product
         $this->subfamilia = $mlpSubFamilia;
     }
 
-
-    protected function getClasseEnergetica($eficiencia){
-        print_r(  " - ".$eficiencia." - ");
-            if (strcmp(trim($eficiencia), 'A&#43 &#43') == 0 ){
-                return 'A++';
-            }elseif (strcmp(trim($eficiencia), 'A&#43') == 0 ){
-                return 'A+';
-            }elseif (strcmp(trim($eficiencia), 'A&#43 &#43 &#43') == 0 ){
-                return 'A++';
-            }else{
-                return trim($eficiencia);
-            }
-        }
-    protected function getPotencia($matches){
-            if ($matches < 9) {
-                return 'De 5KBTU a 7KBTU';
-            } elseif ( 8 < $matches && $matches < 13){
-                return 'De 9KBTU a 12KBTU';
-            } elseif ( 13 < $matches && $matches < 18) {
-                return 'De 12KBTU a 18KBTU';
-            } elseif (  18 < $matches && $matches< 24 ) {
-                return 'De 18KBTU a 24KBTU';
-            }elseif (24 < $matches && $matches< 36) {
-                return 'De 24KBTU a 36KBTU';
-            }elseif (36 < $matches && $matches< 48){
-                return 'De 36KBTU a 48KBTU';
-            }elseif (48 < $matches && $matches< 60) {
-                return 'De 48KBTU a 60KBTU';
-            }elseif ($matches > 60){
-                return 'Superior a 60KBTU';
-            }else {
-                return null;
-            }
-
-
-        }
     protected function add_warranty_option($product, $gama, $familia, $subfamilia){
+
         $one_year = $this->get_one_year_warranty_price((int)$product->getPrice(), $gama, $familia, $subfamilia);
         $three_years = $this->get_three_years_warranty_price((int)$product->getPrice(), $gama);
         //Se os valores forem 0 não adiciona
@@ -483,7 +472,6 @@ class Product
         }
         $this->productRepositoryInterface->save($product);
     }
-
     private function setCategories($product,array $pCategories, $categories)
     {
         try {
@@ -512,6 +500,52 @@ class Product
                 print_r($pCategories);
             }
 
+        }
+    }
+    public function setStock($sku,$source,$quantity)
+    {
+        $filterSku = $this->filterBuilder
+            -> setField("sku")
+            -> setValue($sku)
+            -> create();
+        $sourceFilter = $this->filterBuilder
+            -> setField("source_code")
+            -> setValue($source)
+            -> create();
+
+        $filterGroup1 = $this->filterGroupBuilder->setFilters([$filterSku])->create();
+        $filterGroup2 = $this->filterGroupBuilder->setFilters([$sourceFilter])->create();
+        $searchC = $this->searchCriteriaBuilder->setFilterGroups([$filterGroup1, $filterGroup2]) -> create();
+        $sourceItem = $this -> sourceItemRepositoryI->getList($searchC) -> getItems();
+
+        if (empty($sourceItem)) {
+            $item = $this -> sourceItemIF -> create();
+            $item -> setQuantity($quantity);
+            $item -> setStatus(1);
+            $item -> setSku($sku);
+            $item -> setSourceCode($source);
+            try {
+                $this -> sourceItemSaveI -> execute([$item]);
+            } catch (CouldNotSaveException $e) {
+                print_r($e->getMessage());
+            } catch (InputException $e) {
+                print_r($e->getMessage());
+            } catch (ValidationException $e) {
+                print_r($e->getMessage());
+            }
+        } else {
+            foreach ($sourceItem as $item) {
+                $item -> setQuantity($quantity);
+                try {
+                    $this -> sourceItemSaveI -> execute([$item]);
+                } catch (CouldNotSaveException $e) {
+                    print_r($e->getMessage());
+                } catch (InputException $e) {
+                    print_r($e->getMessage());
+                } catch (ValidationException $e) {
+                    print_r($e->getMessage());
+                }
+            }
         }
     }
 }

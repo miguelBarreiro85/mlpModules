@@ -123,7 +123,7 @@ class Category
     const MO_COM_GRILL = 'MO - COM GRILL';
     const MO_SEM_GRILL = 'MO - SEM GRILL';
     const CAFETEIRAS = 'CAFETEIRAS';
-    const JARROS_E_FERV_PURIF_ÁGUA = 'JARROS E FERV./PURIF. ÁGUA ';
+    const JARROS_E_FERV_PURIF_ÁGUA = 'JARROS E FERV./PURIF. ÁGUA';
     const MAQUINAS_CAFE = 'MAQ.CAFE EXPRESSO';
     const MOINHOS_DE_CAFE = 'MOINHOS DE CAFE';
     const SANDWICHEIRAS = 'SANDWICHEIRAS';
@@ -394,11 +394,11 @@ class Category
                                 return ([$gama, $familia, $subFamilia]);
                             default:
                                 print_r("SubFamilia not found".$subFamilia."\n");
-                                return([$gama,$familia,'']);
+                                return([$gama,$familia,null]);
                         }
                     default:
                         print_r("familia not found".$familia."\n");
-                        return([$gama,'','']);
+                        return([$gama,null,null]);
                 }
 
             case 'MAQUINAS ROUPA':
@@ -431,7 +431,7 @@ class Category
                         return ([$gama, $familia, $subFamilia]);
                     default:
                         print_r("MAQ ROUPA category not found\n");
-                        return(["$gama,'',''"]);
+                        return([$gama,null,null]);
                 }
 
             case 'ENCASTRE':

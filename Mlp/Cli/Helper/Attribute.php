@@ -1043,11 +1043,24 @@ class Attribute
                             array_push($attributes, $attribute1);
                         }
                         if (preg_match('/Extracção:\s*(\d+)\s*m3/', $description, $mExtracao) == 1) {
-                            $getExtracao = $this->getExtracao($mExtracao[1]);
-                            $extracao['code'] = 'termoacumulador_potencia';
-                            $extracao['value'] = $this->dataAttributeOptions->createOrGetId('termoacumulador_potencia', $mPotencia[1]);
-                            array_push($attributes, $potencia);
+                            $capExtracao = $this->getExtracao($mExtracao[1]);
+                            $extracao['code'] = 'potencia_exaustor';
+                            $extracao['value'] = $this->dataAttributeOptions->createOrGetId('potencia_exaustor', $capExtracao);
+                            array_push($attributes, $extracao);
                         }
+                        if (preg_match('/Cor: (\w+)/ui', strip_tags($description), $mCor) == 3) {
+                            $corValue = $this->getCor($mCor[1]);
+                            $corAtr['code'] = 'color';
+                            $corAtr['value'] = $this->dataAttributeOptions->createOrGetId('color', $corValue);
+                            array_push($attributes, $corAtr);
+                        }
+                        if (preg_match('/Largura:\s*(\d*,*\d*\s*cm)/', strip_tags($description), $mLargura) == 1) {
+                            $largura = $this->getLarguraExaustor($mLargura[1]);
+                            $attribute4['code'] = 'largura';
+                            $attribute4['value'] = $this->dataAttributeOptions->createOrGetId('largura', $largura);
+                            array_push($attributes, $attribute4);
+                        }
+                        return $attributes;
                     case 'MICROONDAS':
                         //print_r("description: ".$description."\n");
                         if (preg_match('/(\d{2})L\./', $name, $matches1) == 1) {
@@ -1161,6 +1174,9 @@ class Attribute
         }
     }
 
+    public function getSpecialAttributesOrima($gama, $familia, $subfamilia, $description, $name){
+
+    }
     private function getClasseEnergetica($text){
         if (preg_match('/A&#43 &#43  &#43/', $text) == 1){
             return 'A+++';
@@ -1423,9 +1439,38 @@ class Attribute
         }
     }
 
-    private function getExtracao($int)
+    private function getExtracao($capExtracao)
     {
-        return '700 m3';
+        if ( $capExtracao <= 400) {
+            return 'Até 400 m3/h';
+        }elseif ($capExtracao <= 500){
+            return '400 a 500 m3/h';
+        }elseif ($capExtracao <= 600){
+            return '500 a 600 m3/h';
+        }elseif ($capExtracao <= 700){
+            return '600 a 700 m3/h';
+        }elseif($capExtracao <=800){
+            return '700 a 800 m3/h';
+        }else{
+            return 'Superior a 800 m3/h';
+        }
+    }
+
+    private function getLarguraExaustor($largura)
+    {
+        if($largura <= 55){
+            return 'Até 55 cm';
+        }elseif ($largura <=65){
+            return '55 a 65 cm';
+        }elseif ($largura <= 75) {
+            return '65 a 75 cm';
+        }elseif ($largura <= 85) {
+            return '75 a 85 cm';
+        }elseif ($largura <= 95) {
+            return '85 a 95 cm';
+        }else{
+            return 'Superior a 95 cm';
+        }
     }
 
 

@@ -4,7 +4,8 @@
   "type":"magento2-module",
   "require": {
     "php": "~5.5.0|~5.6.0|~7.0.0",
-    "phpoffice/phpspreadsheet": "^1.3"
+    "phpoffice/phpspreadsheet": "^1.3",
+    "ext-curl": "*"
   },
   "version": "1.0.0",
   "autoload": {
