@@ -272,6 +272,11 @@ class ProdutoInterno
             $stock = 0;
         }
 
+        if (preg_match("/sim/i",$data[16]) == 1) {
+            $status = 2;
+        }else{
+            $status = 1;
+        }
         $data = array_map($functionTim,$data);
         $this -> sku = $data[18];
         $this -> name = $data[1];
@@ -286,7 +291,7 @@ class ProdutoInterno
         $this -> height = (int)$data[22];
         $this -> weight = (int)$data[19];
         $this -> price = (int)str_replace(".", "", $data[12]) * 1.23 * 1.30;
-        $this->status = $data[16];
+        $this->status = $status;
         $this->image = $data[23];
         $this->classeEnergetica = $data[25];
         $this->imageEnergetica = $data[26];
@@ -296,11 +301,11 @@ class ProdutoInterno
 
     public function getProductSorefozStatus()
     {
-        if (preg_match("/sim/i", $this -> status) == 1) {
-            return true;
+        if ($this->status == 1) {
+            return 1;
         }
         else{
-            return false;
+            return 0;
         }
     }
 
@@ -310,7 +315,7 @@ class ProdutoInterno
 
     public function getSubFamilia()
     {
-        return $this->getSubFamilia();
+        return $this->subfamilia;
     }
 
     public function setOrimaData($data)

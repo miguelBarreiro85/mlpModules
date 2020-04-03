@@ -144,11 +144,14 @@ class Sorefoz extends Command
                 continue;
             }
             if (!is_null($categoriesFilter)){
-                if (strcmp($categoriesFilter,$this->produtoInterno->getSubFamilia()) != 0
-                    || $this->produtoInterno->getProductSorefozStatus() == false){
+                if (strcmp($categoriesFilter,$this->produtoInterno->getSubFamilia()) != 0){
                     print_r($this->produtoInterno->getSku() . " - Fora de Gama ");
                     continue;
                 }
+            }
+            if($this->produtoInterno->getProductSorefozStatus() == 0){
+                print_r(" - disabled");
+                continue;
             }
             try {
                 $product = $this -> productRepository -> get($this->produtoInterno->getSku(), true, null, true);
