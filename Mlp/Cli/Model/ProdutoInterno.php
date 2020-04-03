@@ -52,6 +52,11 @@ class ProdutoInterno
     private $searchCriteriaBuilder;
     private $sourceItemSaveI;
     private $filterBuilder;
+    private $status;
+    private $image;
+    private $classeEnergetica;
+    private $imageEnergetica;
+    private $stock;
 
     public function __construct( ProductFactory $productFactory,
                                 CategoryManager $categoryManager,
@@ -103,6 +108,9 @@ class ProdutoInterno
         $this->price = $price;
 
     }
+
+
+
     public function addSpecialAttributesSorefoz($product,$logger){
         $attributes = $this->attributeManager->getSpecialAttributes($this->gama, $this->familia, $this->subfamilia, $this->description, $this->name);
         if (isset($attributes)){
@@ -112,7 +120,6 @@ class ProdutoInterno
         }
         try {
             $product->save();
-            print_r($this->sku . " - added" . "  -  ");
         } catch (\Exception $exception) {
             $logger->info(" - " . $this->sku . " Save product: Exception:  " . $exception->getMessage());
             print_r("- " . $exception->getMessage() . " Save product exception" . "\n");
@@ -143,6 +150,7 @@ class ProdutoInterno
         $product->setTypeId('simple'); // type of product (simple/virtual/downloadable/configurable)
         $product->setCreatedAt(date("Y/m/d"));
         $product->setCustomAttribute('news_from_date', date("Y/m/d"));
+
         $this->setCategories($product, $pCategories,$categories);
 
         $this->setImages($product, $logger, $imgName . "_e.jpeg");
@@ -154,7 +162,6 @@ class ProdutoInterno
         //Salvar produto
         try {
             $product = $this->productRepositoryInterface->save($product);
-            print_r("saved");
             print_r($this->sku . " - added" . "  -  ");
         } catch (\Exception $exception) {
             $logger->info(" - " . $this->sku . " Save product: Exception:  " . $exception->getMessage());
@@ -548,6 +555,54 @@ class ProdutoInterno
             }
         }
     }
+
+
+    public function setSorefozData($data) {
+        $functionTim = function ($data){
+            return trim($data);
+        };
+
+        $data = array_map($functionTim,$data);
+        $this -> sku = $data[18];
+        $this -> name = $data[1];
+        $this -> gama = $data[5];
+        $this -> familia = $data[7];
+        $this -> subfamilia = $data[9];
+        $this -> description = $data[25];
+        $this -> meta_description = $data[24];
+        $this -> manufacter = $data[3];
+        $this -> length = (int)$data[20];
+        $this -> width = (int)$data[21];
+        $this -> height = (int)$data[22];
+        $this -> weight = (int)$data[19];
+        $this -> price = (int)str_replace(".", "", $data[12]) * 1.23 * 1.30;
+        $this->status = $data[16];
+        $this->image = $data[23];
+        $this->classeEnergetica = $data[25];
+        $this->imageEnergetica = $data[26];
+        $this->stock = $data[27];
+        return $this;
+    }
+
+    public function getProductSorefozStatus()
+    {
+        if (preg_match("/sim/i", $this -> status) == 1) {
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+    public function getSku(){
+        return $this->sku;
+    }
+
+    public function getSubFamilia()
+    {
+        return $this->getSubFamilia();
+    }
+
 }
 
 

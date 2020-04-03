@@ -116,7 +116,7 @@ class Orima extends Command
     {
     }
 
-    protected function addProducts(){
+    protected function addProducts($categoriesFilter){
         /*
          * 0 - Nome
          * 1 - ref orima
@@ -139,62 +139,43 @@ class Orima extends Command
         $logger->addWriter($writer);
         print_r("Adding Orima products" . "\n");
         $row = 0;
-        if (($handle = fopen($this->directory->getRoot()."/app/code/Mlp/Cli/Console/Command/Orima/Orima.csv", "r")) !== FALSE) {
-            print_r("abri ficheiro\n");
-            while (!feof($handle)) {
+        foreach ($this->loadCsv->loadCsv('tot_jlcb_utf.csv',";") as $data) {
+            if ($row == 0){
                 $row++;
-                if (($data = fgetcsv($handle, 4000, ";", '"')) !== FALSE) {
-                    if ($row == 1 ) {
-                        continue;
-                    }
-                    $sku = trim($data[8]);
-                    if (strlen($sku) == 13) {
-                        try {
-                            $product = $this->productRepository->get($sku, true, null, true);
-                            if ($product->getStatus() == 2) {
-                                print_r($sku . "\n");
-                                continue;
-                            }
-                        } catch (NoSuchEntityException $exception) {
-                            $name = trim($data[0]);
-                            $gama = trim($data[4]);
-                            $familia = trim($data[5]);
-                            $subfamilia = trim($data[6]);
-                            $description = trim($data[9]);
-                            $meta_description = "";
-                            $manufacter = trim($data[7]);
-                            $length = 0;
-                            $width = 0;
-                            $height = 0;
-                            $weight = trim($data[4]);
-                            $price = (int)trim($data[2]) * 1.23 * 1.20;
-                            $imagem = trim($data[10]); //ref Orima
-                            $etiquetaEner = trim($data[11]);// EAN
-
-                            $categories = $this->categoryManager->getCategoriesArray();
-                            /** @var TYPE_NAME $sku */
-                            $this->produtoInterno->setData($sku,$name,$gama,$familia,
-                                $subfamilia,$description,$meta_description,$manufacter,
-                                $length,$width,$height,$weight,$price);
-
-
-                            $this->produtoInterno->setOrimaCategories();
-                            ImagesHelper::getImages($sku, $imagem, $etiquetaEner,$this->directory);
-                            $this->produtoInterno->add_product($categories, $logger, $sku);
-
-                        }
-                        $stock = $this->setOrimaStock($data[3]);
-                        $this->produtoInterno->setStock($sku,'orima',$stock);
-
-                    }
-                    print_r($row." - sku: ".$sku." stock: ".$stock."-".$data[3]."\n");
-                    unset($data);
+                continue;
+            }
+            $row++;
+            print_r($row." - ");
+            $this->produtoInterno->setOrimaData($data);
+            if (strlen($this->produtoInterno->getSku()) != 13) {
+                //Log sku e name
+                continue;
+            }
+            if (!is_null($categoriesFilter)){
+                if (strcmp($categoriesFilter,$this->produtoInterno->getSubFamilia()) != 0
+                    || $this->produtoInterno->getProductSorefozStatus() == false){
+                    print_r($this->produtoInterno->getSku() . " - Fora de Gama ");
+                    continue;
                 }
             }
-            fclose($handle);
-        }else {
-            print_r("Não abriu o ficheiro");
+            try {
+                $product = $this -> productRepository -> get($this->produtoInterno->getSku(), true, null, true);
+            } catch (NoSuchEntityException $exception) {
+                ImagesHelper ::getImages($this->produtoInterno->getSku(), $data[24], $data[28], $this -> directory);
+                $product = $this->produtoInterno -> add_product($categories, $logger, $this->produtoInterno->getSku());
+                $this -> produtoInterno -> addSpecialAttributesSorefoz($product, $logger);
+            }
+            try {
+                $this -> setSorefozStock($product->getSku(), $data[29]);
+                print_r(" -  stock: " . $data[29] . "\n");
+            } catch (\Exception $ex) {
+                print_r("Update stock exception - " . $ex -> getMessage() . "\n");
+            }
+
         }
+
+
+
     }
 
     private function updateStocks()
