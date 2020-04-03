@@ -36,6 +36,7 @@ class Orima extends Command
     private $productRepositoryInterface;
     private $state;
     private $produtoInterno;
+    private $loadCsv;
 
     public function __construct(DirectoryList $directory,
                                 \Mlp\Cli\Helper\Category $categoryManager,
@@ -46,7 +47,8 @@ class Orima extends Command
                                 \Magento\Catalog\Model\Product\Media\Config $config,
                                 \Magento\Catalog\Model\Product\OptionFactory $optionFactory,
                                 \Magento\Framework\App\State $state,
-                                \Mlp\Cli\Model\ProdutoInterno $productoInterno){
+                                \Mlp\Cli\Model\ProdutoInterno $productoInterno,
+                                \Mlp\Cli\Helper\LoadCsv $loadCsv){
 
         $this->directory = $directory;
         $this->categoryManager = $categoryManager;
@@ -59,6 +61,7 @@ class Orima extends Command
         $this->productRepositoryInterface = $productRepositoryInterface;
         $this->state = $state;
         $this->produtoInterno = $productoInterno;
+        $this->loadCsv = $loadCsv;
         parent::__construct();
     }
 
@@ -85,7 +88,7 @@ class Orima extends Command
                     InputOption::VALUE_NONE,
                     'Update Stocks and State (Active or inactive)'
                 )
-            ]);
+            ])->addArgument('categories', InputArgument::OPTIONAL, 'Categories?');
         parent::configure();
     }
 
@@ -95,13 +98,14 @@ class Orima extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->state->setAreaCode(\Magento\Framework\App\Area::AREA_GLOBAL);
+        $categories = $input->getArgument('categories');
         $filterProducts = $input->getOption(self::FILTER_PRODUCTS);
         if ($filterProducts) {
             $this->filterProducts();
         }
         $addProducts = $input->getOption(self::ADD_PRODUCTS);
         if ($addProducts) {
-            $this->addProducts();
+            $this->addProducts($categories);
         }
         $updateStocks = $input->getOption(self::UPDATE_STOCKS);
         if ($updateStocks){
@@ -117,33 +121,12 @@ class Orima extends Command
     }
 
     protected function addProducts($categoriesFilter){
-        /*
-         * 0 - Nome
-         * 1 - ref orima
-         * 2 - preço liquido
-         * 3 - stock
-         * 4 - gama
-         * 5 - familia
-         * 6 - subfamilia
-         * 7 - marca
-         * 8 - EAN
-         * 9 - Detalhes
-         * 10 - Imagem
-         * 11 - etiqueta energetica
-         * 12 - manual de instruções
-         * 13 - esquema tecnico
-         */
-
         $writer = new \Zend\Log\Writer\Stream($this->directory->getRoot().'/var/log/Orima.log');
         $logger = new \Zend\Log\Logger();
         $logger->addWriter($writer);
         print_r("Adding Orima products" . "\n");
         $row = 0;
-        foreach ($this->loadCsv->loadCsv('tot_jlcb_utf.csv',";") as $data) {
-            if ($row == 0){
-                $row++;
-                continue;
-            }
+        foreach ($this->loadCsv->loadCsv('Orima.csv',";") as $data) {
             $row++;
             print_r($row." - ");
             $this->produtoInterno->setOrimaData($data);
@@ -152,22 +135,21 @@ class Orima extends Command
                 continue;
             }
             if (!is_null($categoriesFilter)){
-                if (strcmp($categoriesFilter,$this->produtoInterno->getSubFamilia()) != 0
-                    || $this->produtoInterno->getProductSorefozStatus() == false){
-                    print_r($this->produtoInterno->getSku() . " - Fora de Gama ");
+                if (strcmp($categoriesFilter,$this->produtoInterno->getSubFamilia()) != 0){
                     continue;
                 }
             }
             try {
                 $product = $this -> productRepository -> get($this->produtoInterno->getSku(), true, null, true);
             } catch (NoSuchEntityException $exception) {
-                ImagesHelper ::getImages($this->produtoInterno->getSku(), $data[24], $data[28], $this -> directory);
+                $categories = $this->categoryManager->getCategoriesArray();
+                $this->produtoInterno->setOrimaCategories();
                 $product = $this->produtoInterno -> add_product($categories, $logger, $this->produtoInterno->getSku());
-                $this -> produtoInterno -> addSpecialAttributesSorefoz($product, $logger);
+                $this -> produtoInterno -> addSpecialAttributesOrima($product, $logger);
             }
             try {
-                $this -> setSorefozStock($product->getSku(), $data[29]);
-                print_r(" -  stock: " . $data[29] . "\n");
+                $this->produtoInterno->setStock($this->produtoInterno->getSku(),'orima');
+                print_r(" -  stock: ".$this->produtoInterno->getStock(). "\n");
             } catch (\Exception $ex) {
                 print_r("Update stock exception - " . $ex -> getMessage() . "\n");
             }

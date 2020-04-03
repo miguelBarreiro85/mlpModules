@@ -19,7 +19,7 @@ use Magento\Framework\Validation\ValidationException;
 use \Mlp\Cli\Helper\Category as CategoryManager;
 use \Mlp\Cli\Helper\Data as DataAttributeOptions;
 use \Mlp\Cli\Helper\Attribute as Attribute;
-
+use \Mlp\Cli\Helper\ProductOptions as ProductOptions;
 class ProdutoInterno
 {
     //atributos
@@ -36,6 +36,11 @@ class ProdutoInterno
     private $height;
     private $weight;
     private $price;
+    private $status;
+    private $image;
+    private $classeEnergetica;
+    private $imageEnergetica;
+    private $stock;
     //stock
     //Classes
     private $productFactory;
@@ -52,12 +57,7 @@ class ProdutoInterno
     private $searchCriteriaBuilder;
     private $sourceItemSaveI;
     private $filterBuilder;
-    private $status;
-    private $image;
-    private $classeEnergetica;
-    private $imageEnergetica;
-    private $stock;
-
+    private $imagesHelper;
     public function __construct( ProductFactory $productFactory,
                                 CategoryManager $categoryManager,
                                 DataAttributeOptions $dataAttributeOptions,
@@ -71,7 +71,8 @@ class ProdutoInterno
                                  \Magento\InventoryApi\Api\Data\SourceItemInterfaceFactory $sourceItemIF,
                                  \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder,
                                  \Magento\InventoryApi\Api\SourceItemsSaveInterface $sourceItemSaveI,
-                                 \Magento\Framework\Api\FilterBuilder  $filterBuilder)
+                                 \Magento\Framework\Api\FilterBuilder  $filterBuilder,
+                                \Mlp\Cli\Helper\imagesHelper $imagesHelper)
     {
 
         $this->directory = $directory;
@@ -88,6 +89,7 @@ class ProdutoInterno
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->sourceItemSaveI = $sourceItemSaveI;
         $this->filterBuilder = $filterBuilder;
+        $this->imagesHelper = $imagesHelper;
     }
 
     public function setData($sku, $name, $gama, $familia, $subfamilia,
@@ -153,8 +155,10 @@ class ProdutoInterno
 
         $this->setCategories($product, $pCategories,$categories);
 
-        $this->setImages($product, $logger, $imgName . "_e.jpeg");
-        $this->setImages($product, $logger, $imgName . ".jpeg");
+        $this->imagesHelper->getImages($this->sku,$this->image,$this->imageEnergetica);
+        $this->imagesHelper->setImages($product, $logger, $imgName . "_e.jpeg");
+        $this->imagesHelper->setImages($product, $logger, $imgName . ".jpeg");
+
         $product->setStatus(\Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED);
         //Preço
         $product->setPrice($this->price);
@@ -167,318 +171,17 @@ class ProdutoInterno
             $logger->info(" - " . $this->sku . " Save product: Exception:  " . $exception->getMessage());
             print_r("- " . $exception->getMessage() . " Save product exception" . "\n");
         }
-        $this->add_warranty_option($product,$pCategories['gama'], $pCategories['familia'], $pCategories['subfamilia']);
-        $value = $this->getInstallationValue($pCategories['familia']);
+        ProductOptions::add_warranty_option($product,$pCategories['gama'], $pCategories['familia'], $pCategories['subfamilia'],
+                                                                        $this->optionFactory,$this->productRepositoryInterface);
+        $value = ProductOptions::getInstallationValue($pCategories['familia']);
         if ($value > 0){
-            $this->add_installation_option($product,$value);
+            ProductOptions::add_installation_option($this->optionFactory,$product,$value,$this->productRepositoryInterface);
         }
         return $product;
     }
 
-    protected function setImages($product, $logger, $ImgName)
-    {
-        $baseMediaPath = $this->config->getBaseMediaPath();
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        try{
-            $type = finfo_file($finfo, $this->directory->getRoot()."/pub/media/".$baseMediaPath. "/" . $ImgName);
-        }catch (\Exception $exception){
-            //finfo exception
-            //print_r("Product.php setImages: ". $exception );
-        }
-        if (isset($type) && in_array($type, array("image/png", "image/jpeg", "image/gif"))) {
-            //this is a image
-            try {
-                $images = $product->getMediaGalleryImages();
-                if (!$images || $images->getSize() == 0) {
-                    $product->addImageToMediaGallery($baseMediaPath . "/" . $ImgName, ['image', 'small_image', 'thumbnail'], false, false);
-                }
-            } catch (\RuntimeException $exception) {
-                print_r("run time exception" . $exception->getMessage() . "\n");
-            } catch (\Exception $localizedException) {
-                $logger->info($product->getName() . "Image name" . $ImgName . "  Sem Imagem");
-            }
-        } else {
-            //not a image
-            $logger->info($product->getName() . "Image name" . $ImgName . "  Sem Imagem");
-        }
 
-    }
 
-    public function setOrimaCategories()
-    {
-        [$mlpGama,$mlpFamilia,$mlpSubFamilia] = $this->categoryManager->setCategoriesOrima($this->gama,$this->familia,$this->subfamilia);
-        $this->gama = $mlpGama;
-        $this->familia = $mlpFamilia;
-        $this->subfamilia = $mlpSubFamilia;
-    }
-
-    protected function add_warranty_option($product, $gama, $familia, $subfamilia){
-
-        $one_year = $this->get_one_year_warranty_price((int)$product->getPrice(), $gama, $familia, $subfamilia);
-        $three_years = $this->get_three_years_warranty_price((int)$product->getPrice(), $gama);
-        //Se os valores forem 0 não adiciona
-        if ($one_year == 0 && $three_years == 0){
-            return;
-        }
-        elseif ($one_year != 0 && $three_years != 0) {
-            $options = [
-                [
-                    'title' => 'Extensão de garantia',
-                    'type' => 'checkbox',
-                    'is_require' => false,
-                    'sort_order' => 4,
-                    'values' => [
-                        [
-                            'title' => '1 ano',
-                            'price' => $one_year,
-                            'price_type' => 'fixed',
-                            'sort_order' => 0,
-                        ],
-                        [
-                            'title' => '3 anos',
-                            'price' => $three_years,
-                            'price_type' => 'fixed',
-                            'sort_order' => 1,
-                        ],
-                    ],
-                ],
-            ];
-        }elseif ($one_year == 0 && $three_years != 0){
-            $options = [
-                [
-                    'title' => 'Extensão de garantia',
-                    'type' => 'checkbox',
-                    'is_require' => false,
-                    'sort_order' => 4,
-                    'values' => [
-                        [
-                            'title' => '3 anos',
-                            'price' => $three_years,
-                            'price_type' => 'fixed',
-                            'sort_order' => 1,
-                        ],
-                    ],
-                ],
-            ];
-        }
-        if(!isset($options)){
-            return;
-        }
-        foreach ($options as $arrayOption) {
-            $option = $this->optionFactory->create();
-            $option->setProductId($product->getId())
-                ->setStoreId($product->getStoreId())
-                ->addData($arrayOption);
-            $option->save();
-            $product->addOption($option);
-        }
-        $this->productRepositoryInterface->save($product);
-
-    }
-    protected function get_one_year_warranty_price($preco, $gama, $familia, $subfamilia)
-    {
-        switch ($gama) {
-            case 'GRANDES DOMÉSTICOS':
-                if ($preco <= 200) {
-                    return 14;
-                } elseif ($preco > 200 && $preco <= 400) {
-                    return 19;
-                } elseif ($preco > 400 && $preco <= 600) {
-                    return 29;
-                } elseif ($preco > 600 && $preco <= 1000) {
-                    return 49;
-                } elseif ($preco > 1000 && $preco <= 1500) {
-                    return 59;
-                } elseif ($preco > 1500) {
-                    return 79;
-                }
-                break;
-            case 'IMAGEM E SOM':
-                switch ($familia) {
-                    case 'CÂMARAS':
-                        if ($preco <= 100) {
-                            return 19;
-                        } elseif ($preco > 100 && $preco <= 200) {
-                            return 24;
-                        } elseif ($preco > 200 && $preco <= 400) {
-                            return 39;
-                        } elseif ($preco > 400 && $preco <= 600) {
-                            return 49;
-                        } elseif ($preco > 600 && $preco <= 800) {
-                            return 69;
-                        } elseif ($preco > 800) {
-                            return 89;
-                        }
-                        break;
-                    default:
-                        if ($preco <= 200) {
-                            return 19;
-                        } elseif (200 < $preco && $preco <= 400) {
-                            return 29;
-                        } elseif ($preco > 400 && $preco <= 600) {
-                            return 49;
-                        } elseif ($preco > 600 && $preco <= 1000) {
-                            return 69;
-                        } elseif ($preco > 1000 && $preco <= 1500) {
-                            return 79;
-                        } elseif ($preco > 1500) {
-                            return 119;
-                        }
-                        break;
-                }
-            case 'INFORMÁTICA':
-                if ($preco <= 200) {
-                    return 24;
-                } elseif ($preco > 200 && $preco <= 400) {
-                    return 39;
-                } elseif ($preco > 400 && $preco <= 600) {
-                    return 49;
-                } elseif ($preco > 600 && $preco <= 1000) {
-                    return 69;
-                } elseif ($preco > 1000 && $preco <= 1500) {
-                    return 89;
-                } elseif ($preco > 1500) {
-                    return 99;
-                }
-                break;
-            case 'COMUNICAÇÕES':
-                if (strcmp($familia, "TELEFONES FIXOS") == 0 || strcmp($subfamilia, "TELEMÓVEIS") == 0){
-                    if ($preco <= 150) {
-                        return 19;
-                    } elseif ($preco > 150 && $preco <= 300) {
-                        return 24;
-                    } elseif ($preco > 300 && $preco <= 400) {
-                        return 39;
-                    } elseif ($preco > 400 && $preco <= 500) {
-                        return 49;
-                    } elseif ($preco > 500 && $preco <= 700) {
-                        return 69;
-                    } elseif ($preco > 700 && $preco <= 900) {
-                        return 79;
-                    } elseif ($preco > 900) {
-                        return 89;
-                    }
-                }else{
-                    return 0;
-                }
-                break;
-            case 'PEQUENOS DOMÉSTICOS':
-                if ($preco <= 50) {
-                    return 9;
-                } elseif ($preco > 50 && $preco <= 100) {
-                    return 14;
-                } elseif ($preco > 100 && $preco <= 200) {
-                    return 19;
-                } elseif ($preco > 200 && $preco <= 500) {
-                    return 29;
-                }
-                break;
-            case 'CLIMATIZAÇÃO':
-                switch ($familia){
-                    case 'AR CONDICIONADO':
-                        if ($preco <= 200) {
-                            return 14;
-                        } elseif ($preco > 200 && $preco <= 400) {
-                            return 19;
-                        } elseif ($preco > 400 && $preco <= 600) {
-                            return 29;
-                        } elseif ($preco > 600 && $preco <= 1000) {
-                            return 49;
-                        } elseif ($preco > 1000 && $preco <= 1500) {
-                            return 59;
-                        } elseif ($preco > 1500) {
-                            return 79;
-                        }
-                        break;
-                    default:
-                        return 0;
-                }
-                break;
-            default:
-                return 0;
-        }
-    }
-    protected function get_three_years_warranty_price($preco, $gama){
-        switch ($gama) {
-            case 'GRANDES DOMÉSTICOS':
-                if ($preco <= 200) {
-                    return 29;
-                } elseif ($preco > 200 && $preco <= 400) {
-                    return 49;
-                } elseif ($preco > 400 && $preco <= 600) {
-                    return 69;
-                } elseif ($preco > 600 && $preco <= 1000) {
-                    return 99;
-                } elseif ($preco > 1000 && $preco <= 1500) {
-                    return 119;
-                } elseif ($preco > 1500) {
-                    return 149;
-                }
-                break;
-            case 'IMAGEM E SOM':
-                if ($preco <= 200) {
-                    return 39;
-                } elseif (200 < $preco && $preco <= 400) {
-                    return 59;
-                } elseif ($preco > 400 && $preco <= 600) {
-                    return 69;
-                } elseif ($preco > 600 && $preco <= 1000) {
-                    return 99;
-                } elseif ($preco > 1000 && $preco <= 1500) {
-                    return 119;
-                } elseif ($preco > 1500) {
-                    return 169;
-                }
-                break;
-            default:
-                return 0;
-        }
-    }
-    protected function getInstallationValue($familia)
-    {
-        switch ($familia){
-            case 'ENCASTRE':
-                return 54.90;
-            case 'FOGÕES':
-                return 39.90;
-            case 'ESQUENTADORES/CALDEIRAS':
-                return 74.90;
-            case 'TERMOACUMULADORES':
-                return 64.90;
-            case 'AR CONDICIONADO':
-                return 180;
-            default:
-                return 0;
-        }
-    }
-    protected function add_installation_option($product, $value){
-        $options = [
-            [
-                'title' => 'Serviço de instalação',
-                'type' => 'checkbox',
-                'is_require' => false,
-                'sort_order' => 4,
-                'values' => [
-                    [
-                        'title' => 'Instalação de equipamento',
-                        'price' => $value,
-                        'price_type' => 'fixed',
-                        'sort_order' => 0,
-                    ],
-                ],
-            ],
-        ];
-
-        foreach ($options as $arrayOption) {
-            $option = $this->optionFactory->create();
-            $option->setProductId($product->getId())
-                ->setStoreId($product->getStoreId())
-                ->addData($arrayOption);
-            $option->save();
-            $product->addOption($option);
-        }
-        $this->productRepositoryInterface->save($product);
-    }
     private function setCategories($product,array $pCategories, $categories)
     {
         try {
@@ -509,7 +212,7 @@ class ProdutoInterno
 
         }
     }
-    public function setStock($sku,$source,$quantity)
+    public function setStock($sku,$source)
     {
         $filterSku = $this->filterBuilder
             -> setField("sku")
@@ -527,7 +230,7 @@ class ProdutoInterno
 
         if (empty($sourceItem)) {
             $item = $this -> sourceItemIF -> create();
-            $item -> setQuantity($quantity);
+            $item -> setQuantity($this->stock);
             $item -> setStatus(1);
             $item -> setSku($sku);
             $item -> setSourceCode($source);
@@ -542,7 +245,7 @@ class ProdutoInterno
             }
         } else {
             foreach ($sourceItem as $item) {
-                $item -> setQuantity($quantity);
+                $item -> setQuantity($this->stock);
                 try {
                     $this -> sourceItemSaveI -> execute([$item]);
                 } catch (CouldNotSaveException $e) {
@@ -562,6 +265,13 @@ class ProdutoInterno
             return trim($data);
         };
 
+
+        if (preg_match("/sim/i",$data[27]) == 1){
+            $stock = 1;
+        }else {
+            $stock = 0;
+        }
+
         $data = array_map($functionTim,$data);
         $this -> sku = $data[18];
         $this -> name = $data[1];
@@ -580,7 +290,7 @@ class ProdutoInterno
         $this->image = $data[23];
         $this->classeEnergetica = $data[25];
         $this->imageEnergetica = $data[26];
-        $this->stock = $data[27];
+        $this->stock = $stock;
         return $this;
     }
 
@@ -601,6 +311,79 @@ class ProdutoInterno
     public function getSubFamilia()
     {
         return $this->getSubFamilia();
+    }
+
+    public function setOrimaData($data)
+    {
+        /*
+         * 0 - Nome
+         * 1 - ref orima
+         * 2 - preço liquido
+         * 3 - stock
+         * 4 - gama
+         * 5 - familia
+         * 6 - subfamilia
+         * 7 - marca
+         * 8 - EAN
+         * 9 - Detalhes
+         * 10 - Imagem
+         * 11 - etiqueta energetica
+         * 12 - manual de instruções
+         * 13 - esquema tecnico
+         */
+        $functionTim = function ($data){
+            return trim($data);
+        };
+
+        $data = array_map($functionTim,$data);
+        $this -> sku = $data[8];
+        $this -> name = $data[0];
+        $this -> gama = $data[4];
+        $this -> familia = $data[5];
+        $this -> subfamilia = $data[6];
+        $this -> description = $data[9];
+        $this -> meta_description = $data[9];
+        $this -> manufacter = $data[7];
+        $this -> length = null;
+        $this -> width = null;
+        $this -> height = null;
+        $this -> weight = null;
+        $this -> price = (int)trim($data[2]) * 1.23 * 1.20;
+        $this->status = 1;
+        $this->image = $data[10];
+        $this->classeEnergetica = null;
+        $this->imageEnergetica = $data[11];
+        $this->stock = (int)filter_var($data[3], FILTER_SANITIZE_NUMBER_INT);
+        return $this;
+    }
+
+    public function setOrimaCategories()
+    {
+        try {
+            [$mlpGama, $mlpFamilia, $mlpSubFamilia] = CategoryManager::setCategoriesOrima($this -> gama, $this -> familia, $this -> subfamilia);
+        } catch (Exception $e) {
+        }
+        $this->gama = $mlpGama;
+        $this->familia = $mlpFamilia;
+        $this->subfamilia = $mlpSubFamilia;
+    }
+    public function addSpecialAttributesOrima(\Magento\Catalog\Api\Data\ProductInterface $product, \Zend\Log\Logger $logger)
+    {
+    }
+
+    public function getImageUrl()
+    {
+        return $this->image;
+    }
+
+    public function getEtiquetaUrl()
+    {
+        return $this->imageEnergetica;
+    }
+
+    public function getStock()
+    {
+        return $this->stock;
     }
 
 }

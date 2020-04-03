@@ -136,10 +136,6 @@ class Sorefoz extends Command
         $categories = $this->categoryManager->getCategoriesArray();
         $row = 0;
         foreach ($this->loadCsv->loadCsv('tot_jlcb_utf.csv',";") as $data) {
-            if ($row == 0){
-                $row++;
-                continue;
-            }
             $row++;
             print_r($row." - ");
             $this->produtoInterno->setSorefozData($data);
@@ -157,9 +153,8 @@ class Sorefoz extends Command
             try {
                 $product = $this -> productRepository -> get($this->produtoInterno->getSku(), true, null, true);
             } catch (NoSuchEntityException $exception) {
-                ImagesHelper ::getImages($this->produtoInterno->getSku(), $data[24], $data[28], $this -> directory);
                 $product = $this->produtoInterno -> add_product($categories, $logger, $this->produtoInterno->getSku());
-                $this -> produtoInterno -> addSpecialAttributesSorefoz($product, $logger);
+                //$this -> produtoInterno -> addSpecialAttributesSorefoz($product, $logger);
             }
             try {
                 $this -> setSorefozStock($product->getSku(), $data[29]);

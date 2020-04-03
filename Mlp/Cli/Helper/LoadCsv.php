@@ -18,6 +18,8 @@ class LoadCsv
     public function loadCsv($csv,$delimiter){
         $fileUrl = $this->directory->getRoot()."/app/code/Mlp/Cli/Csv/".$csv;
         if (($handle = fopen($fileUrl, "r")) !== FALSE) {
+            //ignore 1st line
+            fgetcsv($handle, 4000, $delimiter,'"');
             while (!feof($handle)) {
                 if (($data = fgetcsv($handle, 4000, $delimiter)) !== FALSE) {
                     if($data == "\n" || $data == "\r\n" || $data == "")

@@ -366,7 +366,7 @@ class Category
         return $categories;
     }
 
-    public function setCategoriesOrima($gama, $familia, $subFamilia)
+    public static function setCategoriesOrima($gama, $familia, $subFamilia)
     {
         switch ($gama) {
             case 'QUEIMA':
@@ -981,4 +981,6 @@ class Category
                 print_r("Category Not Found\n");
         }
     }
+
+
 }

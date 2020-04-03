@@ -398,6 +398,87 @@ class Products extends Command
             }
     }
 
+    protected function addOrimaProdCSV(){
+        /*
+         * 0 - Nome
+         * 1 - ref orima
+         * 2 - preço liquido
+         * 3 - stock
+         * 4 - gama
+         * 5 - familia
+         * 6 - subfamilia
+         * 7 - marca
+         * 8 - EAN
+         * 9 - Detalhes
+         * 10 - Imagem
+         * 11 - etiqueta energetica
+         * 12 - manual de instruções
+         * 13 - esquema tecnico
+         */
+        $categories = $this->categoryManager->getCategoriesArray();
+        $writer = new \Zend\Log\Writer\Stream($this->directory->getRoot().'/var/log/Orima.log');
+        $logger = new \Zend\Log\Logger();
+        $logger->addWriter($writer);
+        print_r("Adding Orima products" . "\n");
+        $row = 0;
+        if (($handle = fopen($this->directory->getRoot()."/app/code/Mlp/Cli/Console/Command/Orima.csv", "r")) !== FALSE) {
+            print_r("abri ficheiro\n");
+            while (!feof($handle)) {
+                $row++;
+                if (($data = fgetcsv($handle, 4000, ";", '"')) !== FALSE) {
+                    if ($row == 1 ) {
+                        continue;
+                    }
+                    $sku = trim($data[8]);
+                    if (strlen($sku) == 13) {
+                        try {
+                            $product = $this->productRepository->get($sku, true, null, true);
+                            if ($product->getStatus() == 2) {
+                                print_r($sku . "\n");
+                                continue;
+                            }
+                        } catch (NoSuchEntityException $exception) {
+                            $name = trim($data[0]);
+                            $gama = trim($data[4]);
+                            $familia = trim($data[5]);
+                            $subfamilia = trim($data[6]);
+                            $description = trim($data[9]);
+                            $meta_description = "";
+                            $manufacter = trim($data[7]);
+                            $length = 0;
+                            $width = 0;
+                            $height = 0;
+                            $weight = trim($data[4]);
+                            $price = (int)trim($data[2]) * 1.23 * 1.20;
+                            $imagem = trim($data[10]); //ref Orima
+                            $etiquetaEner = trim($data[11]);// EAN
+
+                            $categories = $this->categoryManager->getCategoriesArray();
+                            $productInterno = new \Mlp\Cli\Helper\Product($sku, $name, $gama, $familia, $subfamilia, $description,
+                                $meta_description, $manufacter, $length, $width, $height, $weight, $price,
+                                $this->productRepository, $this->productFactory, $this->categoryManager,
+                                $this->dataAttributeOptions, $this->attributeManager, $this->stockRegistry,
+                                $this->config, $this->optionFactory, $this->productRepositoryInterface, $this->directory);
+
+                            $productInterno->setOrimaCategories();
+                            $this->getImages($sku, $imagem, $etiquetaEner);
+                            $product = $productInterno->add_product($categories, $logger, $sku);
+
+                        }
+                        $stock = $this->setOrimaStock($data[3]);
+                        $this->setStock($sku,'orima',$stock);
+
+                    }
+                    print_r($row." - sku: ".$sku." stock: ".$stock."-".$data[3]."\n");
+                    unset($data);
+                }
+            }
+            fclose($handle);
+        }else {
+            print_r("Não abriu o ficheiro");
+        }
+    }
+
 
     protected function updatePrice($sku, $price){
         try{
@@ -462,7 +543,49 @@ class Products extends Command
         return $attribute->getData();
     }
 
+    private function setOrimaStock($stock)
+    {
+        return (int)filter_var($stock, FILTER_SANITIZE_NUMBER_INT);;
+    }
 
+    private function setStock($sku,$source,$quantity)
+    {
+        $filterSku = $this -> filterBuilder
+            -> setField("sku")
+            -> setValue($sku)
+            -> create();
+        $sourceFilter = $this -> filterBuilder
+            -> setField("source_code")
+            -> setValue($source)
+            -> create();
+
+        $filterGroup1 = $this -> filterGroupBuilder -> setFilters([$filterSku]) -> create();
+        $filterGroup2 = $this -> filterGroupBuilder -> setFilters([$sourceFilter]) -> create();
+        $searchC = $this -> searchCriteriaBuilder -> setFilterGroups([$filterGroup1, $filterGroup2]) -> create();
+        $sourceItem = $this -> sourceItemRepositoryI -> getList($searchC) -> getItems();
+
+        if (empty($sourceItem)) {
+            $item = $this -> sourceItemIF -> create();
+            $item -> setQuantity($quantity);
+            $item -> setStatus(1);
+            $item -> setSku($sku);
+            $item -> setSourceCode($source);
+            $this->sourceItemSaveI->execute([$item]);
+        } else {
+            foreach ($sourceItem as $item) {
+                $item -> setQuantity($quantity);
+                try {
+                    $this -> sourceItemSaveI -> execute([$item]);
+                } catch (CouldNotSaveException $e) {
+                    print_r($e->getMessage());
+                } catch (InputException $e) {
+                    print_r($e->getMessage());
+                } catch (ValidationException $e) {
+                    print_r($e->getMessage());
+                }
+            }
+        }
+    }
 
 
 }
