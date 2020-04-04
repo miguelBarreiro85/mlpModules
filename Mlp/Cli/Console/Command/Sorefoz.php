@@ -154,7 +154,7 @@ class Sorefoz extends Command
                 continue;
             }
             try {
-                $product = $this -> productRepository -> get($this->produtoInterno->getSku(), true, null, true);
+                $this -> productRepository -> get($this->produtoInterno->getSku(), true, null, true);
             } catch (NoSuchEntityException $exception) {
                 $product = $this->produtoInterno -> add_product($categories, $logger, $this->produtoInterno->getSku());
                 if(isset($product)){

@@ -131,25 +131,28 @@ class Orima extends Command
             print_r($row." - ");
             $this->produtoInterno->setOrimaData($data);
             if (strlen($this->produtoInterno->getSku()) != 13) {
-                //Log sku e name
+                print_r("Wrong sku - ");
                 continue;
             }
             if (!is_null($categoriesFilter)){
                 if (strcmp($categoriesFilter,$this->produtoInterno->getSubFamilia()) != 0){
+                    print_r("wrong familie - ");
                     continue;
                 }
             }
             try {
-                $product = $this -> productRepository -> get($this->produtoInterno->getSku(), true, null, true);
+                $this -> productRepository -> get($this->produtoInterno->getSku(), true, null, true);
             } catch (NoSuchEntityException $exception) {
                 $categories = $this->categoryManager->getCategoriesArray();
+                print_r(" - Setting Categories - ");
                 $this->produtoInterno->setOrimaCategories();
-                $product = $this->produtoInterno -> add_product($categories, $logger, $this->produtoInterno->getSku());
-                $this -> produtoInterno -> addSpecialAttributesOrima($product, $logger);
+                $this->produtoInterno -> add_product($categories, $logger, $this->produtoInterno->getSku());
+                //$this -> produtoInterno -> addSpecialAttributesOrima($product, $logger);
             }
             try {
+                print_r(" - Setting stock: ");
                 $this->produtoInterno->setStock($this->produtoInterno->getSku(),'orima');
-                print_r(" -  stock: ".$this->produtoInterno->getStock(). "\n");
+                print_r($this->produtoInterno->getStock(). "\n");
             } catch (\Exception $ex) {
                 print_r("Update stock exception - " . $ex -> getMessage() . "\n");
             }
