@@ -4,14 +4,33 @@
 namespace Mlp\Cli\Helper;
 
 
+use Magento\Catalog\Model\ResourceModel\Product;
+
 class ProductOptions
 {
 
-    public static function add_warranty_option($product,
-                                               $gama, $familia, $subfamilia,
-                                               $optionFactory,
-                                               $productRepositoryInterface){
+    private $productInt;
+    private $optionFactory;
+    private $optionRepository;
+    private $productResource;
+    private $customOption;
+    private $productRepository;
 
+    public function __construct(\Magento\Catalog\Api\Data\ProductInterface  $productInt,
+                                \Magento\Catalog\Model\ResourceModel\Product $productResource,
+                                \Magento\Catalog\Model\Product\OptionFactory $optionFactory,
+                                \Magento\Catalog\Model\Product\Option\Repository $optionRepository,
+                                \Magento\Catalog\Api\Data\CustomOptionInterface $customOption,
+                                \Magento\Catalog\Api\ProductRepositoryInterface $productRepository)
+    {
+        $this->productResource = $productInt;
+        $this->optionFactory = $optionFactory;
+        $this->optionRepository = $optionRepository;
+        $this->productResource = $productResource;
+        $this->customOption = $customOption;
+    }
+
+    public function add_warranty_option(\Magento\Catalog\Api\Data\ProductInterface  $product,$gama, $familia, $subfamilia){
         $one_year = self::get_one_year_warranty_price((int)$product->getPrice(), $gama, $familia, $subfamilia);
         $three_years = self::get_three_years_warranty_price((int)$product->getPrice(), $gama);
         //Se os valores forem 0 não adiciona
@@ -63,15 +82,40 @@ class ProductOptions
             return;
         }
         foreach ($options as $arrayOption) {
-            $option = $optionFactory->create();
+            $option = $this->optionFactory->create();
             $option->setProductId($product->getId())
                 ->setStoreId($product->getStoreId())
                 ->addData($arrayOption);
             $option->save();
             $product->addOption($option);
         }
-        $productRepositoryInterface->save($product);
+    }
+    public function add_installation_option(\Magento\Catalog\Api\Data\ProductInterface  $product, $value){
+        $options = [
+            [
+                'title' => 'Serviço de instalação',
+                'type' => 'checkbox',
+                'is_require' => false,
+                'sort_order' => 4,
+                'values' => [
+                    [
+                        'title' => 'Instalação de equipamento',
+                        'price' => $value,
+                        'price_type' => 'fixed',
+                        'sort_order' => 0,
+                    ],
+                ],
+            ],
+        ];
 
+        foreach ($options as $arrayOption) {
+            $option = $this->optionFactory->create();
+            $option->setProductId($product->getId())
+                ->setStoreId($product->getStoreId())
+                ->addData($arrayOption);
+            $option->save();
+            $product->addOption($option);
+        }
     }
     public static function get_one_year_warranty_price($preco, $gama, $familia, $subfamilia)
     {
@@ -249,32 +293,5 @@ class ProductOptions
                 return 0;
         }
     }
-    public static function add_installation_option($optionFactory, $product, $value,$productRepositoryInterface){
-        $options = [
-            [
-                'title' => 'Serviço de instalação',
-                'type' => 'checkbox',
-                'is_require' => false,
-                'sort_order' => 4,
-                'values' => [
-                    [
-                        'title' => 'Instalação de equipamento',
-                        'price' => $value,
-                        'price_type' => 'fixed',
-                        'sort_order' => 0,
-                    ],
-                ],
-            ],
-        ];
 
-        foreach ($options as $arrayOption) {
-            $option = $optionFactory->create();
-            $option->setProductId($product->getId())
-                ->setStoreId($product->getStoreId())
-                ->addData($arrayOption);
-            $option->save();
-            $product->addOption($option);
-        }
-        $productRepositoryInterface->save($product);
-    }
 }

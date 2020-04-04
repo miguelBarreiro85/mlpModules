@@ -140,32 +140,33 @@ class Sorefoz extends Command
             print_r($row." - ");
             $this->produtoInterno->setSorefozData($data);
             if (strlen($this->produtoInterno->getSku()) != 13) {
-                //Log sku e name
+                print_r("invalid sku - ");
                 continue;
             }
             if (!is_null($categoriesFilter)){
                 if (strcmp($categoriesFilter,$this->produtoInterno->getSubFamilia()) != 0){
-                    print_r($this->produtoInterno->getSku() . " - Fora de Gama ");
+                    print_r($this->produtoInterno->getSku() . " - Fora de Gama \n");
                     continue;
                 }
             }
             if($this->produtoInterno->getProductSorefozStatus() == 0){
-                print_r(" - disabled");
+                print_r(" - disabled\n");
                 continue;
             }
             try {
                 $product = $this -> productRepository -> get($this->produtoInterno->getSku(), true, null, true);
             } catch (NoSuchEntityException $exception) {
                 $product = $this->produtoInterno -> add_product($categories, $logger, $this->produtoInterno->getSku());
-                //$this -> produtoInterno -> addSpecialAttributesSorefoz($product, $logger);
+                if(isset($product)){
+                    $this -> produtoInterno -> addSpecialAttributesSorefoz($product, $logger);
+                    try {
+                        print_r(" - Setting stock: " . $data[29] . "\n");
+                        $this -> setSorefozStock($product->getSku(), $data[29]);
+                    } catch (\Exception $ex) {
+                        print_r("Update stock exception - " . $ex -> getMessage() . "\n");
+                    }
+                }
             }
-            try {
-                $this -> setSorefozStock($product->getSku(), $data[29]);
-                print_r(" -  stock: " . $data[29] . "\n");
-            } catch (\Exception $ex) {
-                print_r("Update stock exception - " . $ex -> getMessage() . "\n");
-            }
-
         }
     }
 

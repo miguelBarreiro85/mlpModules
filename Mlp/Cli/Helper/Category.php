@@ -366,6 +366,7 @@ class Category
         return $categories;
     }
 
+
     public static function setCategoriesOrima($gama, $familia, $subFamilia)
     {
         switch ($gama) {
@@ -377,6 +378,7 @@ class Category
                         $familia = self::APARELHOS_DE_COZINHA;
                         $subFamilia = self::FOGAREIROS;
                         return ([$gama, $familia, $subFamilia]);
+                        break;
                     case 'FOGOES':
                         $familia = self::FOGOES;
                         switch ($subFamilia) {

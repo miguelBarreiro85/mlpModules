@@ -12,6 +12,7 @@ use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product\Media\Config;
 use Magento\Catalog\Model\Product\OptionFactory;
 use Magento\Catalog\Model\ProductFactory as ProductFactory;
+use Magento\Catalog\Model\ResourceModel\Product;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\InputException;
@@ -58,6 +59,9 @@ class ProdutoInterno
     private $sourceItemSaveI;
     private $filterBuilder;
     private $imagesHelper;
+    private $productResource;
+    private $productOptions;
+
     public function __construct( ProductFactory $productFactory,
                                 CategoryManager $categoryManager,
                                 DataAttributeOptions $dataAttributeOptions,
@@ -65,6 +69,7 @@ class ProdutoInterno
                                 Config $config,
                                 OptionFactory $optionFactory,
                                 ProductRepositoryInterface $productRepositoryInterface,
+                                 \Magento\Catalog\Model\ResourceModel\Product $productResource,
                                 \Magento\Framework\Filesystem\DirectoryList $directory,
                                  \Magento\Framework\Api\Search\FilterGroupBuilder $filterGroupBuilder,
                                  \Magento\InventoryApi\Api\SourceItemRepositoryInterface $sourceItemRepositoryI,
@@ -72,7 +77,8 @@ class ProdutoInterno
                                  \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder,
                                  \Magento\InventoryApi\Api\SourceItemsSaveInterface $sourceItemSaveI,
                                  \Magento\Framework\Api\FilterBuilder  $filterBuilder,
-                                \Mlp\Cli\Helper\imagesHelper $imagesHelper)
+                                \Mlp\Cli\Helper\imagesHelper $imagesHelper,
+                                \Mlp\Cli\Helper\ProductOptions $productOptions)
     {
 
         $this->directory = $directory;
@@ -90,6 +96,8 @@ class ProdutoInterno
         $this->sourceItemSaveI = $sourceItemSaveI;
         $this->filterBuilder = $filterBuilder;
         $this->imagesHelper = $imagesHelper;
+        $this->productResource = $productResource;
+        $this->productOptions = $productOptions;
     }
 
     public function setData($sku, $name, $gama, $familia, $subfamilia,
@@ -113,15 +121,20 @@ class ProdutoInterno
 
 
 
-    public function addSpecialAttributesSorefoz($product,$logger){
+    public function addSpecialAttributesSorefoz(\Magento\Catalog\Model\Product $product,$logger){
         $attributes = $this->attributeManager->getSpecialAttributes($this->gama, $this->familia, $this->subfamilia, $this->description, $this->name);
         if (isset($attributes)){
             foreach ($attributes as $attribute) {
                 $product->setCustomAttribute($attribute['code'], $attribute['value']);
+                try {
+                    $this -> productResource -> saveAttribute($product, $attribute['code']);
+                } catch (\Exception $e) {
+                    print_r($e->getMessage());
+                }
             }
         }
         try {
-            $product->save();
+            //$product->save();
         } catch (\Exception $exception) {
             $logger->info(" - " . $this->sku . " Save product: Exception:  " . $exception->getMessage());
             print_r("- " . $exception->getMessage() . " Save product exception" . "\n");
@@ -155,6 +168,7 @@ class ProdutoInterno
 
         $this->setCategories($product, $pCategories,$categories);
 
+
         $this->imagesHelper->getImages($this->sku,$this->image,$this->imageEnergetica);
         $this->imagesHelper->setImages($product, $logger, $imgName . "_e.jpeg");
         $this->imagesHelper->setImages($product, $logger, $imgName . ".jpeg");
@@ -165,19 +179,27 @@ class ProdutoInterno
 
         //Salvar produto
         try {
+            print_r("saving product.. - ");
             $product = $this->productRepositoryInterface->save($product);
-            print_r($this->sku . " - added" . "  -  ");
         } catch (\Exception $exception) {
             $logger->info(" - " . $this->sku . " Save product: Exception:  " . $exception->getMessage());
             print_r("- " . $exception->getMessage() . " Save product exception" . "\n");
+            return null;
         }
-        ProductOptions::add_warranty_option($product,$pCategories['gama'], $pCategories['familia'], $pCategories['subfamilia'],
-                                                                        $this->optionFactory,$this->productRepositoryInterface);
-        $value = ProductOptions::getInstallationValue($pCategories['familia']);
-        if ($value > 0){
-            ProductOptions::add_installation_option($this->optionFactory,$product,$value,$this->productRepositoryInterface);
+        try{
+            $this->productOptions->add_warranty_option($product,$pCategories['gama'], $pCategories['familia'], $pCategories['subfamilia']);
+            $value = $this->productOptions->getInstallationValue($pCategories['familia']);
+            if ($value > 0){
+                $this->productOptions->add_installation_option($product,$value);
+            }
+            print_r("saving Options.. - ");
+            $this->productRepositoryInterface->save($product);
+
+            return $product;
+        }catch (\Exception $e){
+            print_r("add options exception - ".$e->getMessage());
         }
-        return $product;
+
     }
 
 

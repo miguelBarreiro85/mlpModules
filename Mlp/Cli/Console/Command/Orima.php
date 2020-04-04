@@ -160,6 +160,7 @@ class Orima extends Command
 
     }
 
+
     private function updateStocks()
     {
     }
