@@ -67,7 +67,11 @@ class Products extends Command
 
     private $productCollectionFactory;
 
-    public function __construct(\Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory,
+    private $resourceConnection;
+
+    public function __construct(
+                                \Magento\Framework\App\ResourceConnection $resourceConnection,
+                                \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory,
                                 ProductRepositoryInterface $productRepository,
                                 SearchCriteriaBuilder $searchCriteriaBuilder,
                                 FilterBuilder $filterBuilder,
@@ -84,6 +88,7 @@ class Products extends Command
         $this->state = $state;
         $this->dataAttributeOptions =$dataAttributeOptions;
         $this->productCollectionFactory = $productCollectionFactory;
+        $this->resourceConnection = $resourceConnection;
         parent::__construct();
     }
 
@@ -142,14 +147,22 @@ class Products extends Command
         return $attribute->getData();
     }
 
-    private function changeManufacturer(?string $oldManufacturerCode, ?string $newManufacturer)
+    private function changeManufacturer(?string $oldManufacturer, ?string $newManufacturer)
     {
         //select attribute_id from eav_attribute where attribute_code like "manufacturer"; 83 de momento
         //select option_id from eav_attribute_option_value where value like "orima"; para ver qual é o numero $oldManufacturerCode
+
+        $sqlManufacturerAttributeId = "SELECT attribute_id from eav_attribute where attribute_code like manufacturer";
+        $connection =  $this->resourceConnection->getConnection();
+        $dataManufacturerAttributeId = $connection->fetchAll($sqlManufacturerAttributeId);
+        $oldManufacturerCode = $dataManufacturerAttributeId["attribute_id"];
+        $sqlOldManufacturerCode = "select option_id from eav_attribute_option_value where value like".$oldManufacturerCode;
+        $dataOldManufacturerCode = $connection->fetchAll($sqlOldManufacturerCode);
+
         $collection = $this->productCollectionFactory->create();
         $collection->getSelect()
             ->joinInner(["manufacturer" => "catalog_product_entity_int"],
-                'e.entity_id = manufacturer.entity_id AND manufacturer.attribute_id = 83 AND manufacturer.value ='.(int)$oldManufacturerCode,
+                'e.entity_id = manufacturer.entity_id AND manufacturer.attribute_id = 83 AND manufacturer.value ='.(int)$dataOldManufacturerCode["option_id"],
                 []);
         foreach ($collection as $product) {
             print_r($product->getSku()."\n");
