@@ -155,15 +155,13 @@ class Products extends Command
         $sqlManufacturerAttributeId = 'SELECT attribute_id from eav_attribute where attribute_code like "manufacturer"';
         $connection =  $this->resourceConnection->getConnection();
         $dataManufacturerAttributeId = $connection->fetchAll($sqlManufacturerAttributeId);
-        print_r($dataManufacturerAttributeId);
         $oldManufacturerCode = $dataManufacturerAttributeId[0]["attribute_id"];
-        $sqlOldManufacturerCode = 'select option_id from eav_attribute_option_value where value like"'.$oldManufacturerCode.'"';
+        $sqlOldManufacturerCode = 'select option_id from eav_attribute_option_value where value like"'.$oldManufacturer.'"';
         $dataOldManufacturerCode = $connection->fetchAll($sqlOldManufacturerCode);
-
         $collection = $this->productCollectionFactory->create();
         $collection->getSelect()
             ->joinInner(["manufacturer" => "catalog_product_entity_int"],
-                'e.entity_id = manufacturer.entity_id AND manufacturer.attribute_id = 83 AND manufacturer.value ='.(int)$dataOldManufacturerCode[0]["option_id"],
+                'e.entity_id = manufacturer.entity_id AND manufacturer.attribute_id ='.$oldManufacturerCode.' AND manufacturer.value ='.(int)$dataOldManufacturerCode[0]["option_id"],
                 []);
         foreach ($collection as $product) {
             print_r($product->getSku()."\n");
