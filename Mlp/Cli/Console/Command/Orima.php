@@ -134,7 +134,7 @@ class Orima extends Command
             try{
                 $this->produtoInterno->setOrimaData($data);
             }catch(\Exception $e){
-                $logger->info("Error setOrimaData: $row");
+                $logger->info("Error setOrimaData: ".$row);
                 continue;
             }
             if (strlen($this->produtoInterno->getSku()) != 13) {
