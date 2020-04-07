@@ -152,11 +152,11 @@ class Products extends Command
         //select attribute_id from eav_attribute where attribute_code like "manufacturer"; 83 de momento
         //select option_id from eav_attribute_option_value where value like "orima"; para ver qual é o numero $oldManufacturerCode
 
-        $sqlManufacturerAttributeId = "SELECT attribute_id from eav_attribute where attribute_code like manufacturer";
+        $sqlManufacturerAttributeId = 'SELECT attribute_id from eav_attribute where attribute_code like "manufacturer"';
         $connection =  $this->resourceConnection->getConnection();
         $dataManufacturerAttributeId = $connection->fetchAll($sqlManufacturerAttributeId);
         $oldManufacturerCode = $dataManufacturerAttributeId["attribute_id"];
-        $sqlOldManufacturerCode = "select option_id from eav_attribute_option_value where value like".$oldManufacturerCode;
+        $sqlOldManufacturerCode = 'select option_id from eav_attribute_option_value where value like".$oldManufacturerCode"';
         $dataOldManufacturerCode = $connection->fetchAll($sqlOldManufacturerCode);
 
         $collection = $this->productCollectionFactory->create();
