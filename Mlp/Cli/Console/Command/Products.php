@@ -163,7 +163,7 @@ class Products extends Command
         $collection = $this->productCollectionFactory->create();
         $collection->getSelect()
             ->joinInner(["manufacturer" => "catalog_product_entity_int"],
-                'e.entity_id = manufacturer.entity_id AND manufacturer.attribute_id = 83 AND manufacturer.value ='.(int)$dataOldManufacturerCode["option_id"],
+                'e.entity_id = manufacturer.entity_id AND manufacturer.attribute_id = 83 AND manufacturer.value ='.(int)$dataOldManufacturerCode[0]["option_id"],
                 []);
         foreach ($collection as $product) {
             print_r($product->getSku()."\n");
