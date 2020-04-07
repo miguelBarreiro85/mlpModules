@@ -134,12 +134,12 @@ class Orima extends Command
             try{
                 $this->produtoInterno->setOrimaData($data);
             }catch(\Exception $e){
-                $logger->log("Error setOrimaData: $data");
+                $logger->info("Error setOrimaData: $data");
                 continue;
             }
             if (strlen($this->produtoInterno->getSku()) != 13) {
                 print_r("Wrong sku - ");
-                $logger->log("Wrong Sku: ".$this->produtoInterno->getSku());
+                $logger->info("Wrong Sku: ".$this->produtoInterno->getSku());
                 continue;
             }
             if (!is_null($categoriesFilter)){
