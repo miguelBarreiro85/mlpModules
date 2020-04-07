@@ -144,11 +144,12 @@ class Products extends Command
 
     private function changeManufacturer(?string $oldManufacturerCode, ?string $newManufacturer)
     {
-        //select option_id from eav_attribute_option_value where value like "orima"; para ver qual é o numero
+        //select attribute_id from eav_attribute where attribute_code like "manufacturer"; 83 de momento
+        //select option_id from eav_attribute_option_value where value like "orima"; para ver qual é o numero $oldManufacturerCode
         $collection = $this->productCollectionFactory->create();
         $collection->getSelect()
             ->joinInner(["manufacturer" => "catalog_product_entity_int"],
-                'e.entity_id = manufacturer.entity_id AND manufacturer.attribute_id = 83 AND manufacturer.value ='.$oldManufacturerCode,
+                'e.entity_id = manufacturer.entity_id AND manufacturer.attribute_id = 83 AND manufacturer.value ='.(int)$oldManufacturerCode,
                 []);
         foreach ($collection as $product) {
             print_r($product->getSku()."\n");
