@@ -155,7 +155,8 @@ class Products extends Command
         $sqlManufacturerAttributeId = 'SELECT attribute_id from eav_attribute where attribute_code like "manufacturer"';
         $connection =  $this->resourceConnection->getConnection();
         $dataManufacturerAttributeId = $connection->fetchAll($sqlManufacturerAttributeId);
-        $oldManufacturerCode = $dataManufacturerAttributeId["attribute_id"];
+        print_r($dataManufacturerAttributeId);
+        $oldManufacturerCode = $dataManufacturerAttributeId[0]["attribute_id"];
         $sqlOldManufacturerCode = 'select option_id from eav_attribute_option_value where value like"'.$oldManufacturerCode.'"';
         $dataOldManufacturerCode = $connection->fetchAll($sqlOldManufacturerCode);
 
