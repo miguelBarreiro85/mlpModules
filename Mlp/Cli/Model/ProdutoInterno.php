@@ -31,7 +31,7 @@ class ProdutoInterno
     private $subfamilia;
     private $description;
     private $meta_description;
-    private $manufacter;
+    private $manufacturer;
     private $length;
     private $width;
     private $height;
@@ -101,7 +101,7 @@ class ProdutoInterno
     }
 
     public function setData($sku, $name, $gama, $familia, $subfamilia,
-                            $description, $meta_description, $manufacter,
+                            $description, $meta_description, $manufacturer,
                             $length, $width, $height, $weight, $price) {
         $this->sku = $sku;
         $this->name = $name;
@@ -110,7 +110,7 @@ class ProdutoInterno
         $this->subfamilia = $subfamilia;
         $this->description = $description;
         $this->meta_description = $meta_description;
-        $this->manufacter = $manufacter;
+        $this->manufacturer = $manufacturer;
         $this->length = $length;
         $this->width = $width;
         $this->height = $height;
@@ -150,7 +150,7 @@ class ProdutoInterno
 
         $product->setCustomAttribute('description', $this->description);
         $product->setCustomAttribute('meta_description', $this->meta_description);
-        $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', strval($this->manufacter));
+        $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', strval($this->manufacturer));
         $product->setCustomAttribute('manufacturer', $optionId);
         $product->setCustomAttribute('ts_dimensions_length', $this->length / 10);
         $product->setCustomAttribute('ts_dimensions_width', $this->width / 10);
@@ -307,7 +307,7 @@ class ProdutoInterno
         $this -> subfamilia = $data[9];
         $this -> description = $data[25];
         $this -> meta_description = $data[24];
-        $this -> manufacter = $data[3];
+        $this -> manufacturer = $data[3];
         $this -> length = (int)$data[20];
         $this -> width = (int)$data[21];
         $this -> height = (int)$data[22];
@@ -370,7 +370,7 @@ class ProdutoInterno
         $this -> subfamilia = $data[6];
         $this -> description = $data[9];
         $this -> meta_description = $data[9];
-        $this -> manufacter = $data[7];
+        $this -> manufacturer = $data[7];
         $this -> length = null;
         $this -> width = null;
         $this -> height = null;
@@ -411,6 +411,16 @@ class ProdutoInterno
     public function getStock()
     {
         return $this->stock;
+    }
+
+    public function setManufacturer(string $manufacturer)
+    {
+        $this->manufacturer = $manufacturer;
+    }
+
+    public function getManufacturer()
+    {
+        return $this->manufacturer;
     }
 
 }

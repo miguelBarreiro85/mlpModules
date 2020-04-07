@@ -87,6 +87,76 @@ class Auferma extends Command
         }
     }
 
+    protected function addAufermaProdCSV()
+    {
+        /*
+            Codigo,0
+            Nome,1
+            CodCurto,2
+            PVPBase,3
+            PesoBrt,4
+            Marca,5
+            FamiliaAuferma,6
+            NomeXtra 7
+            Gama,8
+            Familia, 9
+            subfamilia 10
+            stock 11
+        */
+
+
+        $categories = $this->categoryManager->getCategoriesArray();
+        $writer = new \Zend\Log\Writer\Stream($this->directory->getRoot().'/var/log/Auferma.log');
+        $logger = new \Zend\Log\Logger();
+        $logger->addWriter($writer);
+        print_r("Adding Auferma products" . "\n");
+        $row = 0;
+        if (($handle = fopen($this->directory->getRoot()."/app/code/Mlp/Cli/Console/Command/aufermaInterno.csv", "r")) !== FALSE) {
+            while (!feof($handle)) {
+                $row++;
+                if (($data = fgetcsv($handle, 4000, ",")) !== FALSE) {
+                    if ($row == 1 || strcmp($data[8], "ACESSÓRIOS E BATERIAS") == 0 ||
+                        strcmp($data[9], "AR CONDICIONADO") == 0) {
+                        continue;
+                    }
+                    $sku = trim($data[0]);
+                    try {
+                        $product = $this->productRepository->get($sku, true, null, true);
+                        if ($product->getStatus() == 2) {
+                            continue;
+                        }
+                    } catch (NoSuchEntityException $exception) {
+                        $name = trim($data[1]);
+                        $gama = trim($data[8]);
+                        $familia = trim($data[9]);
+                        $subfamilia = trim($data[10]);
+                        $description = trim($data[7]);
+                        $meta_description = "";
+                        $manufacter = trim($data[5]);
+                        $length = 0;
+                        $width = 0;
+                        $height = 0;
+                        $weight = trim($data[4]);
+                        $price = (int)trim($data[3]);
+
+                        try{
+                            $productInterno = new \Mlp\Cli\Helper\Product($sku, $name, $gama, $familia, $subfamilia, $description,
+                                $meta_description, $manufacter, $length, $width, $height, $weight, $price,
+                                $this->productRepository, $this->productFactory, $this->categoryManager,
+                                $this->dataAttributeOptions, $this->attributeManager, $this->stockRegistry,
+                                $this->config, $this->optionFactory, $this->productRepositoryInterface, $this->directory);
+
+                            $product = $productInterno->add_product($categories, $logger, $data[2]);
+                        }catch (\Exception $e){
+                            continue;
+                        }
+                    }
+                    $this->updateStock($product, $data[11]);
+                }
+            }
+            fclose($handle);
+        }
+    }
 
     private function updateStocks(){
         try {

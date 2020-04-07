@@ -14,6 +14,8 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+use Mlp\Cli\Helper\Manufacturer as Manufacturer;
+
 class Orima extends Command
 {
 
@@ -146,6 +148,8 @@ class Orima extends Command
                 $categories = $this->categoryManager->getCategoriesArray();
                 print_r(" - Setting Categories - ");
                 $this->produtoInterno->setOrimaCategories();
+                //$manufacturer = Manufacturer::getOrimaManufacturer($this->produtoInterno->getManufacturer());
+                //$this->produtoInterno->setManufacturer($manufacturer);
                 $this->produtoInterno -> add_product($categories, $logger, $this->produtoInterno->getSku());
                 //$this -> produtoInterno -> addSpecialAttributesOrima($product, $logger);
             }
@@ -172,5 +176,7 @@ class Orima extends Command
     {
         return (int)filter_var($stock, FILTER_SANITIZE_NUMBER_INT);;
     }
+
+
 
 }
