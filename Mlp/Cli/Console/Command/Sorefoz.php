@@ -8,6 +8,7 @@ use Braintree\Exception;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Filesystem\DirectoryList;
+use Mlp\Cli\Helper\Manufacturer as Manufacturer;
 use Mlp\Cli\Helper\splitFile;
 use Mlp\Cli\Helper\imagesHelper as ImagesHelper;
 use Mlp\Cli\Helper\LoadCsv;
@@ -139,6 +140,7 @@ class Sorefoz extends Command
             $row++;
             print_r($row." - ");
             $this->produtoInterno->setSorefozData($data);
+
             if (strlen($this->produtoInterno->getSku()) != 13) {
                 print_r("invalid sku - ");
                 continue;
@@ -156,6 +158,10 @@ class Sorefoz extends Command
             try {
                 $this -> productRepository -> get($this->produtoInterno->getSku(), true, null, true);
             } catch (NoSuchEntityException $exception) {
+
+                $manufacturer = Manufacturer::getSorefozManufacturer($this->produtoInterno->getManufacturer());
+                $this->produtoInterno->setManufacturer($manufacturer);
+
                 $product = $this->produtoInterno -> add_product($categories, $logger, $this->produtoInterno->getSku());
                 if(isset($product)){
                     $this -> produtoInterno -> addSpecialAttributesSorefoz($product, $logger);

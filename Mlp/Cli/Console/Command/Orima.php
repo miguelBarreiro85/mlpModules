@@ -131,9 +131,15 @@ class Orima extends Command
         foreach ($this->loadCsv->loadCsv('Orima.csv',";") as $data) {
             $row++;
             print_r($row." - ");
-            $this->produtoInterno->setOrimaData($data);
+            try{
+                $this->produtoInterno->setOrimaData($data);
+            }catch(\Exception $e){
+                $logger->log("Error setOrimaData: $data");
+                continue;
+            }
             if (strlen($this->produtoInterno->getSku()) != 13) {
                 print_r("Wrong sku - ");
+                $logger->log("Wrong Sku: ".$this->produtoInterno->getSku());
                 continue;
             }
             if (!is_null($categoriesFilter)){
@@ -148,8 +154,8 @@ class Orima extends Command
                 $categories = $this->categoryManager->getCategoriesArray();
                 print_r(" - Setting Categories - ");
                 $this->produtoInterno->setOrimaCategories();
-                //$manufacturer = Manufacturer::getOrimaManufacturer($this->produtoInterno->getManufacturer());
-                //$this->produtoInterno->setManufacturer($manufacturer);
+                $manufacturer = Manufacturer::getOrimaManufacturer($this->produtoInterno->getManufacturer());
+                $this->produtoInterno->setManufacturer($manufacturer);
                 $this->produtoInterno -> add_product($categories, $logger, $this->produtoInterno->getSku());
                 //$this -> produtoInterno -> addSpecialAttributesOrima($product, $logger);
             }
