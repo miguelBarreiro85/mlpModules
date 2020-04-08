@@ -389,6 +389,7 @@ class Attribute
                                 ->toArray();
                             $attributeSetId = (int)$attributeSet['attribute_set_id'];
                             return $attributeSetId;
+                        }
                 case 'MAQUINAS SECAR ROUPA':
                     $attributeSet = $this->attributeSetCollection->create()
                         ->addFieldToSelect('attribute_set_id')
@@ -729,7 +730,7 @@ class Attribute
                     return $attributeSetId;
                 default:
                     return 4;
-            }
+        }
         }catch (\Exception $ex){
             /*
             $entityTypeCode = 'catalog_product';
