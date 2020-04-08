@@ -140,6 +140,7 @@ class ProdutoInterno
             print_r("- " . $exception->getMessage() . " Save product exception" . "\n");
         }
     }
+    
     public function add_product($categories, $logger, $imgName) {
         $product = $this->productFactory->create();
         $product->setSku($this->sku);

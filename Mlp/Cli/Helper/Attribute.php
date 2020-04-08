@@ -372,13 +372,23 @@ class Attribute
 
                 //Grandes domesticos
                 case 'MAQUINAS LAVAR ROUPA':
-                    $attributeSet = $this->attributeSetCollection->create()
-                        ->addFieldToSelect('attribute_set_id')
-                        ->addFieldToFilter('attribute_set_name', 'MLR')
-                        ->getFirstItem()
-                        ->toArray();
-                    $attributeSetId = (int)$attributeSet['attribute_set_id'];
-                    return $attributeSetId;
+                    switch($subfamilia) {
+                        case 'MLR LAVAR E SECAR ROUPA':
+                            $attributeSet = $this->attributeSetCollection->create()
+                            ->addFieldToSelect('attribute_set_id')
+                            ->addFieldToFilter('attribute_set_name', 'MLSR')
+                            ->getFirstItem()
+                            ->toArray();
+                            $attributeSetId = (int)$attributeSet['attribute_set_id'];
+                            return $attributeSetId;
+                        default:
+                            $attributeSet = $this->attributeSetCollection->create()
+                                ->addFieldToSelect('attribute_set_id')
+                                ->addFieldToFilter('attribute_set_name', 'MLR')
+                                ->getFirstItem()
+                                ->toArray();
+                            $attributeSetId = (int)$attributeSet['attribute_set_id'];
+                            return $attributeSetId;
                 case 'MAQUINAS SECAR ROUPA':
                     $attributeSet = $this->attributeSetCollection->create()
                         ->addFieldToSelect('attribute_set_id')

@@ -378,7 +378,6 @@ class Category
                         $familia = self::APARELHOS_DE_COZINHA;
                         $subFamilia = self::FOGAREIROS;
                         return ([$gama, $familia, $subFamilia]);
-                        break;
                     case 'FOGOES':
                         $familia = self::FOGOES;
                         switch ($subFamilia) {
@@ -396,11 +395,10 @@ class Category
                                 return ([$gama, $familia, $subFamilia]);
                             default:
                                 print_r("SubFamilia not found".$subFamilia."\n");
-                                return([$gama,$familia,null]);
+                                return ([$gama, $familia, $subFamilia]);
                         }
                     default:
-                        print_r("familia not found".$familia."\n");
-                        return([$gama,null,null]);
+                        return ([$gama, $familia, $subFamilia]);
                 }
 
             case 'MAQUINAS ROUPA':
@@ -432,8 +430,7 @@ class Category
                         $subFamilia = self::MAQUINAS_SECAR_ROUPA_VENT;
                         return ([$gama, $familia, $subFamilia]);
                     default:
-                        print_r("MAQ ROUPA category not found\n");
-                        return([$gama,null,null]);
+                        return ([$gama, $familia, $subFamilia]);
                 }
 
             case 'ENCASTRE':
@@ -495,8 +492,7 @@ class Category
                         return ([$gama, self::ENCASTRE, $subFamilia]);
 
                     default:
-                        print_r("Não encontrei nada Category.php line 454");
-                        return([$gama,'','']);
+                        return ([$gama, self::ENCASTRE, $subFamilia]);
                 }
 
             case 'FRIO':
@@ -509,8 +505,6 @@ class Category
                             $subFamilia = self::COMBINADOS_NO_FROST;
                         } elseif ($result == 0) {
                             $subFamilia = self::COMBINADOS_CONVENCIONAIS;
-                        } else {
-                            $subFamilia = null;
                         }
                         return ([$gama, self::FRIGORIFICOS_COMBINADOS, $subFamilia]);
                     case 'FRIGORIFICOS 1 PORTA':
@@ -523,10 +517,6 @@ class Category
                             $subFamilia = self::FRIGORIF_2P_NO_FROST;
                         } elseif ($result == 0) {
                             $subFamilia = self::FRIGORIF_2_PORTAS;
-                        } else {
-                            //ERRO
-                            print_r("ERRO CATEGORY.PHP 514\n");
-                            $subFamilia = null;
                         }
                         return ([$gama, self::FRIGORIFICOS_COMBINADOS, $subFamilia]);
 
@@ -544,8 +534,7 @@ class Category
                     case 'FRIGORIFICOS MINI-BAR':
                         return ([$gama,self::FRIGORIFICOS_COMBINADOS,self::FRIGOBAR]);
                     default:
-                        print_r("Family not found!");
-                        return ([$gama,'','']);
+                    return ([$gama, $familia, $subFamilia]);
                 }
 
             case 'AGUAS QUENTES':
@@ -559,7 +548,6 @@ class Category
                                 $subFamilia = self::TERMOACUMULADORES_ELECTRICOS;
                                 return ([$gama, $familia, $subFamilia]);
                             default:
-                                $subFamilia = null;
                                 return ([$gama, $familia, $subFamilia]);
                         }
 
@@ -577,11 +565,10 @@ class Category
                                 return ([$gama, $familia, $subFamilia]);
                             default:
                                 print_r("Esquentador not found category.php 556");
-                                $subFamilia = null;
                                 return ([$gama, $familia, $subFamilia]);
                         }
                     default:
-                        throw new \Exception('Unexpected value');
+                        return ([$gama, $familia, $subFamilia]);
                 }
 
             case 'MAQUINAS LOUÇA':
@@ -599,7 +586,6 @@ class Category
                         $subFamilia = self::MLL_COMPACTAS;
                         return ([$gama, $familia, $subFamilia]);
                     default:
-                        $subFamilia = null;
                         return ([$gama, $familia, $subFamilia]);
                 }
 
@@ -625,8 +611,6 @@ class Category
                                 $subFamilia = null;
                                 return ([$gama, $familia, $subFamilia]);
                             default:
-                                $familia = null;
-                                $subFamilia = null;
                                 return ([$gama, $familia, $subFamilia]);
                         }
                     case 'SUPORTES':
@@ -653,7 +637,6 @@ class Category
                                 $subFamilia = self::DEPILADORAS;
                                 return ([$gama, $familia, $subFamilia]);
                             default:
-                                $subFamilia = null;
                                 return ([$gama, $familia, $subFamilia]);
                         }
                     case 'CASA':
@@ -886,14 +869,12 @@ class Category
                     case 'FOGOES GAMA INDUSTRIAL':
                     case 'TREMPES':
                         $familia = self::FOGOES_INDUSTRIAIS;
-                        $subFamilia = null;
                         return ([$gama, $familia, $subFamilia]);
                     case 'VARINHAS GAMA HOTELEIRA':
                         $familia = self::EQUIPAMENTOS_COZINHA_INDUSTRIAIS;
                         $subFamilia = self::VARINHAS_INDUSTRIAIS;
                         return ([$gama, $familia, $subFamilia]);
                     default:
-                        $subFamilia = null;
                         return ([$gama, $familia, $subFamilia]);
                 }
 
@@ -912,7 +893,6 @@ class Category
                                 $subFamilia = self::AC_PORTATIL;
                                 return ([$gama, $familia, $subFamilia]);
                             default:
-                                $subFamilia = null;
                                 return ([$gama, $familia, $subFamilia]);
                         }
                     case 'AMBIENTE - PORTATIL, PELLETS E LENHA':
@@ -980,7 +960,7 @@ class Category
                 }
 
             default:
-                print_r("Category Not Found\n");
+                return [$gama,$familia,$subFamilia]
         }
     }
 
