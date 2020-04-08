@@ -165,6 +165,7 @@ class Orima extends Command
                 print_r($this->produtoInterno->getStock(). "\n");
             } catch (\Exception $ex) {
                 print_r("Update stock exception - " . $ex -> getMessage() . "\n");
+                $logger->info("Setting stock error: ".$this->produtoInterno->getSku());
             }
 
         }

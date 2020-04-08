@@ -205,6 +205,7 @@ class Auferma extends Command
 
     private function addProducts()
     {
+    
         try {
             $fileUrl = $this -> directory -> getRoot() . "/app/code/Mlp/Cli/Console/Command/aufermaInterno.xlsx";
             $spreadsheetInterno = IOFactory ::load($fileUrl);
@@ -269,6 +270,7 @@ class Auferma extends Command
 
     private function filterProducts()
     {
+
     }
 
 }
