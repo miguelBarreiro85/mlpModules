@@ -960,7 +960,7 @@ class Category
                 }
 
             default:
-                return [$gama,$familia,$subFamilia]
+                return [$gama,$familia,$subFamilia];
         }
     }
 

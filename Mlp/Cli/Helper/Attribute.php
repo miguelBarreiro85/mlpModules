@@ -1184,7 +1184,10 @@ class Attribute
                 }
         }
     }
-
+    
+    public function getPotencia($pot){
+        return $pot;
+    }
     public function getSpecialAttributesOrima($gama, $familia, $subfamilia, $description, $name){
 
     }
