@@ -187,6 +187,7 @@ class Category
             $newGama -> setIsActive(true);
             $newGama -> setIsAnchor(false);
             $gamaId = $this -> categoryRepositoryInterface -> save($newGama) -> getId();
+            
         }
         try {
             $familiaId = $categorias[$familia];
@@ -200,17 +201,14 @@ class Category
         }
         //Se deu erro é porque este tem de ser adicionado
         if ($subfamlia != null) {
-            try {
-                $newSubFamilia = $this -> categoryFactory -> create();
-                $newSubFamilia -> setName($subfamlia);
-                $newSubFamilia -> setParentId($familiaId);
-                $newSubFamilia -> setIsActive(true);
-                $newSubFamilia -> setIsAnchor(true);
-                $subfamliaId = $this -> categoryRepositoryInterface -> save($newSubFamilia) -> getId();
-            } catch (\Exception $ex) {
-                print_r($ex -> getMessage());
-            }
+            $newSubFamilia = $this -> categoryFactory -> create();
+            $newSubFamilia -> setName($subfamlia);
+            $newSubFamilia -> setParentId($familiaId);
+            $newSubFamilia -> setIsActive(true);
+            $newSubFamilia -> setIsAnchor(true);
+            $this -> categoryRepositoryInterface -> save($newSubFamilia);           
         }
+        
     }
 
     public function getCategoriesArray()

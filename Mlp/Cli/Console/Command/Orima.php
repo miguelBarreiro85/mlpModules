@@ -28,40 +28,20 @@ class Orima extends Command
     const UPDATE_STOCKS = 'update-stocks';
 
     private $directory;
-
     private $categoryManager;
     private $productRepository;
-    private $productFactory;
-    private $dataAttributeOptions;
-    private $attributeManager;
-    private $config;
-    private $optionFactory;
-    private $productRepositoryInterface;
     private $state;
     private $produtoInterno;
     private $loadCsv;
 
     public function __construct(DirectoryList $directory,
-                                \Mlp\Cli\Helper\Category $categoryManager,
-                                \Magento\Catalog\Api\ProductRepositoryInterface $productRepositoryInterface,
-                                \Magento\Catalog\Model\ProductFactory $productFactory,
-                                \Mlp\Cli\Helper\Data $dataAttributeOptions,
-                                \Mlp\Cli\Helper\Attribute $attributeManager,
-                                \Magento\Catalog\Model\Product\Media\Config $config,
-                                \Magento\Catalog\Model\Product\OptionFactory $optionFactory,
+                                \Mlp\Cli\Helper\Category $categoryManager,                          
                                 \Magento\Framework\App\State $state,
                                 \Mlp\Cli\Model\ProdutoInterno $productoInterno,
                                 \Mlp\Cli\Helper\LoadCsv $loadCsv){
 
         $this->directory = $directory;
         $this->categoryManager = $categoryManager;
-        $this->productRepository = $productRepositoryInterface;
-        $this->productFactory = $productFactory;
-        $this->dataAttributeOptions = $dataAttributeOptions;
-        $this->attributeManager = $attributeManager;
-        $this->config = $config;
-        $this->optionFactory = $optionFactory;
-        $this->productRepositoryInterface = $productRepositoryInterface;
         $this->state = $state;
         $this->produtoInterno = $productoInterno;
         $this->loadCsv = $loadCsv;
@@ -152,12 +132,9 @@ class Orima extends Command
             try {
                 $this -> productRepository -> get($this->produtoInterno->sku, true, null, true);
             } catch (NoSuchEntityException $exception) {
-                $categories = $this->categoryManager->getCategoriesArray();
-                print_r(" - Setting Categories - ");
                 $this->setOrimaCategories();
-                $manufacturer = Manufacturer::getOrimaManufacturer($this->produtoInterno->manufacturer);
-                $this->produtoInterno->manufacturer = $manufacturer;
-                $this->produtoInterno -> add_product($categories, $logger, $this->produtoInterno->sku);
+                $this->produtoInterno->manufacturer =  Manufacturer::getOrimaManufacturer($this->produtoInterno->manufacturer);
+                $this->produtoInterno -> add_product($logger, $this->produtoInterno->sku);
                 //$this -> produtoInterno -> addSpecialAttributesOrima($product, $logger);
             }
             try {
@@ -212,7 +189,7 @@ class Orima extends Command
         $this->produtoInterno->name = $data[0];
         $this->produtoInterno->gama = $data[4];
         $this->produtoInterno->familia = $data[5];
-        $this->produtoInterno->subfamilia = $data[6];
+        $this->produtoInterno->subFamilia = $data[6];
         $this->produtoInterno->description = $data[9];
         $this->produtoInterno->meta_description = $data[9];
         $this->produtoInterno->manufacturer = $data[7];
@@ -234,12 +211,12 @@ class Orima extends Command
             [$mlpGama, $mlpFamilia, $mlpSubFamilia] = CategoryManager::setCategoriesOrima(
                 $this->produtoInterno->gama,
                 $this->produtoInterno->familia,
-                $this->produtoInterno->subfamilia);
+                $this->produtoInterno->subFamilia);
         } catch (\Exception $e) {
 
         }
         $this->produtoInterno->gama = $mlpGama;
         $this->produtoInterno->familia = $mlpFamilia;
-        $this->produtoInterno->subfamilia = $mlpSubFamilia;
+        $this->produtoInterno->subFamilia = $mlpSubFamilia;
     }
 }

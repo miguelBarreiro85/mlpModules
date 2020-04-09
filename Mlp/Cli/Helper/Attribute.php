@@ -838,7 +838,7 @@ class Attribute
                         }
                     case 'ENCASTRE - MAQ.L.ROUPA':
                     case 'MAQUINAS LAVAR ROUPA':
-                        if (preg_match('/(\d+)R\./', $name, $matches) == 1) {
+                        /* if (preg_match('/(\d+)R\./', $name, $matches) == 1) {
                             if ((int)$matches[1] > 600) {
                                 $attribute1['code'] = 'rotacao_mlr';
                                 $attribute1['value'] = $this->dataAttributeOptions->createOrGetId('rotacao_mlr', (int)$matches[1]);
@@ -852,7 +852,7 @@ class Attribute
                                 array_push($attributes, $attribute2);
                             }
 
-                        }
+                        } */
                         if (preg_match('/(A\+{1,3})/', $name, $matches2) == 1) {
                             $attribute3['code'] = 'eficiencia_energetica';
                             $attribute3['value'] = $this->dataAttributeOptions->createOrGetId('eficiencia_energetica', trim($matches2[1]));
@@ -934,7 +934,7 @@ class Attribute
                         if (preg_match('/Largura:\s*(\d*,*\d*\s*cm)/', strip_tags($description), $matches4) == 1) {
                             $attribute4['code'] = 'largura';
                             $attribute4['value'] = $this->dataAttributeOptions->createOrGetId('largura', $matches4[1]);
-                            array_push($attributes, $attribute1);
+                            array_push($attributes, $attribute4);
                         }
                         return $attributes;
                     case 'CONGELADORES':

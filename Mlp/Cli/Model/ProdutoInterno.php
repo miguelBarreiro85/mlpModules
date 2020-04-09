@@ -28,7 +28,7 @@ class ProdutoInterno
     public $name;
     public $gama;
     public $familia;
-    public $subfamilia;
+    public $subFamilia;
     public $description;
     public $meta_description;
     public $manufacturer;
@@ -122,7 +122,7 @@ class ProdutoInterno
 
 
     public function addSpecialAttributesSorefoz(\Magento\Catalog\Model\Product $product,$logger){
-        $attributes = $this->attributeManager->getSpecialAttributes($this->gama, $this->familia, $this->subfamilia, $this->description, $this->name);
+        $attributes = $this->attributeManager->getSpecialAttributes($this->gama, $this->familia, $this->subFamilia, $this->description, $this->name);
         if (isset($attributes)){
             foreach ($attributes as $attribute) {
                 $product->setCustomAttribute($attribute['code'], $attribute['value']);
@@ -141,13 +141,13 @@ class ProdutoInterno
         }
     }
     
-    public function add_product($categories, $logger, $imgName) {
+    public function add_product($logger, $imgName) {
         $product = $this->productFactory->create();
         $product->setSku($this->sku);
         $product->setName($this->name);
         $product->setTypeId(\Magento\Catalog\Model\Product\Type::TYPE_SIMPLE);
         //Set Categories
-        $pCategories = $this->categoryManager->setCategories($this->gama, $this->familia, $this->subfamilia, $this->name);
+        $pCategories = $this->categoryManager->setCategories($this->gama, $this->familia, $this->subFamilia, $this->name);
 
         $product->setCustomAttribute('description', $this->description);
         $product->setCustomAttribute('meta_description', $this->meta_description);
@@ -167,9 +167,7 @@ class ProdutoInterno
         $product->setCreatedAt(date("Y/m/d"));
         $product->setCustomAttribute('news_from_date', date("Y/m/d"));
 
-        $this->setCategories($product, $pCategories,$categories);
-
-
+        $this->setCategories($product,$pCategories);
         $this->imagesHelper->getImages($this->sku,$this->image,$this->imageEnergetica);
         $this->imagesHelper->setImages($product, $logger, $imgName . "_e.jpeg");
         $this->imagesHelper->setImages($product, $logger, $imgName . ".jpeg");
@@ -182,11 +180,14 @@ class ProdutoInterno
         try {
             print_r("saving product.. - ");
             $product = $this->productRepositoryInterface->save($product);
+            print_r($product->getSku()." - ");
         } catch (\Exception $exception) {
             $logger->info(" - " . $this->sku . " Save product: Exception:  " . $exception->getMessage());
             print_r("- " . $exception->getMessage() . " Save product exception" . "\n");
             return null;
         }
+
+        //Adicionar opções de garantia e instalação
         try{
             $this->productOptions->add_warranty_option($product,$pCategories['gama'], $pCategories['familia'], $pCategories['subfamilia']);
             $value = $this->productOptions->getInstallationValue($pCategories['familia']);
@@ -205,8 +206,10 @@ class ProdutoInterno
 
 
 
-    private function setCategories($product,array $pCategories, $categories)
+    private function setCategories($product, $pCategories)
     {
+        
+        $categories = $this->categoryManager->getCategoriesArray();
         try {
             if (isset($pCategories['subfamilia'])){
                 $product->setCategoryIds([$categories[$pCategories['gama']],
@@ -216,9 +219,15 @@ class ProdutoInterno
                     $categories[$pCategories['familia']]]);
             }
 
-        } catch (\Exception $ex) { //Adicionar nova categoria
+        } catch (\Exception $ex) { 
+            print_r(" - ".$ex->getMessage()." - ");
+            //Adicionar nova categoria
             try{
                 $this->categoryManager->createCategory($pCategories['gama'], $pCategories['familia'], $pCategories['subfamilia'], $categories);
+            }catch (\Exception $ex){
+                print_r(" - Erro ao adicionar nova categtoria ". $ex->getMessage());
+            }
+            try{
                 $categories = $this->categoryManager->getCategoriesArray();
                 if (isset($pCategories['subfamilia'])){
                     $product->setCategoryIds([$categories[$pCategories['gama']],
@@ -227,14 +236,13 @@ class ProdutoInterno
                     $product->setCategoryIds([$categories[$pCategories['gama']],
                         $categories[$pCategories['familia']]]);
                 }
-            }catch (\Exception $ex){
-                print_r("\nErro ao adicionar nova categtoria ". $ex->getMessage() .
-                    " ". $product->getSku() ."\n");
-                print_r($pCategories);
+            }catch(\Exception $e){
+                print_r(" - Erro ao atribuir categoria: ".$e->getMessage());
             }
 
         }
     }
+
     public function setStock($sku,$source)
     {
         $filterSku = $this->filterBuilder
@@ -281,7 +289,6 @@ class ProdutoInterno
             }
         }
     }
-
 
     public function updatePrice($sku, $price){
         try{

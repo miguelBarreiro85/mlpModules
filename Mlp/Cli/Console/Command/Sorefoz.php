@@ -117,13 +117,12 @@ class Sorefoz extends Command
         $logger = new \Zend\Log\Logger();
         $logger->addWriter($writer);
 
-        $categories = $this->categoryManager->getCategoriesArray();
+        
         $row = 0;
         foreach ($this->loadCsv->loadCsv('tot_jlcb_utf.csv',";") as $data) {
             $row++;
             print_r($row." - ");
             $this->setSorefozData($data);
-
             if (strlen($this->produtoInterno->sku) != 13) {
                 print_r("invalid sku - \n");
                 continue;
@@ -141,14 +140,13 @@ class Sorefoz extends Command
             try {
                 $product = $this -> productRepository -> get($this->produtoInterno->sku, true, null, true);
             } catch (NoSuchEntityException $exception) {
-                $manufacturer = Manufacturer::getSorefozManufacturer($this->produtoInterno->manufacturer);
-                $this->produtoInterno->manufacturer = $manufacturer;
-                $product = $this->produtoInterno -> add_product($categories, $logger, $this->produtoInterno->sku);
+                $this->produtoInterno->manufacturer = Manufacturer::getSorefozManufacturer($this->produtoInterno->manufacturer);
+                $product = $this->produtoInterno -> add_product($logger, $this->produtoInterno->sku);
             }
             if(isset($product)){
                 $this -> produtoInterno -> addSpecialAttributesSorefoz($product, $logger);
                 try {
-                    print_r(" - Setting stock: " . $data[29] . "\n");
+                    print_r(" - Setting stock: " . $this->produtoInterno->stock . "\n");
                     $this -> setSorefozStock($product->getSku(), $data[29]);
                 } catch (\Exception $ex) {
                     print_r("Update stock exception - " . $ex -> getMessage() . "\n");
@@ -252,8 +250,8 @@ class Sorefoz extends Command
     }
 
     public function setSorefozData($data) {
-        $functionTim = function ($data){
-            return trim($data);
+        $functionTim = function ($el){
+            return trim($el);
         };
 
 
@@ -273,7 +271,7 @@ class Sorefoz extends Command
         $this->produtoInterno->name = $data[1];
         $this->produtoInterno->gama = $data[5];
         $this->produtoInterno->familia = $data[7];
-        $this->produtoInterno->subfamilia = $data[9];
+        $this->produtoInterno->subFamilia = $data[9];
         $this->produtoInterno->description = $data[25];
         $this->produtoInterno->meta_description = $data[24];
         $this->produtoInterno->manufacturer = $data[3];

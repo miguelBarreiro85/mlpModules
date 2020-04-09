@@ -32,9 +32,9 @@ class Auferma extends Command
     const ADD_PRODUCTS_XLSX = 'add-products-xlsx';
     const UPDATE_STOCKS_XLSX = 'update-stocks-xlsx';
 
-    const AUFERMA_INTERNO_XLSX = '/app/code/Mlp/Cli/Console/Csv/aufermaInterno.xlsx';
-    const AUFERMA_STOCK_XLSX = '/app/code/Mlp/Cli/Console/Csv/aufermaStock.xlsx';
-    const AUFERMA_INTERNO_CSV = '/app/code/Mlp/Cli/Console/Csv/aufermaInterno.csv';
+    const AUFERMA_INTERNO_XLSX = '/app/code/Mlp/Cli/Csv/aufermaInterno.xlsx';
+    const AUFERMA_STOCK_XLSX = '/app/code/Mlp/Cli/Csv/aufermaStock.xlsx';
+    const AUFERMA_INTERNO_CSV = '/app/code/Mlp/Cli/Csv/aufermaInterno.csv';
 
     private $directory;
 
@@ -94,14 +94,16 @@ class Auferma extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $filterProducts = $input->getOption(self::AUFERMA_INTERNO_CSV);
+        $this->state->setAreaCode(\Magento\Framework\App\Area::AREA_GLOBAL);
         $categories = $input->getArgument('categories');
-
-        if ($filterProducts) {
+        $addProducts = $input->getOption(self::ADD_PRODUCTS);
+        if ($addProducts) {
+            print_r("Adding products");
             $this->addAufermaProducts($categories);
             print_r("finished");
             exit;
         }
+    
         $addProducts = $input->getOption(self::ADD_PRODUCTS_XLSX);
         if ($addProducts) {
             $this->addProductsXlsx();
@@ -123,16 +125,13 @@ class Auferma extends Command
         $writer = new \Zend\Log\Writer\Stream($this->directory->getRoot().'/var/log/Auferma.log');
         $logger = new \Zend\Log\Logger();
         $logger->addWriter($writer);
-
-        $categories = $this->categoryManager->getCategoriesArray();
         $row = 0;
-        foreach ($this->loadCsv->loadCsv('AufermaInterno.csv',",") as $data) {
+        foreach ($this->loadCsv->loadCsv('aufermaInterno.csv',",") as $data) {
             $row++;
             print_r($row." - ");
             $this->setAufermaData($data);
-
             if (!is_null($categoriesFilter)){
-                if (strcmp($categoriesFilter,$this->produtoInterno->subfamilia) != 0){
+                if (strcmp($categoriesFilter,$this->produtoInterno->subFamilia) != 0){
                     print_r("\n");
                     continue;
                 }
@@ -140,14 +139,14 @@ class Auferma extends Command
             try {
                 $this -> productRepository -> get($this->produtoInterno->sku, true, null, true);
             } catch (NoSuchEntityException $exception) {
-                $product = $this->produtoInterno -> add_product($categories, $logger, $this->produtoInterno->sku);
-                if(isset($product)){
-                    try {
-                        print_r(" - Setting stock: " . $this->produtoInterno->stock . "\n");
-                        $this->produtoInterno->setStock($this->produtoInterno->sku, 'auferma');
-                    } catch (\Exception $ex) {
-                        print_r("Update stock exception - " . $ex -> getMessage() . "\n");
-                    }
+                $product = $this->produtoInterno -> add_product($logger, $this->produtoInterno->sku);
+            }
+            if(isset($product)){
+                try {
+                    print_r(" - Setting stock: " . $this->produtoInterno->stock . "\n");
+                    $this->produtoInterno->setStock($this->produtoInterno->sku, 'auferma');
+                } catch (\Exception $ex) {
+                    print_r("Update stock exception - " . $ex -> getMessage() . "\n");
                 }
             }
         }
@@ -281,12 +280,20 @@ class Auferma extends Command
             return trim($data);
         };
 
+        if (preg_match("/sim/i",$data[11]) == 1){
+            $stock = 1;
+            $status = 2;
+        }else {
+            $stock = 0;
+            $status = 1;
+        }
+
         $data = array_map($functionTrim,$data);
         $this->produtoInterno->sku = $data[0];
         $this->produtoInterno->name = $data[1];
         $this->produtoInterno->gama = $data[8];
         $this->produtoInterno->familia = $data[9];
-        $this->produtoInterno->subfamilia = $data[10];
+        $this->produtoInterno->subFamilia = $data[10];
         $this->produtoInterno->description = $data[7];
         $this->produtoInterno->meta_description = $data[7];
         $this->produtoInterno->manufacturer = $data[5];
@@ -295,11 +302,11 @@ class Auferma extends Command
         $this->produtoInterno->height = null;
         $this->produtoInterno->weight = (int)$data[4];
         $this->produtoInterno->price = (int)trim($data[3]);
-        $this->produtoInterno->status = $data[11];
+        $this->produtoInterno->status = $status;
         $this->produtoInterno->image = $data[10];
         $this->produtoInterno->classeEnergetica = null;
         $this->produtoInterno->imageEnergetica = null;
-        $this->produtoInterno->stock = $data[11];
+        $this->produtoInterno->stock = $stock;
     }
 
 }
