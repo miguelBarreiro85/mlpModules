@@ -24,24 +24,24 @@ use \Mlp\Cli\Helper\ProductOptions as ProductOptions;
 class ProdutoInterno
 {
     //atributos
-    private $sku;
-    private $name;
-    private $gama;
-    private $familia;
-    private $subfamilia;
-    private $description;
-    private $meta_description;
-    private $manufacturer;
-    private $length;
-    private $width;
-    private $height;
-    private $weight;
-    private $price;
-    private $status;
-    private $image;
-    private $classeEnergetica;
-    private $imageEnergetica;
-    private $stock;
+    public $sku;
+    public $name;
+    public $gama;
+    public $familia;
+    public $subfamilia;
+    public $description;
+    public $meta_description;
+    public $manufacturer;
+    public $length;
+    public $width;
+    public $height;
+    public $weight;
+    public $price;
+    public $status;
+    public $image;
+    public $classeEnergetica;
+    public $imageEnergetica;
+    public $stock;
     //stock
     //Classes
     private $productFactory;
@@ -283,146 +283,23 @@ class ProdutoInterno
     }
 
 
-    public function setSorefozData($data) {
-        $functionTim = function ($data){
-            return trim($data);
-        };
-
-
-        if (preg_match("/sim/i",$data[27]) == 1){
-            $stock = 1;
-        }else {
-            $stock = 0;
-        }
-
-        if (preg_match("/sim/i",$data[16]) == 1) {
-            $status = 2;
-        }else{
-            $status = 1;
-        }
-        $data = array_map($functionTim,$data);
-        $this -> sku = $data[18];
-        $this -> name = $data[1];
-        $this -> gama = $data[5];
-        $this -> familia = $data[7];
-        $this -> subfamilia = $data[9];
-        $this -> description = $data[25];
-        $this -> meta_description = $data[24];
-        $this -> manufacturer = $data[3];
-        $this -> length = (int)$data[20];
-        $this -> width = (int)$data[21];
-        $this -> height = (int)$data[22];
-        $this -> weight = (int)$data[19];
-        $this -> price = (int)str_replace(".", "", $data[12]) * 1.23 * 1.30;
-        $this->status = $status;
-        $this->image = $data[23];
-        $this->classeEnergetica = $data[25];
-        $this->imageEnergetica = $data[26];
-        $this->stock = $stock;
-        return $this;
-    }
-
-    public function getProductSorefozStatus()
-    {
-        if ($this->status == 1) {
-            return 1;
-        }
-        else{
-            return 0;
+    public function updatePrice($sku, $price){
+        try{
+            $product = $this->productRepository->get($sku, true, null, true);
+            $product->setPrice($price);
+            $this->productRepository->save($product);
+            print_r("price updated - " . $sku . "\n");
+        }catch (\Exception $ex){
+            print_r("update price exception - " . $ex->getMessage() . "\n");
         }
     }
-
-    public function getSku(){
-        return $this->sku;
-    }
-
-    public function getSubFamilia()
-    {
-        return $this->subfamilia;
-    }
-
-    public function setOrimaData($data)
-    {
-        /*
-         * 0 - Nome
-         * 1 - ref orima
-         * 2 - preço liquido
-         * 3 - stock
-         * 4 - gama
-         * 5 - familia
-         * 6 - subfamilia
-         * 7 - marca
-         * 8 - EAN
-         * 9 - Detalhes
-         * 10 - Imagem
-         * 11 - etiqueta energetica
-         * 12 - manual de instruções
-         * 13 - esquema tecnico
-         */
-        $functionTim = function ($data){
-            return trim($data);
-        };
-
-        $data = array_map($functionTim,$data);
-        $this -> sku = $data[8];
-        $this -> name = $data[0];
-        $this -> gama = $data[4];
-        $this -> familia = $data[5];
-        $this -> subfamilia = $data[6];
-        $this -> description = $data[9];
-        $this -> meta_description = $data[9];
-        $this -> manufacturer = $data[7];
-        $this -> length = null;
-        $this -> width = null;
-        $this -> height = null;
-        $this -> weight = null;
-        $this -> price = (int)trim($data[2]) * 1.23 * 1.20;
-        $this->status = 1;
-        $this->image = $data[10];
-        $this->classeEnergetica = null;
-        $this->imageEnergetica = $data[11];
-        $this->stock = (int)filter_var($data[3], FILTER_SANITIZE_NUMBER_INT);
-        return $this;
-    }
-
-    public function setOrimaCategories()
-    {
-        try {
-            [$mlpGama, $mlpFamilia, $mlpSubFamilia] = CategoryManager::setCategoriesOrima($this -> gama, $this -> familia, $this -> subfamilia);
-        } catch (Exception $e) {
-        }
-        $this->gama = $mlpGama;
-        $this->familia = $mlpFamilia;
-        $this->subfamilia = $mlpSubFamilia;
-    }
+    
     public function addSpecialAttributesOrima(\Magento\Catalog\Api\Data\ProductInterface $product, \Zend\Log\Logger $logger)
     {
     }
 
-    public function getImageUrl()
-    {
-        return $this->image;
-    }
 
-    public function getEtiquetaUrl()
-    {
-        return $this->imageEnergetica;
-    }
 
-    public function getStock()
-    {
-        return $this->stock;
-    }
-
-    public function setManufacturer(string $manufacturer)
-    {
-        $this->manufacturer = $manufacturer;
-    }
-
-    public function getManufacturer()
-    {
-        return $this->manufacturer;
-    }
 
 }
 

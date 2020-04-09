@@ -15,6 +15,7 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Csv;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use \Magento\Framework\Filesystem\DirectoryList;
+use Magento\Framework\Exception\NoSuchEntityException;
 
 
 /**
@@ -27,15 +28,38 @@ class Auferma extends Command
     /**
      * Filter Prodcuts
      */
-    const FILTER_PRODUCTS = 'filter-products';
     const ADD_PRODUCTS = 'add-products';
-    const UPDATE_STOCKS = 'update-stocks';
+    const ADD_PRODUCTS_XLSX = 'add-products-xlsx';
+    const UPDATE_STOCKS_XLSX = 'update-stocks-xlsx';
+
+    const AUFERMA_INTERNO_XLSX = '/app/code/Mlp/Cli/Console/Csv/aufermaInterno.xlsx';
+    const AUFERMA_STOCK_XLSX = '/app/code/Mlp/Cli/Console/Csv/aufermaStock.xlsx';
+    const AUFERMA_INTERNO_CSV = '/app/code/Mlp/Cli/Console/Csv/aufermaInterno.csv';
 
     private $directory;
 
-    public function __construct(DirectoryList $directory){
-        $this->directory = $directory;
-        parent::__construct();
+    private $categoryManager;
+    private $productRepository;
+    private $state;
+    private $produtoInterno;
+    private $loadCsv;
+
+
+    public function __construct(DirectoryList $directory,
+                                \Mlp\Cli\Helper\Category $categoryManager,
+                                \Magento\Framework\App\State $state,
+                                \Mlp\Cli\Model\ProdutoInterno $productoInterno,
+                                \Magento\Catalog\Api\ProductRepositoryInterface $productRepositoryInterface,
+                                \Mlp\Cli\Helper\LoadCsv $loadCsv)
+    {
+
+        $this -> directory = $directory;
+        $this -> categoryManager = $categoryManager;
+        $this -> productRepository = $productRepositoryInterface;
+        $this -> state = $state;
+        $this -> produtoInterno = $productoInterno;
+        $this->loadCsv = $loadCsv;
+        parent ::__construct();
     }
 
     protected function configure()
@@ -44,24 +68,24 @@ class Auferma extends Command
             ->setDescription('Manage Auferma XLSX')
             ->setDefinition([
                 new InputOption(
-                    self::FILTER_PRODUCTS,
-                    '-f',
+                    self::ADD_PRODUCTS_XLSX,
+                    '-ax',
                     InputOption::VALUE_NONE,
-                    'Filter Auferma File'
+                    'ADD NEW PRODUCTS TO XLSX'
                 ),
                 new InputOption(
                     self::ADD_PRODUCTS,
                     '-a',
                     InputOption::VALUE_NONE,
-                    'Add new Products'
+                    'Add new Products TO SITE'
                 ),
                 new InputOption(
-                    self::UPDATE_STOCKS,
-                    '-u',
+                    self::UPDATE_STOCKS_XLSX,
+                    '-ux',
                     InputOption::VALUE_NONE,
-                    'Update Stocks and State (Active or inactive)'
+                    'Update Stocks and State (Active or inactive) on XLSX and Csv' 
                 )
-            ]);
+            ])->addArgument('categories', InputArgument::OPTIONAL, 'Categories?');;
         parent::configure();
     }
 
@@ -70,146 +94,72 @@ class Auferma extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $filterProducts = $input->getOption(self::FILTER_PRODUCTS);
+        $filterProducts = $input->getOption(self::AUFERMA_INTERNO_CSV);
+        $categories = $input->getArgument('categories');
+
         if ($filterProducts) {
-            $this->filterProducts();
+            $this->addAufermaProducts($categories);
+            print_r("finished");
+            exit;
         }
-        $addProducts = $input->getOption(self::ADD_PRODUCTS);
+        $addProducts = $input->getOption(self::ADD_PRODUCTS_XLSX);
         if ($addProducts) {
-            $this->addProducts();
+            $this->addProductsXlsx();
+            print_r("finished");
+            exit;
         }
-        $updateStocks = $input->getOption(self::UPDATE_STOCKS);
+        $updateStocks = $input->getOption(self::UPDATE_STOCKS_XLSX);
         if ($updateStocks){
-            $this->updateStocks();
+            $this->updateStocksXlsx();
+            print_r("finished");
+            exit;
         }
         else {
-            throw new \InvalidArgumentException('Option ' . self::FILTER_PRODUCTS . ' is missing.');
+            throw new \InvalidArgumentException('Option is missing.');
         }
     }
 
-    protected function addAufermaProdCSV()
-    {
-        /*
-            Codigo,0
-            Nome,1
-            CodCurto,2
-            PVPBase,3
-            PesoBrt,4
-            Marca,5
-            FamiliaAuferma,6
-            NomeXtra 7
-            Gama,8
-            Familia, 9
-            subfamilia 10
-            stock 11
-        */
-
-
-        $categories = $this->categoryManager->getCategoriesArray();
+    protected function addAufermaProducts($categoriesFilter) {
         $writer = new \Zend\Log\Writer\Stream($this->directory->getRoot().'/var/log/Auferma.log');
         $logger = new \Zend\Log\Logger();
         $logger->addWriter($writer);
-        print_r("Adding Auferma products" . "\n");
+
+        $categories = $this->categoryManager->getCategoriesArray();
         $row = 0;
-        if (($handle = fopen($this->directory->getRoot()."/app/code/Mlp/Cli/Console/Command/aufermaInterno.csv", "r")) !== FALSE) {
-            while (!feof($handle)) {
-                $row++;
-                if (($data = fgetcsv($handle, 4000, ",")) !== FALSE) {
-                    if ($row == 1 || strcmp($data[8], "ACESSÓRIOS E BATERIAS") == 0 ||
-                        strcmp($data[9], "AR CONDICIONADO") == 0) {
-                        continue;
-                    }
-                    $sku = trim($data[0]);
-                    try {
-                        $product = $this->productRepository->get($sku, true, null, true);
-                        if ($product->getStatus() == 2) {
-                            continue;
-                        }
-                    } catch (NoSuchEntityException $exception) {
-                        $name = trim($data[1]);
-                        $gama = trim($data[8]);
-                        $familia = trim($data[9]);
-                        $subfamilia = trim($data[10]);
-                        $description = trim($data[7]);
-                        $meta_description = "";
-                        $manufacter = trim($data[5]);
-                        $length = 0;
-                        $width = 0;
-                        $height = 0;
-                        $weight = trim($data[4]);
-                        $price = (int)trim($data[3]);
+        foreach ($this->loadCsv->loadCsv('AufermaInterno.csv',",") as $data) {
+            $row++;
+            print_r($row." - ");
+            $this->setAufermaData($data);
 
-                        try{
-                            $productInterno = new \Mlp\Cli\Helper\Product($sku, $name, $gama, $familia, $subfamilia, $description,
-                                $meta_description, $manufacter, $length, $width, $height, $weight, $price,
-                                $this->productRepository, $this->productFactory, $this->categoryManager,
-                                $this->dataAttributeOptions, $this->attributeManager, $this->stockRegistry,
-                                $this->config, $this->optionFactory, $this->productRepositoryInterface, $this->directory);
-
-                            $product = $productInterno->add_product($categories, $logger, $data[2]);
-                        }catch (\Exception $e){
-                            continue;
-                        }
-                    }
-                    $this->updateStock($product, $data[11]);
-                }
-            }
-            fclose($handle);
-        }
-    }
-
-    private function updateStocks(){
-        try {
-            $fileUrl = $this -> directory -> getRoot() . "/app/code/Mlp/Cli/Console/Command/aufermaInterno.xlsx";
-            $spreadsheetInterno = IOFactory ::load($fileUrl);
-            $fileUrl = $this -> directory -> getRoot() . "/app/code/Mlp/Cli/Console/Command/aufermaStock.xlsx";
-            $spreadsheetAuferma = IOFactory ::load($fileUrl);
-            $intSheet = $spreadsheetInterno -> getActiveSheet();
-            $aSheet = $spreadsheetAuferma -> getActiveSheet();
-        }catch (\Exception $e){
-            print_r($e->getMessage());
-        }
-        foreach ($intSheet->getRowIterator() as $iRow) {
-            if ($iRow->getRowIndex() == 1) {
-                continue;
-            }
-            try {
-                $codProduto = $intSheet->getCell('A' . $iRow->getRowIndex())->getValue();
-            } catch (\PhpOffice\PhpSpreadsheet\Exception $e) {
-                print_r($e->getMessage());
-            }
-            $intSheet->setCellValue('L'.$iRow->getRowIndex(),'não');
-            foreach ($aSheet->getRowIterator() as $aRow ){
-                if ($aRow->getRowIndex() == 1) {
+            if (!is_null($categoriesFilter)){
+                if (strcmp($categoriesFilter,$this->produtoInterno->subfamilia) != 0){
+                    print_r("\n");
                     continue;
                 }
-                try {
-                    $codProdAuf = $aSheet->getCell('A' . $aRow->getRowIndex())-> getCalculatedValue();
-                } catch (\PhpOffice\PhpSpreadsheet\Exception $e) {
-                    print_r($e->getMessage());
-                }
-                if(strcmp($codProduto,$codProdAuf) == 0){
-                    print_r($codProduto."<->".$codProdAuf."->".$aRow->getRowIndex()."SIM\n");
-                    $intSheet->setCellValue('L'.$iRow->getRowIndex(),'sim');
-                    break;
-                }elseif ($aRow->getRowIndex() == $aSheet->getHighestRow()){
-                    print_r("Sem Codigo->".$codProdAuf."\n");
+            }
+            try {
+                $this -> productRepository -> get($this->produtoInterno->sku, true, null, true);
+            } catch (NoSuchEntityException $exception) {
+                $product = $this->produtoInterno -> add_product($categories, $logger, $this->produtoInterno->sku);
+                if(isset($product)){
+                    try {
+                        print_r(" - Setting stock: " . $this->produtoInterno->stock . "\n");
+                        $this->produtoInterno->setStock($this->produtoInterno->sku, 'auferma');
+                    } catch (\Exception $ex) {
+                        print_r("Update stock exception - " . $ex -> getMessage() . "\n");
+                    }
                 }
             }
         }
-        $writer = new Xlsx($spreadsheetInterno);
-        $writer->save('aufermaInterno.xlsx');
-        $csv_writer = new Csv($spreadsheetInterno);
-        $csv_writer->save('aufermaInterno.csv');
     }
 
-    private function addProducts()
+    private function addProductsXlsx()
     {
     
         try {
-            $fileUrl = $this -> directory -> getRoot() . "/app/code/Mlp/Cli/Console/Command/aufermaInterno.xlsx";
+            $fileUrl = $this -> directory -> getRoot() . self::AUFERMA_INTERNO_XLSX;
             $spreadsheetInterno = IOFactory ::load($fileUrl);
-            $fileUrl = $this -> directory -> getRoot() . "/app/code/Mlp/Cli/Console/Command/aufermaStock.xlsx";
+            $fileUrl = $this -> directory -> getRoot() . self::AUFERMA_STOCK_XLSX;
             $spreadsheetAuferma = IOFactory ::load($fileUrl);
             $intSheet= $spreadsheetInterno->getActiveSheet();
             $aSheet=$spreadsheetAuferma->getActiveSheet();
@@ -260,7 +210,7 @@ class Auferma extends Command
 
         $writer = new Xlsx($spreadsheetInterno);
         try{
-            $fileUrl = $this -> directory -> getRoot() . "/app/code/Mlp/Cli/Console/Command/aufermaInterno.xlsx";
+            $fileUrl = $this -> directory -> getRoot() . self::AUFERMA_INTERNO_XLSX;
             $writer->save($fileUrl);
         }catch (\Exception $e){
             print_r($e->getMessage());
@@ -268,9 +218,88 @@ class Auferma extends Command
 
     }
 
-    private function filterProducts()
+    private function updateStocksXlsx()
     {
+        $fileUrl = $this -> directory -> getRoot() . self::AUFERMA_INTERNO_XLSX;
+        $spreadsheetInterno = IOFactory ::load($fileUrl);
+        $fileUrl = $this -> directory -> getRoot() . self::AUFERMA_STOCK_XLSX;
+        $spreadsheetAuferma = IOFactory ::load($fileUrl);
 
+        $intSheet= $spreadsheetInterno->getActiveSheet();
+        $aSheet=$spreadsheetAuferma->getActiveSheet();
+
+        foreach ($intSheet->getRowIterator() as $iRow) {
+            if ($iRow->getRowIndex() == 1) {
+                continue;
+            }
+            $codProduto = $intSheet->getCell('A'.$iRow->getRowIndex())->getValue();
+            $intSheet->setCellValue('L'.$iRow->getRowIndex(),'não');
+
+            foreach ($aSheet->getRowIterator() as $aRow ){
+                if ($aRow->getRowIndex() == 1) {
+                    continue;
+                }
+
+                $codProdAuf = $aSheet->getCell('A'.$aRow->getRowIndex())->getCalculatedValue();
+                if(strcmp($codProduto,$codProdAuf) == 0){
+                    print_r($codProduto."<->".$codProdAuf."->".$aRow->getRowIndex()."SIM\n");
+                    $intSheet->setCellValue('L'.$iRow->getRowIndex(),'sim');
+                    break;
+                }elseif ($aRow->getRowIndex() == $aSheet->getHighestRow()){
+                    print_r("Sem Codigo->".$codProdAuf."\n");
+                }
+            }
+        }
+        $writer = new Xlsx($spreadsheetInterno);
+        try{
+            $fileUrl = $this -> directory -> getRoot() . self::AUFERMA_INTERNO_XLSX;
+            $writer->save($fileUrl);
+        }catch (\Exception $e){
+            print_r($e->getMessage());
+        }
+        $csv_writer = new Csv($spreadsheetInterno);
+        $csv_writer->save('aufermaInterno.csv');
+    }
+
+
+    private function setAufermaData($data) {
+        /*
+        0 codigo
+        1 nome
+        2 codcurtp
+        3 PVP BASE
+        4 PesoBruto
+        5 marca
+        6
+        7 Descricao
+        8 Gama
+        9 familia
+        10 subfamilia
+        11 status e stock
+        */
+        $functionTrim = function ($data){
+            return trim($data);
+        };
+
+        $data = array_map($functionTrim,$data);
+        $this->produtoInterno->sku = $data[0];
+        $this->produtoInterno->name = $data[1];
+        $this->produtoInterno->gama = $data[8];
+        $this->produtoInterno->familia = $data[9];
+        $this->produtoInterno->subfamilia = $data[10];
+        $this->produtoInterno->description = $data[7];
+        $this->produtoInterno->meta_description = $data[7];
+        $this->produtoInterno->manufacturer = $data[5];
+        $this->produtoInterno->length = null;
+        $this->produtoInterno->width = null;
+        $this->produtoInterno->height = null;
+        $this->produtoInterno->weight = (int)$data[4];
+        $this->produtoInterno->price = (int)trim($data[3]);
+        $this->produtoInterno->status = $data[11];
+        $this->produtoInterno->image = $data[10];
+        $this->produtoInterno->classeEnergetica = null;
+        $this->produtoInterno->imageEnergetica = null;
+        $this->produtoInterno->stock = $data[11];
     }
 
 }

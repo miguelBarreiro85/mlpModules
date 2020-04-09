@@ -3,6 +3,7 @@
 
 namespace Mlp\Cli\Console\Command;
 
+use \Mlp\Cli\Helper\Category as CategoryManager;
 
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Filesystem\DirectoryList;
@@ -132,40 +133,40 @@ class Orima extends Command
             $row++;
             print_r($row." - ");
             try{
-                $this->produtoInterno->setOrimaData($data);
+                $this->setOrimaData($data);
             }catch(\Exception $e){
                 $logger->info("Error setOrimaData: ".$row);
                 continue;
             }
-            if (strlen($this->produtoInterno->getSku()) != 13) {
+            if (strlen($this->produtoInterno->sku) != 13) {
                 print_r("Wrong sku - ");
-                $logger->info("Wrong Sku: ".$this->produtoInterno->getSku());
+                $logger->info("Wrong Sku: ".$this->produtoInterno->sku);
                 continue;
             }
             if (!is_null($categoriesFilter)){
-                if (strcmp($categoriesFilter,$this->produtoInterno->getSubFamilia()) != 0){
+                if (strcmp($categoriesFilter,$this->produtoInterno->subFamilia) != 0){
                     print_r("wrong familie - ");
                     continue;
                 }
             }
             try {
-                $this -> productRepository -> get($this->produtoInterno->getSku(), true, null, true);
+                $this -> productRepository -> get($this->produtoInterno->sku, true, null, true);
             } catch (NoSuchEntityException $exception) {
                 $categories = $this->categoryManager->getCategoriesArray();
                 print_r(" - Setting Categories - ");
-                $this->produtoInterno->setOrimaCategories();
-                $manufacturer = Manufacturer::getOrimaManufacturer($this->produtoInterno->getManufacturer());
-                $this->produtoInterno->setManufacturer($manufacturer);
-                $this->produtoInterno -> add_product($categories, $logger, $this->produtoInterno->getSku());
+                $this->setOrimaCategories();
+                $manufacturer = Manufacturer::getOrimaManufacturer($this->produtoInterno->manufacturer);
+                $this->produtoInterno->manufacturer = $manufacturer;
+                $this->produtoInterno -> add_product($categories, $logger, $this->produtoInterno->sku);
                 //$this -> produtoInterno -> addSpecialAttributesOrima($product, $logger);
             }
             try {
                 print_r(" - Setting stock: ");
-                $this->produtoInterno->setStock($this->produtoInterno->getSku(),'orima');
-                print_r($this->produtoInterno->getStock(). "\n");
+                $this->produtoInterno->setStock($this->produtoInterno->sku,'orima');
+                print_r($this->produtoInterno->stock. "\n");
             } catch (\Exception $ex) {
                 print_r("Update stock exception - " . $ex -> getMessage() . "\n");
-                $logger->info("Setting stock error: ".$this->produtoInterno->getSku());
+                $logger->info("Setting stock error: ".$this->produtoInterno->sku);
             }
 
         }
@@ -184,6 +185,61 @@ class Orima extends Command
         return (int)filter_var($stock, FILTER_SANITIZE_NUMBER_INT);;
     }
 
+    private function setOrimaData($data)
+    {
+        /*
+         * 0 - Nome
+         * 1 - ref orima
+         * 2 - preço liquido
+         * 3 - stock
+         * 4 - gama
+         * 5 - familia
+         * 6 - subfamilia
+         * 7 - marca
+         * 8 - EAN
+         * 9 - Detalhes
+         * 10 - Imagem
+         * 11 - etiqueta energetica
+         * 12 - manual de instruções
+         * 13 - esquema tecnico
+         */
+        $functionTim = function ($data){
+            return trim($data);
+        };
 
+        $data = array_map($functionTim,$data);
+        $this->produtoInterno->sku = $data[8];
+        $this->produtoInterno->name = $data[0];
+        $this->produtoInterno->gama = $data[4];
+        $this->produtoInterno->familia = $data[5];
+        $this->produtoInterno->subfamilia = $data[6];
+        $this->produtoInterno->description = $data[9];
+        $this->produtoInterno->meta_description = $data[9];
+        $this->produtoInterno->manufacturer = $data[7];
+        $this->produtoInterno->length = null;
+        $this->produtoInterno->width = null;
+        $this->produtoInterno->height = null;
+        $this->produtoInterno->weight = null;
+        $this->produtoInterno->price = (int)trim($data[2]) * 1.23 * 1.20;
+        $this->produtoInterno->status = 1;
+        $this->produtoInterno->image = $data[10];
+        $this->produtoInterno->classeEnergetica = null;
+        $this->produtoInterno->imageEnergetica = $data[11];
+        $this->produtoInterno->stock = (int)filter_var($data[3], FILTER_SANITIZE_NUMBER_INT);
+    }
 
+    private function setOrimaCategories()
+    {
+        try {
+            [$mlpGama, $mlpFamilia, $mlpSubFamilia] = CategoryManager::setCategoriesOrima(
+                $this->produtoInterno->gama,
+                $this->produtoInterno->familia,
+                $this->produtoInterno->subfamilia);
+        } catch (\Exception $e) {
+
+        }
+        $this->produtoInterno->gama = $mlpGama;
+        $this->produtoInterno->familia = $mlpFamilia;
+        $this->produtoInterno->subfamilia = $mlpSubFamilia;
+    }
 }

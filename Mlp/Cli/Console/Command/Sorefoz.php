@@ -36,12 +36,6 @@ class Sorefoz extends Command
 
     private $categoryManager;
     private $productRepository;
-    private $productFactory;
-    private $dataAttributeOptions;
-    private $attributeManager;
-    private $config;
-    private $optionFactory;
-    private $productRepositoryInterface;
     private $state;
     private $produtoInterno;
     private $loadCsv;
@@ -49,26 +43,15 @@ class Sorefoz extends Command
 
     public function __construct(DirectoryList $directory,
                                 \Mlp\Cli\Helper\Category $categoryManager,
-                                \Magento\Catalog\Api\ProductRepositoryInterface $productRepositoryInterface,
-                                \Magento\Catalog\Model\ProductFactory $productFactory,
-                                \Mlp\Cli\Helper\Data $dataAttributeOptions,
-                                \Mlp\Cli\Helper\Attribute $attributeManager,
-                                \Magento\Catalog\Model\Product\Media\Config $config,
-                                \Magento\Catalog\Model\Product\OptionFactory $optionFactory,
                                 \Magento\Framework\App\State $state,
                                 \Mlp\Cli\Model\ProdutoInterno $productoInterno,
+                                \Magento\Catalog\Api\ProductRepositoryInterface $productRepositoryInterface,
                                 LoadCsv $loadCsv)
     {
 
         $this -> directory = $directory;
         $this -> categoryManager = $categoryManager;
         $this -> productRepository = $productRepositoryInterface;
-        $this -> productFactory = $productFactory;
-        $this -> dataAttributeOptions = $dataAttributeOptions;
-        $this -> attributeManager = $attributeManager;
-        $this -> config = $config;
-        $this -> optionFactory = $optionFactory;
-        $this -> productRepositoryInterface = $productRepositoryInterface;
         $this -> state = $state;
         $this -> produtoInterno = $productoInterno;
         $this->loadCsv = $loadCsv;
@@ -139,38 +122,36 @@ class Sorefoz extends Command
         foreach ($this->loadCsv->loadCsv('tot_jlcb_utf.csv',";") as $data) {
             $row++;
             print_r($row." - ");
-            $this->produtoInterno->setSorefozData($data);
+            $this->setSorefozData($data);
 
-            if (strlen($this->produtoInterno->getSku()) != 13) {
-                print_r("invalid sku - ");
+            if (strlen($this->produtoInterno->sku) != 13) {
+                print_r("invalid sku - \n");
                 continue;
             }
             if (!is_null($categoriesFilter)){
-                if (strcmp($categoriesFilter,$this->produtoInterno->getSubFamilia()) != 0){
-                    print_r($this->produtoInterno->getSku() . " - Fora de Gama \n");
+                if (strcmp($categoriesFilter,$this->produtoInterno->subFamilia) != 0){
+                    print_r($this->produtoInterno->sku . " - Fora de Gama \n");
                     continue;
                 }
             }
-            if($this->produtoInterno->getProductSorefozStatus() == 0){
+            if($this->getProductSorefozStatus() == 0){
                 print_r(" - disabled\n");
                 continue;
             }
             try {
-                $this -> productRepository -> get($this->produtoInterno->getSku(), true, null, true);
+                $product = $this -> productRepository -> get($this->produtoInterno->sku, true, null, true);
             } catch (NoSuchEntityException $exception) {
-
-                $manufacturer = Manufacturer::getSorefozManufacturer($this->produtoInterno->getManufacturer());
-                $this->produtoInterno->setManufacturer($manufacturer);
-
-                $product = $this->produtoInterno -> add_product($categories, $logger, $this->produtoInterno->getSku());
-                if(isset($product)){
-                    $this -> produtoInterno -> addSpecialAttributesSorefoz($product, $logger);
-                    try {
-                        print_r(" - Setting stock: " . $data[29] . "\n");
-                        $this -> setSorefozStock($product->getSku(), $data[29]);
-                    } catch (\Exception $ex) {
-                        print_r("Update stock exception - " . $ex -> getMessage() . "\n");
-                    }
+                $manufacturer = Manufacturer::getSorefozManufacturer($this->produtoInterno->manufacturer);
+                $this->produtoInterno->manufacturer = $manufacturer;
+                $product = $this->produtoInterno -> add_product($categories, $logger, $this->produtoInterno->sku);
+            }
+            if(isset($product)){
+                $this -> produtoInterno -> addSpecialAttributesSorefoz($product, $logger);
+                try {
+                    print_r(" - Setting stock: " . $data[29] . "\n");
+                    $this -> setSorefozStock($product->getSku(), $data[29]);
+                } catch (\Exception $ex) {
+                    print_r("Update stock exception - " . $ex -> getMessage() . "\n");
                 }
             }
         }
@@ -193,8 +174,7 @@ class Sorefoz extends Command
         print_r("Updating Sorefoz prices" . "\n");
 
         foreach ($this -> loadCsv -> loadCsv('tot_jlcb_utf.csv', ";") as $data) {
-
-            $this -> updatePrice($sku, $price);
+            $this->produtoInterno->updatePrice($sku, $price);
         }
     }
 
@@ -269,5 +249,53 @@ class Sorefoz extends Command
 
     private function updateStocks()
     {
+    }
+
+    public function setSorefozData($data) {
+        $functionTim = function ($data){
+            return trim($data);
+        };
+
+
+        if (preg_match("/sim/i",$data[27]) == 1){
+            $stock = 1;
+        }else {
+            $stock = 0;
+        }
+
+        if (preg_match("/sim/i",$data[16]) == 1) {
+            $status = 2;
+        }else{
+            $status = 1;
+        }
+        $data = array_map($functionTim,$data);
+        $this->produtoInterno->sku = $data[18];
+        $this->produtoInterno->name = $data[1];
+        $this->produtoInterno->gama = $data[5];
+        $this->produtoInterno->familia = $data[7];
+        $this->produtoInterno->subfamilia = $data[9];
+        $this->produtoInterno->description = $data[25];
+        $this->produtoInterno->meta_description = $data[24];
+        $this->produtoInterno->manufacturer = $data[3];
+        $this->produtoInterno->length = (int)$data[20];
+        $this->produtoInterno->width = (int)$data[21];
+        $this->produtoInterno->height = (int)$data[22];
+        $this->produtoInterno->weight = (int)$data[19];
+        $this->produtoInterno->price = (int)str_replace(".", "", $data[12]) * 1.23 * 1.30;
+        $this->produtoInterno->status = $status;
+        $this->produtoInterno->image = $data[23];
+        $this->produtoInterno->classeEnergetica = $data[25];
+        $this->produtoInterno->imageEnergetica = $data[26];
+        $this->produtoInterno->stock = $stock;
+    }
+
+    public function getProductSorefozStatus()
+    {
+        if ($this->produtoInterno->status == 1) {
+            return 1;
+        }
+        else{
+            return 0;
+        }
     }
 }

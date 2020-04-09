@@ -129,18 +129,6 @@ class Products extends Command
     }
 
 
-    protected function updatePrice($sku, $price){
-        try{
-            $product = $this->productRepository->get($sku, true, null, true);
-            $product->setPrice($price);
-            $this->productRepository->save($product);
-            print_r("price updated - " . $sku . "\n");
-        }catch (\Exception $ex){
-            print_r("update price exception - " . $ex->getMessage() . "\n");
-        }
-    }
-
-
     protected function getAttribute($attCode)
     {
         $attribute = $this->entityAttribute->loadByCode('catalog_product', $attCode);
