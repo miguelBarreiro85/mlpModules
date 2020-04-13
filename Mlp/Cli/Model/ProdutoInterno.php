@@ -147,7 +147,7 @@ class ProdutoInterno
         $product->setName($this->name);
         $product->setTypeId(\Magento\Catalog\Model\Product\Type::TYPE_SIMPLE);
         //Set Categories
-        $pCategories = $this->categoryManager->setCategories($this->gama, $this->familia, $this->subFamilia, $this->name);
+        [$pGama,$pFamilia,$pSubfamila] = $this->categoryManager->setCategories($this->gama, $this->familia, $this->subFamilia, $this->name);
 
         $product->setCustomAttribute('description', $this->description);
         $product->setCustomAttribute('meta_description', $this->meta_description);
@@ -159,7 +159,7 @@ class ProdutoInterno
         $product->setCustomAttribute('tax_class_id', 2); //taxable goods id
         $product->setWeight($this->weight);
         $product->setWebsiteIds([1]);
-        $attributeSetId = $this->attributeManager->getAttributeSetId($pCategories['familia'], $pCategories['subfamilia']);
+        $attributeSetId = $this->attributeManager->getAttributeSetId($pFamilia, $pSubfamila);
         $product->setAttributeSetId($attributeSetId); // Attribute set id
         $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
         $product->setTaxClassId(2); // Tax class id
@@ -167,7 +167,7 @@ class ProdutoInterno
         $product->setCreatedAt(date("Y/m/d"));
         $product->setCustomAttribute('news_from_date', date("Y/m/d"));
 
-        $this->setCategories($product,$pCategories);
+        $this->setCategories($product, [$pGama, $pFamilia, $pSubfamila]);
         $this->imagesHelper->getImages($this->sku,$this->image,$this->imageEnergetica);
         $this->imagesHelper->setImages($product, $logger, $imgName . "_e.jpeg");
         $this->imagesHelper->setImages($product, $logger, $imgName . ".jpeg");

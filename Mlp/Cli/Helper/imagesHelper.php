@@ -17,7 +17,7 @@ class imagesHelper
         $this->config = $config;
     }
 
-    public function getImages($sku, $img, $etiqueta){
+    public function getImages($sku, $img = null, $etiqueta = null){
         try {
             if (preg_match('/^http/', (string)$etiqueta) == 1) {
                 $ch = curl_init($etiqueta);

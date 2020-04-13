@@ -10,7 +10,7 @@ use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Filesystem\DirectoryList;
 use Mlp\Cli\Helper\Manufacturer as Manufacturer;
 use Mlp\Cli\Helper\splitFile;
-use Mlp\Cli\Helper\imagesHelper as ImagesHelper;
+use Mlp\Cli\Helper\imagesHelper;
 use Mlp\Cli\Helper\LoadCsv;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputOption;
@@ -31,6 +31,7 @@ class Sorefoz extends Command
     const FILTER_PRODUCTS = 'filter-products';
     const ADD_PRODUCTS = 'add-products';
     const UPDATE_STOCKS = 'update-stocks';
+    const ADD_IMAGES = 'add-images';
 
     private $directory;
 
@@ -39,22 +40,24 @@ class Sorefoz extends Command
     private $state;
     private $produtoInterno;
     private $loadCsv;
-
+    private $imagesHelper;
 
     public function __construct(DirectoryList $directory,
                                 \Mlp\Cli\Helper\Category $categoryManager,
                                 \Magento\Framework\App\State $state,
-                                \Mlp\Cli\Model\ProdutoInterno $productoInterno,
+                                \Mlp\Cli\Model\ProdutoInterno $produtoInterno,
                                 \Magento\Catalog\Api\ProductRepositoryInterface $productRepositoryInterface,
-                                LoadCsv $loadCsv)
+                                LoadCsv $loadCsv,
+                                imagesHelper $imagesHelper)
     {
 
         $this -> directory = $directory;
         $this -> categoryManager = $categoryManager;
         $this -> productRepository = $productRepositoryInterface;
         $this -> state = $state;
-        $this -> produtoInterno = $productoInterno;
+        $this -> produtoInterno = $produtoInterno;
         $this->loadCsv = $loadCsv;
+        $this->imagesHelper = $imagesHelper;
 
         parent ::__construct();
     }
@@ -81,6 +84,12 @@ class Sorefoz extends Command
                     '-u',
                     InputOption::VALUE_NONE,
                     'Update Stocks and State (Active or inactive)'
+                ),
+                new InputOption(
+                    self::ADD_IMAGES,
+                    '-i',
+                    InputOption::VALUE_NONE,
+                    'Add images to products'
                 )
             ])->addArgument('categories', InputArgument::OPTIONAL, 'Categories?');
         parent::configure();
@@ -104,7 +113,12 @@ class Sorefoz extends Command
         $updateStocks = $input -> getOption(self::UPDATE_STOCKS);
         if ($updateStocks) {
             $this -> updateStocks();
-        } else {
+        }
+        $addImages = $input->getOption(self::ADD_IMAGES);
+        if($addImages) {
+            $this->addImages($categories);
+        }
+        else {
             throw new \InvalidArgumentException('Option  is missing.');
         }
     }
@@ -172,7 +186,7 @@ class Sorefoz extends Command
         print_r("Updating Sorefoz prices" . "\n");
 
         foreach ($this -> loadCsv -> loadCsv('tot_jlcb_utf.csv', ";") as $data) {
-            $this->produtoInterno->updatePrice($sku, $price);
+            $this->produtoInterno->updatePrice($logger->produtoInterno->sku, $this->produtoInterno->price);
         }
     }
 
@@ -207,7 +221,7 @@ class Sorefoz extends Command
                                     if ($product->getStatus() != 2) {
                                         $product->setStatus(Status::STATUS_DISABLED);
                                         try {
-                                            $product->save();
+                                            $this->productRepository->save($product);
                                         } catch (\Exception $ex) {
                                             print_r("save: " . $ex->getMessage() . "\n");
                                         }
@@ -281,9 +295,9 @@ class Sorefoz extends Command
         $this->produtoInterno->weight = (int)$data[19];
         $this->produtoInterno->price = (int)str_replace(".", "", $data[12]) * 1.23 * 1.30;
         $this->produtoInterno->status = $status;
-        $this->produtoInterno->image = $data[23];
+        $this->produtoInterno->image = $data[24];
         $this->produtoInterno->classeEnergetica = $data[25];
-        $this->produtoInterno->imageEnergetica = $data[26];
+        $this->produtoInterno->imageEnergetica = $data[28];
         $this->produtoInterno->stock = $stock;
     }
 
@@ -294,6 +308,45 @@ class Sorefoz extends Command
         }
         else{
             return 0;
+        }
+    }
+
+    private function addImages($categoriesFilter) 
+    {
+
+        $writer = new \Zend\Log\Writer\Stream($this->directory->getRoot().'/var/log/Sorefoz.log');
+        $logger = new \Zend\Log\Logger();
+        $logger->addWriter($writer);
+
+        
+        $row = 0;
+        foreach ($this->loadCsv->loadCsv('tot_jlcb_utf.csv',";") as $data) {
+            $row++;
+            print_r($row." - ");
+            $this->setSorefozData($data);
+            if (strlen($this->produtoInterno->sku) != 13) {
+                print_r("invalid sku - \n");
+                continue;
+            }
+            if (!is_null($categoriesFilter)){
+                if (strcmp($categoriesFilter,$this->produtoInterno->subFamilia) != 0){
+                    print_r($this->produtoInterno->sku . " - Fora de Gama \n");
+                    continue;
+                }
+            }
+            if($this->getProductSorefozStatus() == 0){
+                print_r(" - disabled\n");
+                continue;
+            }
+            try {
+                print_r($this->produtoInterno->sku);
+                $product = $this -> productRepository -> get($this->produtoInterno->sku, true, null, true);
+                $this->imagesHelper->getImages($product->getSku(), $this->produtoInterno->image, $this->produtoInterno->imageEnergetica);
+                $this->imagesHelper->setImages($product, $logger, $this->produtoInterno->sku);
+                print_r("\n");
+            } catch (\Exception $exception) {
+                print_r($exception->getMessage());
+            }
         }
     }
 }

@@ -11,9 +11,15 @@ namespace Mlp\Cli\Helper;
 
 use Exception;
 use Magento\Newsletter\Model\SubscriberFactory;
+use Vertex\Data\Seller;
 
 class Category
 {
+    const DESKTOPS =  'DESKTOPS';
+    const TV_LED_28 = 'TV LED 28"';
+    const TV_LED_M42 = 'TV LED+42"';
+    const TV_LED_M46 = 'TV LED+46"';
+    const COMUNICACOES = 'COMUNICAÇÕES';
     const ENCASTRE = 'ENCASTRE';
     const FRIGORIFICOS_COMBINADOS = 'FRIGORIFICOS/COMBINADOS';
     const MAQUINAS_LAVAR_ROUPA = 'MAQUINAS LAVAR ROUPA';
@@ -322,8 +328,10 @@ class Category
                 return 'TV LED 28"';
             case 'TV LED 42"':
                 return 'TV LED+42"';
+
             case 'MICROONDAS':
                 return 'MICROONDAS ENCASTRE';
+
             case 'DE SECRETÁRIA':
                 return 'DESKTOPS';
 
@@ -332,6 +340,114 @@ class Category
                 return 'FIXO';
             default:
                 return $subFamilia;
+        }
+    }
+
+    public function getCategoriesSorefoz($gama,$familia,$subFamilia)
+    {
+        switch ($gama) {
+            case 'TELEFONES E TELEMÓVEIS':
+            case 'SERVIÇOS TV/INTERNET/OUTROS':
+                $gama = self::COMUNICACOES;
+                return [$gama,$familia,$subFamilia];
+            case 'GRANDES DOMESTICOS':
+                switch ($familia) {
+                    case 'ENCASTRE - FORNOS':
+                        switch ($subFamilia) {
+                            case 'INDEPENDENTES - ELÉCTRICOS':
+                            case 'PIROLITICOS':
+                            case 'INDEPENDENTES C/GÁS':
+                            case 'POLIVALENTES':
+                                $familia = self::ENCASTRE;
+                                $subfamilia = self::FORNOS;
+                                return [$gama, $familia, $subfamilia];
+                            default:
+                                return [$gama,$familia,$subFamilia];
+                    case 'ENCASTRE - MESAS':
+                        switch ($subFamilia) {
+                            case 'CONVENCIONAIS C/GÁS':
+                            case 'DE INDUÇÃO':
+                            case 'VITROCERÂMICAS C/GÁS':
+                            case 'DOMINÓS C/GÁS':
+                            case 'VITROCERÂMICAS - ELÉCTRICAS':
+                            case 'DOMINÓS - ELÉCTRICOS':                                
+                            case 'CONVENCIONAIS - ELÉCTRICAS':
+                                $familia = self::ENCASTRE;
+                                $subFamilia = self::PLACAS;
+                                return [$gama,$familia,$subFamilia];
+                            default:
+                            return [$gama,$familia,$subFamilia];
+                        }
+                    case 'ENCASTRE - EXAUSTOR/EXTRATORES':
+                        switch($subFamilia){
+                            case 'EXAUST.DE CHAMINÉ':
+                            case 'EXAUST.TELESCÓPICOS':
+                            case 'EXAUST.CONVENCIONAIS':
+                            case 'EXTRACTORES':
+                                $familia = self::ENCASTRE;
+                                $subFamilia = self::EXAUSTORES;
+                                return [$gama,$familia,$subFamilia];
+                        }
+                    case 'ENCASTRE - FRIO':
+                        $familia = self::ENCASTRE;
+                        return [$gama,$familia,$subFamilia];
+                    case 'ENCASTRE - MAQ.LOUÇA':
+                        switch ($subFamilia) {
+                            case 'MAQ.LAVAR LOUÇA 60 Cm':
+                            case 'MAQ.LAVAR LOUÇA 45 Cm':
+                                $familia = self::ENCASTRE;
+                                $subFamilia = self::MAQUINAS_DE_LOUCA_ENCASTRE;
+                                return [$gama,$familia,$subFamilia];
+                        }
+                    case 'ENCASTRE - MAQ.L.ROUPA':
+                    case 'ENCASTRE - MICROONDAS':
+                        $familia = self::ENCASTRE;
+                        $subFamilia = self::MICROONDAS_ENCASTRE;
+                        return [$gama,$familia,$subFamilia];
+                    case 'ENCASTRE - OUTRAS':
+                        $familia = self::ENCASTRE;
+                        return [$gama,$familia,$subFamilia];
+                    default:
+                        return [$gama,$familia,$subFamilia];
+                }
+            default:
+                return [$gama,$familia,$subfamilia];
+        
+        
+        
+        
+            }
+            case 'IMAGEM E SOM':
+                switch ($subFamilia) {
+                    case 'TV LED 46"':
+                        $subFamilia = self::TV_LED_M46;
+                    case 'TV LED 27"':
+                        $subFamilia = self::TV_LED_28;
+                    case 'TV LED 42"':
+                        $subFamilia = self::TV_LED_M42;
+                    default:
+                        return [$gama,$familia,$subFamilia];
+                    return [$gama,$familia,$subFamilia];
+                }
+            case 'INFORMÁTICA':
+                switch ($subFamilia) {
+                    case 'DE SECRETÁRIA':
+                        $subFamilia = self::DESKTOPS;
+                        return [$gama,$familia,$subFamilia];
+                    default:
+                        return [$gama,$familia,$subFamilia];
+                }
+            case 'CLIMATIZAÇÃO':
+                switch ($subFamilia) {
+                    case 'AR COND.INVERTER':
+                    case 'AR COND.MULTI-SPLIT':
+                         $subFamilia = self::AC_FIXO;
+                         return [$gama,$familia,$subFamilia];
+                    default:
+                        return [$gama,$familia,$subFamilia];
+                }
+            default:
+                return [$gama,$familia,$subFamilia];
         }
     }
 
@@ -358,9 +474,10 @@ class Category
             $categories['subfamilia'] = 'CLIMATIZADORES';
             return $categories;
         }
-        $categories['gama'] = $this -> setGamaSorefoz($gama);
-        $categories['familia'] = $this -> setFamiliaSorefoz($familia);
-        $categories['subfamilia'] = $this -> setSubFamiliaSorefoz($subfamilia);
+        $categories = $this->getCategoriesSorefoz($gama,$familia,$subfamilia);
+        //$categories['gama'] = $this -> setGamaSorefoz($gama);
+        //$categories['familia'] = $this -> setFamiliaSorefoz($familia);
+        //$categories['subfamilia'] = $this -> setSubFamiliaSorefoz($familia,$subfamilia);
         return $categories;
     }
 

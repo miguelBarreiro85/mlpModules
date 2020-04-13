@@ -8,12 +8,13 @@ namespace Mlp\Cli\Console\Command;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Framework\Api\FilterBuilder;
 use Magento\Framework\Api\SearchCriteriaBuilder;
-
+use Mlp\Cli\Model\ProdutoInterno;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Mlp\Cli\Helper\imagesHelper as imagesHelper;
 /**
  * Class Products
  */
@@ -32,6 +33,8 @@ class Products extends Command
      * Anonymous name
      */
     const ANONYMOUS_NAME = 'Anonymous';
+
+    const ADD_SOREFOZ_IMAGES = "add-sorefoz-images";
     /**
      * @var ProductRepositoryInterface
      */
@@ -69,16 +72,27 @@ class Products extends Command
 
     private $resourceConnection;
 
+    private $productoInterno;
+
+    private $sorefoz;
+
+    private $directory;
+
+    private $loadCsv;
     public function __construct(
                                 \Magento\Framework\App\ResourceConnection $resourceConnection,
                                 \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory,
-                                ProductRepositoryInterface $productRepository,
+                                \Mlp\Cli\Model\ProdutoInterno $productoInterno,
+                                \Magento\Catalog\Api\ProductRepositoryInterface $productRepository,
                                 SearchCriteriaBuilder $searchCriteriaBuilder,
                                 FilterBuilder $filterBuilder,
                                 \Magento\Framework\Api\SortOrderBuilder $sortOrderBuilder,
                                 \Magento\Catalog\Model\ResourceModel\Product $productResource,
                                 \Magento\Framework\App\State $state,
-                                \Mlp\Cli\Helper\Data  $dataAttributeOptions)
+                                \Mlp\Cli\Helper\Data  $dataAttributeOptions,
+                                \Mlp\Cli\Console\Command\Sorefoz $sorefoz,
+                                \Magento\Framework\Filesystem\DirectoryList $directory,
+                                \Mlp\Cli\Helper\LoadCsv $loadCsv)
     {
         $this->productRepository = $productRepository;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
@@ -89,6 +103,10 @@ class Products extends Command
         $this->dataAttributeOptions =$dataAttributeOptions;
         $this->productCollectionFactory = $productCollectionFactory;
         $this->resourceConnection = $resourceConnection;
+        $this->productoInterno = $productoInterno;
+        $this->sorefoz = $sorefoz;
+        $this->directory = $directory;
+        $this->loadCsv = $loadCsv;
         parent::__construct();
     }
 
@@ -102,6 +120,12 @@ class Products extends Command
                     '-m',
                     InputOption::VALUE_NONE,
                     'change manufacturer'
+                ),
+                new InputOption(
+                    self::ADD_SOREFOZ_IMAGES,
+                    '-i',
+                    InputOption::VALUE_NONE,
+                    'Add Sorefoz Images'
                 ),
             ])
             ->addArgument('oldManufacturer', InputArgument::OPTIONAL, 'oldManufacturer')
@@ -121,6 +145,10 @@ class Products extends Command
         if ($changeManufacturer) {
             $this->changeManufacturer($oldManufacturer,$newManufacturer);
             $output->writeln('<info>ACabei</info>');
+        }
+        $addSorefozImages = $input->getOption(self::ADD_SOREFOZ_IMAGES);
+        if($addSorefozImages) {
+            $this->addImages(null);
         }
         else {
             throw new \InvalidArgumentException('Option  ELSE');
@@ -158,6 +186,45 @@ class Products extends Command
             $this->productResource->saveAttribute($product,"manufacturer");
         }
     }
+
+    private function addImages($categoriesFilter) 
+    {
+
+        $writer = new \Zend\Log\Writer\Stream($this->directory->getRoot().'/var/log/Sorefoz.log');
+        $logger = new \Zend\Log\Logger();
+        $logger->addWriter($writer);
+
+        
+        $row = 0;
+        foreach ($this->loadCsv->loadCsv('tot_jlcb_utf.csv',";") as $data) {
+            print_r($data);
+            $row++;
+            print_r($row." - ");
+            $this->sorefoz->setSorefozData($data);
+            if (strlen($this->productoInterno->sku) != 13) {
+                print_r("invalid sku - \n");
+                continue;
+            }
+            if (!is_null($categoriesFilter)){
+                if (strcmp($categoriesFilter,$this->productoInterno->subFamilia) != 0){
+                    print_r($this->productoInterno->sku . " - Fora de Gama \n");
+                    continue;
+                }
+            }
+            if($this->sorefoz->getProductSorefozStatus() == 0){
+                print_r(" - disabled\n");
+                continue;
+            }
+            try {
+                $product = $this -> productRepository -> get($this->productoInterno->sku, true, null, true);
+                imagesHelper::getImages($this->productoInterno->sku, $this->productoInterno->image, $this->productoInterno->imageEnergetica);
+                imagesHelper::setImages($product, $logger, $this->productoInterno->sku);
+            } catch (\Exception $exception) {
+                print_r($exception);
+            }
+        }
+    }
+    
 
 
 }
