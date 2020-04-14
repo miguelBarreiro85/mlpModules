@@ -153,6 +153,10 @@ class Orima extends Command
     }
 
 
+    protected function desativateProducts() {
+        
+    }
+
     private function updateStocks()
     {
     }

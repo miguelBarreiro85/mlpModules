@@ -147,7 +147,7 @@ class ProdutoInterno
         $product->setName($this->name);
         $product->setTypeId(\Magento\Catalog\Model\Product\Type::TYPE_SIMPLE);
         //Set Categories
-        [$pGama,$pFamilia,$pSubfamila] = $this->categoryManager->setCategories($this->gama, $this->familia, $this->subFamilia, $this->name);
+        [$pGama,$pFamilia,$pSubFamilia] = $this->categoryManager->setCategories($this->gama, $this->familia, $this->subFamilia, $this->name);
 
         $product->setCustomAttribute('description', $this->description);
         $product->setCustomAttribute('meta_description', $this->meta_description);
@@ -159,7 +159,7 @@ class ProdutoInterno
         $product->setCustomAttribute('tax_class_id', 2); //taxable goods id
         $product->setWeight($this->weight);
         $product->setWebsiteIds([1]);
-        $attributeSetId = $this->attributeManager->getAttributeSetId($pFamilia, $pSubfamila);
+        $attributeSetId = $this->attributeManager->getAttributeSetId($pFamilia, $pSubFamilia);
         $product->setAttributeSetId($attributeSetId); // Attribute set id
         $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
         $product->setTaxClassId(2); // Tax class id
@@ -167,7 +167,7 @@ class ProdutoInterno
         $product->setCreatedAt(date("Y/m/d"));
         $product->setCustomAttribute('news_from_date', date("Y/m/d"));
 
-        $this->setCategories($product, [$pGama, $pFamilia, $pSubfamila]);
+        $this->setCategories($product, $pGama, $pFamilia, $pSubFamilia);
         $this->imagesHelper->getImages($this->sku,$this->image,$this->imageEnergetica);
         $this->imagesHelper->setImages($product, $logger, $imgName . "_e.jpeg");
         $this->imagesHelper->setImages($product, $logger, $imgName . ".jpeg");
@@ -189,8 +189,8 @@ class ProdutoInterno
 
         //Adicionar opções de garantia e instalação
         try{
-            $this->productOptions->add_warranty_option($product,$pCategories['gama'], $pCategories['familia'], $pCategories['subfamilia']);
-            $value = $this->productOptions->getInstallationValue($pCategories['familia']);
+            $this->productOptions->add_warranty_option($product,$pGama, $pFamilia, $pSubFamilia);
+            $value = $this->productOptions->getInstallationValue($pFamilia);
             if ($value > 0){
                 $this->productOptions->add_installation_option($product,$value);
             }
@@ -206,35 +206,34 @@ class ProdutoInterno
 
 
 
-    private function setCategories($product, $pCategories)
+    private function setCategories(\Magento\Catalog\Model\Product $product, $pGama, $pFamilia, $pSubFamilia)
     {
         
         $categories = $this->categoryManager->getCategoriesArray();
         try {
-            if (isset($pCategories['subfamilia'])){
-                $product->setCategoryIds([$categories[$pCategories['gama']],
-                    $categories[$pCategories['familia']], $categories[$pCategories['subfamilia']]]);
+            if (isset($pSubFamilia)){
+                $product->setCategoryIds([$categories[$pGama],
+                    $categories[$pFamilia], $categories[$pSubFamilia]]);
             }else {
-                $product->setCategoryIds([$categories[$pCategories['gama']],
-                    $categories[$pCategories['familia']]]);
+                $product->setCategoryIds([$categories[$pGama],
+                    $categories[$pFamilia]]);
             }
 
         } catch (\Exception $ex) { 
-            print_r(" - ".$ex->getMessage()." - ");
             //Adicionar nova categoria
             try{
-                $this->categoryManager->createCategory($pCategories['gama'], $pCategories['familia'], $pCategories['subfamilia'], $categories);
+                $this->categoryManager->createCategory($pGama, $pFamilia, $pSubFamilia, $categories);
             }catch (\Exception $ex){
                 print_r(" - Erro ao adicionar nova categtoria ". $ex->getMessage());
             }
             try{
                 $categories = $this->categoryManager->getCategoriesArray();
-                if (isset($pCategories['subfamilia'])){
-                    $product->setCategoryIds([$categories[$pCategories['gama']],
-                        $categories[$pCategories['familia']], $categories[$pCategories['subfamilia']]]);
+                if (isset($pSubFamilia)){
+                    $product->setCategoryIds([$categories[$pGama],
+                        $categories[$pFamilia], $categories[$pSubFamilia]]);
                 }else {
-                    $product->setCategoryIds([$categories[$pCategories['gama']],
-                        $categories[$pCategories['familia']]]);
+                    $product->setCategoryIds([$categories[$pGama],
+                        $categories[$pFamilia]]);
                 }
             }catch(\Exception $e){
                 print_r(" - Erro ao atribuir categoria: ".$e->getMessage());
@@ -243,11 +242,11 @@ class ProdutoInterno
         }
     }
 
-    public function setStock($sku,$source)
+    public function setStock($source)
     {
         $filterSku = $this->filterBuilder
             -> setField("sku")
-            -> setValue($sku)
+            -> setValue($this->sku)
             -> create();
         $sourceFilter = $this->filterBuilder
             -> setField("source_code")
@@ -263,7 +262,7 @@ class ProdutoInterno
             $item = $this -> sourceItemIF -> create();
             $item -> setQuantity($this->stock);
             $item -> setStatus(1);
-            $item -> setSku($sku);
+            $item -> setSku($this->sku);
             $item -> setSourceCode($source);
             try {
                 $this -> sourceItemSaveI -> execute([$item]);
@@ -290,23 +289,16 @@ class ProdutoInterno
         }
     }
 
-    public function updatePrice($sku, $price){
+    public function updatePrice(){
         try{
-            $product = $this->productRepository->get($sku, true, null, true);
-            $product->setPrice($price);
+            $product = $this->productRepository->get($this->sku, true, null, true);
+            $product->setPrice($this->price);
             $this->productRepository->save($product);
-            print_r("price updated - " . $sku . "\n");
+            print_r("price updated - " . $this->sku . "\n");
         }catch (\Exception $ex){
             print_r("update price exception - " . $ex->getMessage() . "\n");
         }
     }
-    
-    public function addSpecialAttributesOrima(\Magento\Catalog\Api\Data\ProductInterface $product, \Zend\Log\Logger $logger)
-    {
-    }
-
-
-
 
 }
 

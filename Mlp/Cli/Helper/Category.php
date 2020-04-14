@@ -11,6 +11,7 @@ namespace Mlp\Cli\Helper;
 
 use Exception;
 use Magento\Newsletter\Model\SubscriberFactory;
+use phpDocumentor\Reflection\Types\Self_;
 use Vertex\Data\Seller;
 
 class Category
@@ -363,6 +364,7 @@ class Category
                                 return [$gama, $familia, $subfamilia];
                             default:
                                 return [$gama,$familia,$subFamilia];
+                        }
                     case 'ENCASTRE - MESAS':
                         switch ($subFamilia) {
                             case 'CONVENCIONAIS C/GÁS':
@@ -376,7 +378,7 @@ class Category
                                 $subFamilia = self::PLACAS;
                                 return [$gama,$familia,$subFamilia];
                             default:
-                            return [$gama,$familia,$subFamilia];
+                                return [$gama,$familia,$subFamilia];
                         }
                     case 'ENCASTRE - EXAUSTOR/EXTRATORES':
                         switch($subFamilia){
@@ -386,6 +388,8 @@ class Category
                             case 'EXTRACTORES':
                                 $familia = self::ENCASTRE;
                                 $subFamilia = self::EXAUSTORES;
+                                return [$gama,$familia,$subFamilia];
+                            default:
                                 return [$gama,$familia,$subFamilia];
                         }
                     case 'ENCASTRE - FRIO':
@@ -398,6 +402,8 @@ class Category
                                 $familia = self::ENCASTRE;
                                 $subFamilia = self::MAQUINAS_DE_LOUCA_ENCASTRE;
                                 return [$gama,$familia,$subFamilia];
+                            default:
+                                return [$gama,$familia,$subFamilia];
                         }
                     case 'ENCASTRE - MAQ.L.ROUPA':
                     case 'ENCASTRE - MICROONDAS':
@@ -409,14 +415,7 @@ class Category
                         return [$gama,$familia,$subFamilia];
                     default:
                         return [$gama,$familia,$subFamilia];
-                }
-            default:
-                return [$gama,$familia,$subfamilia];
-        
-        
-        
-        
-            }
+                }        
             case 'IMAGEM E SOM':
                 switch ($subFamilia) {
                     case 'TV LED 46"':
@@ -443,6 +442,19 @@ class Category
                     case 'AR COND.MULTI-SPLIT':
                          $subFamilia = self::AC_FIXO;
                          return [$gama,$familia,$subFamilia];
+                    default:
+                        return [$gama,$familia,$subFamilia];
+                }
+            case 'PEQUENOS DOMÉSTICOS':
+                switch ($familia) {
+                    case 'APARELHOS DE COZINHA':
+                        switch ($subFamilia) {
+                            case 'FORNOS':
+                                $subFamilia = SELF::FORNOS_DE_BANCADA;
+                                return [$gama,$familia,$subFamilia];
+                            default:
+                                return [$gama,$familia,$subFamilia];
+                        }
                     default:
                         return [$gama,$familia,$subFamilia];
                 }

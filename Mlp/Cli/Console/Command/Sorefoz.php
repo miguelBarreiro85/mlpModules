@@ -83,7 +83,7 @@ class Sorefoz extends Command
                     self::UPDATE_STOCKS,
                     '-u',
                     InputOption::VALUE_NONE,
-                    'Update Stocks and State (Active or inactive)'
+                    'Update Stocks, State and Price'
                 ),
                 new InputOption(
                     self::ADD_IMAGES,
@@ -156,28 +156,19 @@ class Sorefoz extends Command
             } catch (NoSuchEntityException $exception) {
                 $this->produtoInterno->manufacturer = Manufacturer::getSorefozManufacturer($this->produtoInterno->manufacturer);
                 $product = $this->produtoInterno -> add_product($logger, $this->produtoInterno->sku);
+                //$this -> produtoInterno -> addSpecialAttributesSorefoz($product, $logger);
             }
             if(isset($product)){
-                $this -> produtoInterno -> addSpecialAttributesSorefoz($product, $logger);
                 try {
                     print_r(" - Setting stock: " . $this->produtoInterno->stock . "\n");
-                    $this -> setSorefozStock($product->getSku(), $data[29]);
+                    $this->produtoInterno->setStock("sorefoz");
                 } catch (\Exception $ex) {
                     print_r("Update stock exception - " . $ex -> getMessage() . "\n");
                 }
             }
         }
     }
-
-    private function setSorefozStock($sku,$stock)
-    {
-        if(preg_match("/sim/",$stock)==1){
-            $stock = 1;
-        }else{
-            $stock = 0;
-        }
-        $this->produtoInterno->setStock($sku,"sorefoz",$stock);
-    }
+    
     protected function updateSorefozPrices()
     {
         $writer = new \Zend\Log\Writer\Stream($this -> directory -> getRoot() . '/var/log/Sorefoz.log');
@@ -186,7 +177,7 @@ class Sorefoz extends Command
         print_r("Updating Sorefoz prices" . "\n");
 
         foreach ($this -> loadCsv -> loadCsv('tot_jlcb_utf.csv', ";") as $data) {
-            $this->produtoInterno->updatePrice($logger->produtoInterno->sku, $this->produtoInterno->price);
+            $this->produtoInterno->updatePrice();
         }
     }
 
@@ -269,7 +260,7 @@ class Sorefoz extends Command
         };
 
 
-        if (preg_match("/sim/i",$data[27]) == 1){
+        if (preg_match("/sim/i",$data[26]) == 1){
             $stock = 1;
         }else {
             $stock = 0;
