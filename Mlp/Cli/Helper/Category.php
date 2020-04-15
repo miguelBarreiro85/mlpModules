@@ -1106,7 +1106,80 @@ class Category
         $familia = $pieces[1];
         $subFamilia = $pieces[2];
         switch($gama) {
+            case '':
+                switch ($familia) {
+                    case 'value':
+                        switch ($subFamilia) {
+                            case 'value':
+                                # code...
+                                break;
+                            
+                            default:
+                                # code...
+                                break;
+                        }
+                        break;
+                    
+                    default:
+                        # code...
+                        break;
+                }
+            
+            case 'Audiovisual':
+                $gama = self::IMAGEM_E_SOM;
+                switch ($familia) {
+                    case 'Home Cinema':
+                        $familia = self::SIST_HOME_CINEMA;
+                        switch ($subFamilia) {
+                            case 'Kit Colunas':
+                                $subFamilia = self::KIT_COLUNAS;
+                                return [$gama, $familia, $subFamilia];
+                                
+                            case 'Sound Bars':
+                                $subFamilia = self::SOUND_BARS;
+                                return [$gama, $familia, $subFamilia];
+                            default:
+                                return [$gama, $familia, $subFamilia];
+                        }
+                    case 'Sistema Áudio':
+                        $familia = self::EQUIPAMENTOS_AUDIO;
+                        switch ($subFamilia) {
+                            case 'Mini':
+                            case 'Micro':
+                                $subFamilia = self::APARELHAGENS_MICROS;
+                                return [$gama, $familia, $subFamilia];
+                            case 'Outros':
+                                $subFamilia = self::OUTRO_HIFI;
+                                $logger->info(self::VERIFICAR_SUBFAMILIA.$sku);
+                                return [$gama, $familia, $subFamilia];
+                            case 'Amplificadores':
+                                $subFamilia = self::AMPLIFICADORES_HIFI;
+                                return [$gama, $familia, $subFamilia];
+                            case 'Colunas':
+                                $familia = self::COLUNAS;
+                                $subFamilia = null;
+                                return [$gama, $familia, $subFamilia];
+                            case 'Rádio':
+                                $familia = self::AUDIO_PORTATIL;
+                                $subFamilia = self::RADIOS_PORTATEIS;
+                                return [$gama, $familia, $subFamilia];
+                            case 'Rádio CD':
+                                $familia = self::AUDIO_PORTATIL;
+                                $subFamilia = self::RADIO_CDS;
+                                return [$gama, $familia, $subFamilia];
+                            case 'Auscultadores':
+                                $familia = self::AUSCULTADORES;
+                                $subFamilia = null;
+                            default:
+                                # code...
+                                break;
+                        }
+                    default:
+                        # code...
+                        break;
+                }
             case 'Comunicações':
+                $gama = self::COMUNICACOES;
                 switch ($familia) {
                     case 'Comunicações Móveis':
                         switch ($subFamilia) {
@@ -1114,11 +1187,42 @@ class Category
                                 $familia = self::ACESSORIOS_COMUNICACOES;
                                 $subFamilia = self::ALIMENTACAO_COMUNICACOES;
                                 return [$gama, $familia, $subFamilia];
+                            case 'Telemóveis':
+                                $familia = self::TELEMOVEIS;
+                                $subFamilia = null;
+                                return [$gama, $familia, $subFamilia];
+                            case 'Auriculares':
+                                $familia = self::ACESSORIOS_COMUNICACOES;
+                                $subFamilia = self::AURICULARES;
+                                return [$gama, $familia, $subFamilia];
+                            case 'Bolsas/Protecções':
+                                $familia = self::ACESSORIOS_COMUNICACOES;
+                                $subFamilia = self::BOLSAS_PROTECCOES;
+                                return [$gama, $familia, $subFamilia];
+                            case 'Colunas':
+                                $gama = self::IMAGEM_E_SOM;
+                                $familia = self::COLUNAS;
+                                $subFamilia = null;
+                                return [$gama, $familia, $subFamilia];
+                            case 'Outros Acessórios':
+                                $familia = self::ACESSORIOS_COMUNICACOES;
+                                $subFamilia = self::OUTROS_ACESSORIOS_COMUNICACOES;
+                                return [$gama, $familia, $subFamilia];
                             default:
                                 return [$gama, $familia, $subFamilia];
                         }
                         # code...
-                        break;
+                    case 'Comunicações Fixas':
+                        switch ($subFamilia) {
+                            case 'Telefones':
+                                $familia = self::COMUNICACOES_FIXAS;
+                                $subFamilia = self::TELEFONES_FIXOS;
+                                return [$gama, $familia, $subFamilia];
+                            
+                            default:
+                                # code...
+                                break;
+                        }
                     
                     default:
                         # code...
@@ -1128,70 +1232,137 @@ class Category
                 $gama = self::IMAGEM_E_SOM;
                 switch ($familia) {
                     case 'Câmaras Fotográficas':
+                        //Foto e Vídeo->Câmaras de Vídeo->Drones
                         $familia = self::CAMARAS_FOTOGRAFICAS;
                         switch ($subFamilia) {
                             case 'Compactas':
                                 $subFamilia = self::FOTOS_DIGITAL_COMPACTA;
-                                
-                                break;
-                            
+                                return [$gama, $familia, $subFamilia];
+                            case 'Objectivas':
+                                $familia = self::ACESSORIOS_CAMARAS_FOTOGRAFICAS;
+                                $subFamilia = self::OBJECTIVAS_CAMARAS;
+                                return [$gama, $familia, $subFamilia];
+                            case 'Reflex':
+                                $subFamilia = self::CAMARAS_REFLEX;
+                                return [$gama, $familia, $subFamilia];
                             default:
                                 # code...
                                 break;
                         }
                         break;
+                    case 'Câmaras de Vídeo':
+                        $familia = self::CAMARAS_VIDEO;
+                        switch ($subFamilia) {
+                            case 'Drones':
+                                $subFamilia = self::DRONES;
+                                return [$gama, $familia, $subFamilia];
+                            case 'Standard':
+                                $subFamilia = self::CAMARAS_VIDEO_STANDARD;
+                                return [$gama, $familia, $subFamilia];
+                            case 'HD - Alta definição':
+                                $subFamilia = self::CAMARAS_VIDEO_HD;
+                                return [$gama, $familia, $subFamilia];
+                            default:
+                                # code...
+                                break;
+                        }
                     
                     default:
                         # code...
                         break;
                 }
             case 'Energia':
+                //Energia->Pilhas e Carregadores->Lítio
+                $gama = self::ILUMINACAO_BATERIAS;
                 switch ($familia) {
                     case 'Iluminação':
                         switch ($subFamilia) {
                             case 'Lanternas':
-                                $gama = self::ILUMINACAO_BATERIAS;
                                 $familia = self::ILUMINACAO;
                                 $subFamilia = self::LANTERNAS;
+                                return [$gama, $familia, $subFamilia];
+                            case 'Lâmpadas':
+                                $familia = self::ILUMINACAO;
+                                $subFamilia = self::LAMPADAS;
+                                return [$gama, $familia, $subFamilia];
+                            default:
+                                # code...
+                                break;
+                        }
+                        break;
+                    case 'Pilhas e Carregadores':
+                        $familia = self::PILHAS_BATERIAS;
+                        switch ($subFamilia) {
+                            case 'Lítio':
+                            case 'Standard':
+                                $subFamilia = self::PILHAS;
                                 return [$gama, $familia, $subFamilia];
                             
                             default:
                                 # code...
                                 break;
                         }
-                        break;
+                        
                     
                     default:
                         # code...
                         break;
                 }
             case 'Eletrodomésticos':
+                $gama = self::GRANDES_DOMESTICOS;
                 switch ($familia) {
                     case 'Máquinas de Roupa':
+                        $familia = self::MAQUINAS_ROUPA;
                         switch ($subFamilia) {
                             case 'Máquina Lavar Roupa':
-                                $gama = self::GRANDES_DOMESTICOS;
-                                $familia = self::MAQUINAS_LAVAR_ROUPA;
                                 $subFamilia = self::MAQUINAS_LAVAR_ROUPA_CARGA_FRONTAL;
                                 $logger->info("Verificar SubFamila: ".$sku);
                                 return [$gama, $familia, $subFamilia];
-                            
+                            case 'Máquina Secar Roupa':
+                                $subFamilia = self::MAQUINAS_SECAR_ROUPA;
+                                $logger->info("Ver subfamilia: ".$sku);
+                                return [$gama, $familia, $subFamilia];
+                            case 'Acessórios':
+                                $subFamilia = self::ACESSORIOS_MAQUINAS_ROUPA;
+                                return [$gama, $familia, $subFamilia];
+                            case 'Máquina Lavar e Secar Roupa':
+                                $subFamilia = self::MAQUINAS_LAVAR_SECAR_ROUPA;
                             default:
                                 # code...
                                 break;
                         }
                     case 'Frio':
+                        $familia = self::FRIO;
                         switch ($subFamilia) {
                             case 'Frigorifico 2 portas':
-                                $gama = self::GRANDES_DOMESTICOS;
-                                $familia = self::FRIGORIFICOS_COMBINADOS;
                                 $subFamilia = self::FRIGORIF_2_PORTAS;
-                                $logger->info("Verificar SubFamila: ".$sku);
+                                $logger->info(self::VERIFICAR_SUBFAMILIA.$sku);
                                 return [$gama, $familia, $subFamilia];
                                 break;
-
+                            case 'Congelador Vertical':
+                                $subFamilia = self::CONGELADORES_VERTICAIS;
+                                return [$gama, $familia, $subFamilia];
+                            case 'Side By Side':
+                                $subFamilia = self::FRIGORIF_AMERICANOS;
+                                return [$gama, $familia, $subFamilia];
+                            case 'Frigorifico 1 porta':
+                                $subFamilia = self::FRIGORIF_1_PORTA;
+                                return [$gama, $familia, $subFamilia];
+                            case 'Arca Horizontal':
+                                $subFamilia = self::CONGELADORES_HORIZONTAIS;
+                                return [$gama, $familia, $subFamilia];
+                            case 'Garrafeira':
+                                $subFamilia = self::GARRAFEIRAS;
+                                return [$gama, $familia, $subFamilia];
+                            case 'Acessórios':
+                                $subFamilia = self::GARRAFEIRAS;
+                                return [$gama, $familia, $subFamilia];
+                            case 'Combinados':
+                                $subFamilia = self::COMBINADOS_CONVENCIONAIS;
+                                $logger->info(self::VERIFICAR_SUBFAMILIA.$sku);
+                                return [$gama, $familia, $subFamilia];
                             default:
-                                # code...
+                                return [$gama, $familia, $subFamilia];
                                 break;
                         }
                         break;
