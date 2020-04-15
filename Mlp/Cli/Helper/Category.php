@@ -16,6 +16,13 @@ use Vertex\Data\Seller;
 
 class Category
 {
+    const CAMARAS_FOTOGRAFICAS = 'CÂMARAS';
+    const LANTERNAS = 'LANTERNAS';
+    const ILUMINACAO = 'ILUMINAÇÃO';
+    const ILUMINACAO_BATERIAS = 'ILUMINAÇÃO E BATERIAS';
+    const ACESSORIOS_COMUNICACOES = 'ACESSORIOS DE COMUNICAÇÕES';
+    const ALIMENTACAO_COMUNICACOES = 'ALIMENTAÇÃO COMUNICAÇÕES';
+    const FOTOS_DIGITAL_COMPACTA = 'FOTOS DIGITAL COMPACTA';
     const DESKTOPS =  'DESKTOPS';
     const TV_LED_28 = 'TV LED 28"';
     const TV_LED_M42 = 'TV LED+42"';
@@ -1091,5 +1098,111 @@ class Category
         }
     }
 
+    public static function setExpertCategories($categories,$logger,$sku) {
+        print_r($categories);
+        $pieces = explode("->",$categories);
+        print_r($pieces);
+        $gama = $pieces[0];
+        $familia = $pieces[1];
+        $subFamilia = $pieces[2];
+        switch($gama) {
+            case 'Comunicações':
+                switch ($familia) {
+                    case 'Comunicações Móveis':
+                        switch ($subFamilia) {
+                            case 'Alimentação':
+                                $familia = self::ACESSORIOS_COMUNICACOES;
+                                $subFamilia = self::ALIMENTACAO_COMUNICACOES;
+                                return [$gama, $familia, $subFamilia];
+                            default:
+                                return [$gama, $familia, $subFamilia];
+                        }
+                        # code...
+                        break;
+                    
+                    default:
+                        # code...
+                        break;
+                }
+            case 'Foto e Vídeo':
+                $gama = self::IMAGEM_E_SOM;
+                switch ($familia) {
+                    case 'Câmaras Fotográficas':
+                        $familia = self::CAMARAS_FOTOGRAFICAS;
+                        switch ($subFamilia) {
+                            case 'Compactas':
+                                $subFamilia = self::FOTOS_DIGITAL_COMPACTA;
+                                
+                                break;
+                            
+                            default:
+                                # code...
+                                break;
+                        }
+                        break;
+                    
+                    default:
+                        # code...
+                        break;
+                }
+            case 'Energia':
+                switch ($familia) {
+                    case 'Iluminação':
+                        switch ($subFamilia) {
+                            case 'Lanternas':
+                                $gama = self::ILUMINACAO_BATERIAS;
+                                $familia = self::ILUMINACAO;
+                                $subFamilia = self::LANTERNAS;
+                                return [$gama, $familia, $subFamilia];
+                            
+                            default:
+                                # code...
+                                break;
+                        }
+                        break;
+                    
+                    default:
+                        # code...
+                        break;
+                }
+            case 'Eletrodomésticos':
+                switch ($familia) {
+                    case 'Máquinas de Roupa':
+                        switch ($subFamilia) {
+                            case 'Máquina Lavar Roupa':
+                                $gama = self::GRANDES_DOMESTICOS;
+                                $familia = self::MAQUINAS_LAVAR_ROUPA;
+                                $subFamilia = self::MAQUINAS_LAVAR_ROUPA_CARGA_FRONTAL;
+                                $logger->info("Verificar SubFamila: ".$sku);
+                                return [$gama, $familia, $subFamilia];
+                            
+                            default:
+                                # code...
+                                break;
+                        }
+                    case 'Frio':
+                        switch ($subFamilia) {
+                            case 'Frigorifico 2 portas':
+                                $gama = self::GRANDES_DOMESTICOS;
+                                $familia = self::FRIGORIFICOS_COMBINADOS;
+                                $subFamilia = self::FRIGORIF_2_PORTAS;
+                                $logger->info("Verificar SubFamila: ".$sku);
+                                return [$gama, $familia, $subFamilia];
+                                break;
+
+                            default:
+                                # code...
+                                break;
+                        }
+                        break;
+                    
+                    default:
+                        # code...
+                        break;
+                }
+        }
+
+        return [$gama, $familia, $subFamilia];
+    }
 
 }

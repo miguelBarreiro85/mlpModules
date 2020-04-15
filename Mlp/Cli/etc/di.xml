@@ -10,6 +10,7 @@
                 <item name="auferma" xsi:type="object">Mlp\Cli\Console\Command\Auferma</item>
                 <item name="orima" xsi:type="object">Mlp\Cli\Console\Command\Orima</item>
                 <item name="sorefoz" xsi:type="object">Mlp\Cli\Console\Command\Sorefoz</item>
+                <item name="expert" xsi:type="object">Mlp\Cli\Console\Command\Expert</item>
             </argument>
         </arguments>
     </type>

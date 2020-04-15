@@ -7,6 +7,12 @@ namespace Mlp\Cli\Helper;
 class Manufacturer
 {
 
+
+    public static function getExpertManufacturer($manufacturer){
+
+        return $manufacturer;
+    }
+    
     public static function getSorefozManufacturer($manufacturer)  {
         switch ($manufacturer) {
             case 'TOSHIBA  - INFORMATICA':
