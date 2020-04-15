@@ -1267,9 +1267,39 @@ class Category
                                 break;
                         }
                     
+                    
+                    case 'Acessórios':
+                        $familia = self::ACESSORIOS_IMAGEM_E_SOM;
+                        switch ($subFamilia) {
+                            case 'Bolsas':
+                                $subFamilia = self::BOLSAS;
+                                return [$gama, $familia, $subFamilia];
+                            case 'Impressoras Fotog.':
+                                $gama = self::INFORMATICA;
+                                $familia = self::IMPRESSORAS;
+                                $subFamilia = self::IMPRESSORAS_FOTOS;
+                                return [$gama, $familia, $subFamilia];
+                            case 'Tripés/Monopés':
+                            case 'Flash':
+                            case 'Kits':
+                            case 'Lentes':
+                            case 'Filtros':
+                            case 'Outros':
+                                $subFamilia = self::OUTROS_ACESSORIOS_IMAGEM_SOM;
+                                return [$gama, $familia, $subFamilia];
+                            
+                            default:
+                                return [$gama, $familia, $subFamilia];
+                        }
+                    case 'Cartões de Memória':
+                        $gama = self::INFORMATICA;
+                        $familia = self::MEMORIAS;
+                        $subFamilia = self::CARTOES_MEMORIA;
+                        return [$gama, $familia, $subFamilia];
                     default:
                         # code...
                         break;
+                    
                 }
             case 'Energia':
                 //Energia->Pilhas e Carregadores->Lítio
