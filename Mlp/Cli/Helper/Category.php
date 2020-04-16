@@ -16,7 +16,62 @@ use Vertex\Data\Seller;
 
 class Category
 {
-    const CAMARAS_FOTOGRAFICAS = 'CÂMARAS';
+    //IMAGEM SOM
+        //EQUIPAMENTOS AUDIO
+
+        //AUDIO PORTATIL
+        const AUDIO_PORTATIL = 'AUDIO PORTATIL';
+        const RADIOS_PORTATEIS = 'RADIOS PORTATEIS';
+        //HOME CINEMA
+        const SIST_HOME_CINEMA = 'SIST.HOME CINEMA';
+        const KIT_COLUNAS = 'KIT COLUNAS';
+        const SOUND_BARS = 'SOUND BAR';
+        const OUTRO_HIFI = 'OUTRO HI-FI';
+        const AMPLIFICADORES_HIFI = 'AMPLIFICADORES HIFI';
+        const COLUNAS = 'COLUNAS';
+    
+        const RADIO_CDS = 'RADIOS C/CD';
+        const AUSCULTADORES = 'AUSCULTADORES';
+    
+    //GRANDES DOMESTICOS
+
+    //INFORMATICA
+
+    //PEQUENOS DOMESTICOS
+    
+    //COMUNICACOES
+    
+    
+    const IMPRESSORAS = 'IMPRESSORAS';
+    const IMPRESSORAS_FOTOS = 'IMPRESSORAS DE FOTOS';
+    const CARTOES_MEMORIA = 'CARTÕES DE MEMÓRIA';
+    const PILHAS_BATERIAS = 'PILHAS E BATERIAS';
+    const PILHAS = 'PILHAS';
+    const CAMARAS_VIDEO_STANDARD = 'CAMARAS VIDEO STANDARD';
+    const MAQUINAS_ROUPA = 'MAQUINAS DE ROUPA';
+    const GARRAFEIRAS = 'GARRAFEIRAS';
+    const BOLSAS_PROTECCOES = 'BOLSAS E PROTECÇÕES';
+    const TELEMOVEIS = 'TELEMÓVEIS';
+    const TELEMOVEIS_CARTOES = 'TELEMÓVEIS / CARTÕES';
+    const AURICULARES = 'AURICULARES';
+    const OUTROS_ACESSORIOS_COMUNICACOES = 'OUTROS ACESSORIOS COMUNICAÇÕES';
+    const COMUNICACOES_FIXAS = 'COMUNICAÇÕES FIXAS';
+    const TELEFONES_FIXOS = 'TELEFONES DOMÉSTICOS';
+    const VERIFICAR_SUBFAMILIA = 'Verificar subFamilia: ';
+    
+    const CAMARAS_FOTOGRAFICAS = 'CAMARAS FOTOGRAFICAS';
+    const ACESSORIOS_CAMARAS_FOTOGRAFICAS = 'ACESSORIOS FOTOGRAFIA';
+    const OBJECTIVAS_CAMARAS = 'OBJECTIVAS CAMARAS';
+    const DRONES = 'DRONES';
+    const BOLSAS = 'BOLSAS';
+    const CAMARAS_REFLEX = 'CAMARAS REFLEX';
+    const CAMARAS_VIDEO = 'CAMARAS VIDEO';
+    const CAMARAS_VIDEO_HD = 'CAMARAS VIDEO HD';
+    const OUTROS_ACESSORIOS_IMAGEM_SOM = 'OUTROS ACESSORIOS IMAGEM E SOM';
+    const INFORMATICA = 'INFORMÁTICA';
+    const MEMORIAS = 'MEMÓRIAS';
+    const LAMPADAS = 'LAMPADAS';
+    const CAMARAS = 'CÂMARAS';
     const LANTERNAS = 'LANTERNAS';
     const ILUMINACAO = 'ILUMINAÇÃO';
     const ILUMINACAO_BATERIAS = 'ILUMINAÇÃO E BATERIAS';
@@ -1188,8 +1243,8 @@ class Category
                                 $subFamilia = self::ALIMENTACAO_COMUNICACOES;
                                 return [$gama, $familia, $subFamilia];
                             case 'Telemóveis':
-                                $familia = self::TELEMOVEIS;
-                                $subFamilia = null;
+                                $familia = self::TELEMOVEIS_CARTOES;
+                                $subFamilia = self::TELEMOVEIS;
                                 return [$gama, $familia, $subFamilia];
                             case 'Auriculares':
                                 $familia = self::ACESSORIOS_COMUNICACOES;
@@ -1233,7 +1288,7 @@ class Category
                 switch ($familia) {
                     case 'Câmaras Fotográficas':
                         //Foto e Vídeo->Câmaras de Vídeo->Drones
-                        $familia = self::CAMARAS_FOTOGRAFICAS;
+                        $familia = self::CAMARAS;
                         switch ($subFamilia) {
                             case 'Compactas':
                                 $subFamilia = self::FOTOS_DIGITAL_COMPACTA;
@@ -1251,7 +1306,7 @@ class Category
                         }
                         break;
                     case 'Câmaras de Vídeo':
-                        $familia = self::CAMARAS_VIDEO;
+                        $familia = self::CAMARAS;
                         switch ($subFamilia) {
                             case 'Drones':
                                 $subFamilia = self::DRONES;
