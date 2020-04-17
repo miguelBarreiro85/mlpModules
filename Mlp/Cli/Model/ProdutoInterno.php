@@ -20,6 +20,7 @@ use Magento\Framework\Validation\ValidationException;
 use \Mlp\Cli\Helper\Category as CategoryManager;
 use \Mlp\Cli\Helper\Data as DataAttributeOptions;
 use \Mlp\Cli\Helper\Attribute as Attribute;
+use Mlp\Cli\Helper\Expert\ExpertCategories;
 use \Mlp\Cli\Helper\ProductOptions as ProductOptions;
 class ProdutoInterno
 {
@@ -291,10 +292,9 @@ class ProdutoInterno
 
     public function updatePrice(){
         try{
-            $product = $this->productRepository->get($this->sku, true, null, true);
+            $product = $this->productRepositoryInterface->get($this->sku, true, null, true);
             $product->setPrice($this->price);
-            $this->productRepository->save($product);
-            print_r("price updated - " . $this->sku . "\n");
+            $this->productRepositoryInterface->save($product);
         }catch (\Exception $ex){
             print_r("update price exception - " . $ex->getMessage() . "\n");
         }

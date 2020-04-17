@@ -1153,6 +1153,7 @@ class Category
         }
     }
 
+    /*
     public static function setExpertCategories($categories,$logger,$sku) {
         print_r($categories);
         $pieces = explode("->",$categories);
@@ -1161,25 +1162,6 @@ class Category
         $familia = $pieces[1];
         $subFamilia = $pieces[2];
         switch($gama) {
-            case '':
-                switch ($familia) {
-                    case 'value':
-                        switch ($subFamilia) {
-                            case 'value':
-                                # code...
-                                break;
-                            
-                            default:
-                                # code...
-                                break;
-                        }
-                        break;
-                    
-                    default:
-                        # code...
-                        break;
-                }
-            
             case 'Audiovisual':
                 $gama = self::IMAGEM_E_SOM;
                 switch ($familia) {
@@ -1459,6 +1441,6 @@ class Category
         }
 
         return [$gama, $familia, $subFamilia];
-    }
+    }*/
 
 }

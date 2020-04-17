@@ -3,98 +3,154 @@
 namespace Mlp\Cli\Helper\Expert;
 
 class ExpertCategories {
+    
+    const IMAGEM_E_SOM = "IMAGEM E SOM";
+    
+        const TELEVISAO =  "TELEVISÃO";
+            const ACESSORIOS_TV = 'ACESSORIOS TV';
+            const CABOS_TV = 'CABOS TV';
+            const TV_LED_50_60 = 'TV LED 50 A 60"';
+            const TV_LED_M65 = 'TV LED +65"' ;
+            const TV_HOTELARIA = 'TV HOTELARIA';
+        
+        const PROJECTORES = 'PROJECTORES VIDEO';
+            const PROJECTORES_MESA = 'PROJECTORES MESA';
+            const PROJECTORES_PORTATEIS = 'PROJECTORES PORTATEIS';
 
-    //IMAGEM SOM
-    //
-    const ACESSORIOS_TV = 'ACESSORIOS TV';
-    const CABOS_TV = 'CABOS TV';
-    const TV_LED_50_60 = 'TV LED 50 A 60"';
-    const TV_LED_M65 = 'TV LED +65"' ;
-    const TV_HOTELARIA = 'TV HOTELARIA';
-    const PROJECTORES = 'PROJECTORES VIDEO';
-    const PROJECTORES_MESA = 'PROJECTORES MESA';
-    const PROJECTORES_PORTATEIS = 'PROJECTORES PORTATEIS';
-    const RECEPTORES_AV = 'RECEPTORES AV';
-    const ACESSORIOS_PROJECTORES = 'ACESSORIOS PROJECTORES';
-    const LEITOR_DVD = 'LEITOR DVD';
-    const CAR_AUDIO = 'CAR AUDIO';
-    const AUTO_RADIOS = 'AUTO RADIOS';
-    const CAR_KITS = 'CAR KITS';
-    const ACESSORIOS_VIDEO = 'ACESSORIOS DE VIDEO';
-    const PILHAS_RECARREGAVEIS = 'PILHAS RECARREGAVEIS';
-    const SMARTWATCHES = 'SMARTWATCHES';
-    const FICHAS_TOMADAS = 'FICHAS E TOMADAS';
-    const TOMADAS = 'TOMADAS';
-    CONST DIVERSOS_ILUMINACAO = 'DIVERSOS ILUMINAÇÃO';
-    const ACESSORIOS_ILUMINACAO = 'ACESSÓRIOS ILUMINAÇÃO';
-    const PILHAS_COMANDO = 'PILHAS COMANDO';
-    const BATERIAS = 'BATERIAS';
-    const EXTENSOES_CABOS = 'EXTENSÕES E CABOS';
-    const EXTENSOES_MULTIPLAS = 'EXTENSÕES MULTIPLAS';
-    const ACESSORIOS_MLL = 'ACESSORIOS MÁQUINA LOUÇA';
-    const FRIO_ENCASTRE = 'ENCASTRE FRIO';
-    const FOGOES_GAS = 'FOGÕES GÁS';
-    const MAQ_SECAR_ROUPA_ENCASTRE = 'MAQUINAS SECAR ROUPA ENCASTRE';
-    
-    
-    //EQUIPAMENTOS AUDIO
+        const SIST_HOME_CINEMA = 'SIST.HOME CINEMA';
+            const RECEPTORES_AV = 'RECEPTORES AV';
+            const ACESSORIOS_PROJECTORES = 'ACESSORIOS PROJECTORES';
+            const LEITOR_DVD = 'LEITOR DVD';
+            const KIT_COLUNAS = 'KIT COLUNAS';
+            const SOUND_BARS = 'SOUND BAR';
+            const OUTRO_HIFI = 'OUTRO HI-FI';
+            const AMPLIFICADORES_HIFI = 'AMPLIFICADORES HIFI';
+        
+        //COLUNAS
+        const COLUNAS = 'COLUNAS';
 
-    //AUDIO PORTATIL
-    const AUDIO_PORTATIL = 'AUDIO PORTATIL';
-    const RADIOS_PORTATEIS = 'RADIOS PORTATEIS';
-    //HOME CINEMA
-    const SIST_HOME_CINEMA = 'SIST.HOME CINEMA';
-    const KIT_COLUNAS = 'KIT COLUNAS';
-    const SOUND_BARS = 'SOUND BAR';
-    const OUTRO_HIFI = 'OUTRO HI-FI';
-    const AMPLIFICADORES_HIFI = 'AMPLIFICADORES HIFI';
-    const COLUNAS = 'COLUNAS';
+        //CAR AUDIO
+            const CAR_AUDIO = 'CAR AUDIO';
+            const AUTO_RADIOS = 'AUTO RADIOS';
+            const CAR_KITS = 'CAR KITS';
 
-    const RADIO_CDS = 'RADIOS C/CD';
-    const AUSCULTADORES = 'AUSCULTADORES';
+        //CAMARAS DE VIDEO
+            const ACESSORIOS_CAM_VIDEO = 'ACESSORIOS DE VIDEO';
+            const CAMARAS_VIDEO_STANDARD = 'CAMARAS VIDEO STANDARD';
+
+        const AUDIO_PORTATIL = 'AUDIO PORTATIL';
+            const RADIOS_PORTATEIS = 'RADIOS PORTATEIS';
+            const RADIO_CDS = 'RADIOS C/CD';
+            
+        
+
+        const EQUIPAMENTOS_AUDIO = 'EQUIPAMENTOS AUDIO';
+            const BARRAS_SOM = 'BARRAS DE SOM';
+            const APARELHAGENS_MICROS = 'APARELHAGENS MICROS';
+            const AUSCULTADORES = 'AUSCULTADORES';
+        
+        const DVD_BLURAY_TDT = 'DVD /BLURAY /TDT';
     
-    //GRANDES DOMESTICOS
-    const GRANDES_DOMESTICOS = 'GRANDES DOMÉSTICOS';
-    //INFORMATICA
-    const TABLETS = "TABLET'S";
-    const PORTATEIS_NOTEBOOKS = 'PORTÁTEIS';
-    const ACESSORIOS_TABLETS = 'ACESSORIOS TABLETS';
-    const ACESSORIOS_NOTEBOOKS = 'ACESSORIOS PORTATEIS';
-    const MONITORES = 'MONITORES';
-    const MONITORES_PC = 'MONITORES PC';
-    const MONITORES_PC_CURVO = 'MONITORES CURVOS';
-    const MONITORES_TACTEIS = 'MONITORES TACTEIS';
-    const MONITORES_C_TV = 'MONITORES COM TV';
-    const ACESSORIOS_IMPRESSORAS = 'ACESSORIOS IMPRESSORAS';
-    const IMPRESSORAS_JACTO_DE_TINTA = 'MULTIFUNÇÕES J.TINTA';
-    const ACESSORIOS_INFORMATICA = 'ACESSORIOS INFORMATICA';
-    const UPS = 'UPS';
-    const WEB_CAMS = 'WEB CAMS';
-    const LEITOR_CARTOES = 'LEITOR DE CARTÕES';
-    const REDES_CABOS = 'REDES E CABOS';
-    const MALAS_BOLSAS_INFORMATICA = 'MALAS E BOLSAS';
-    const INFORMATICA_SOFTWARE = 'SOFTWARE';
-    const INFORMATICA_SOFTWARE_POS = 'SOFTWARE POS';
-    const INFORMATICA_SOFTWARE_SEGURANCA = 'SOFTWARE SEGURANÇA';
-    const GAMING = 'GAMING';
-    const ACESSORIOS_PLAYSTATION = 'ACESSORIOS PLAYSTATION';
-    const CONSOLAS_PLAYSTATION = 'CONSOLAS PLAYSTATION';
-    const JOGOS_PLAYSTATION = 'JOGOS PLAYSTATION';
-    const ACESSORIOS_PC_GAMING = 'ACESSORIOS PC GAMING';
     
-    //PEQUENOS DOMESTICOS
-    
+    const ELECTRICIDADE = 'ELECTRICIDADE';
+
+        const PILHAS_BATERIAS = 'PILHAS E BATERIAS';
+            const PILHAS = 'PILHAS';
+            const PILHAS_COMANDO = 'PILHAS COMANDO';
+            const BATERIAS = 'BATERIAS';
+            const PILHAS_RECARREGAVEIS = 'PILHAS RECARREGAVEIS';
+            
+            
+        const FICHAS_TOMADAS = 'FICHAS E TOMADAS';
+            const TOMADAS = 'TOMADAS';
+            
+        const EXTENSOES_CABOS = 'EXTENSÕES E CABOS';
+            const EXTENSOES_MULTIPLAS = 'EXTENSÕES MULTIPLAS';
+        
+        CONST DIVERSOS_ILUMINACAO = 'DIVERSOS ILUMINAÇÃO';
+        
+        const ACESSORIOS_ILUMINACAO = 'ACESSÓRIOS ILUMINAÇÃO';
+
+
     //COMUNICACOES
+        const SMARTWATCHES = 'SMARTWATCHES';
     
     
-    const IMPRESSORAS = 'IMPRESSORAS';
-    const IMPRESSORAS_FOTOS = 'IMPRESSORAS DE FOTOS';
-    const CARTOES_MEMORIA = 'CARTÕES DE MEMÓRIA';
-    const PILHAS_BATERIAS = 'PILHAS E BATERIAS';
-    const PILHAS = 'PILHAS';
-    const CAMARAS_VIDEO_STANDARD = 'CAMARAS VIDEO STANDARD';
-    const MAQUINAS_ROUPA = 'MAQUINAS DE ROUPA';
-    const GARRAFEIRAS = 'GARRAFEIRAS';
+    
+    
+    
+    
+
+    const TEXTIL = 'TEXTIL';
+    
+   
+    
+
+    
+    
+    
+    const GRANDES_DOMESTICOS = 'GRANDES DOMÉSTICOS';
+        //MAQUINAS LOUCA
+            const ACESSORIOS_MLL = 'ACESSORIOS MÁQUINA LOUÇA';
+        
+        //ENCASTRE
+            const FRIO_ENCASTRE = 'ENCASTRE FRIO';
+        
+        //FOGOES
+        const FOGOES_GAS = 'FOGÕES GÁS';
+        const MAQ_SECAR_ROUPA_ENCASTRE = 'MAQUINAS SECAR ROUPA ENCASTRE';
+        const ACESSORIOS_FRIO = 'ACESSORIOS FRIO';
+        const MAQUINAS_ROUPA = 'MAQUINAS DE ROUPA';
+        const GARRAFEIRAS = 'GARRAFEIRAS';
+    
+    //INFORMATICA
+        const COMPUTADORES_E_TABLETS = "COMPUTADORES E TABLET'S";
+            const TABLETS = "TABLET'S";
+            const PORTATEIS_NOTEBOOKS = 'PORTÁTEIS';
+            const ACESSORIOS_TABLETS = 'ACESSORIOS TABLETS';
+            const ACESSORIOS_NOTEBOOKS = 'ACESSORIOS PORTATEIS';
+        const MONITORES = 'MONITORES';
+            const MONITORES_PC = 'MONITORES PC';
+            const MONITORES_PC_CURVO = 'MONITORES CURVOS';
+            const MONITORES_TACTEIS = 'MONITORES TACTEIS';
+            const MONITORES_C_TV = 'MONITORES COM TV';
+        
+        
+        const IMPRESSORAS = 'IMPRESSORAS';
+            const IMPRESSORAS_FOTOS = 'IMPRESSORAS DE FOTOS';
+            const ACESSORIOS_IMPRESSORAS = 'ACESSORIOS IMPRESSORAS';
+            const IMPRESSORAS_JACTO_DE_TINTA = 'MULTIFUNÇÕES J.TINTA';
+        
+        const ACESSORIOS_INFORMATICA = 'ACESSORIOS INFORMATICA';
+            const UPS = 'UPS';
+            const WEB_CAMS = 'WEB CAMS';
+            const LEITOR_CARTOES = 'LEITOR DE CARTÕES';
+            const MALAS_BOLSAS_INFORMATICA = 'MALAS E BOLSAS';
+            const OUTROS_ACESSORIOS_INFORMATICA = 'OUTROS ACESSORIOS INFORMÁTICA';
+            
+        const REDES_CABOS = 'REDES E CABOS';
+        
+        const INFORMATICA_SOFTWARE = 'SOFTWARE';
+            const INFORMATICA_SOFTWARE_POS = 'SOFTWARE POS';
+            const INFORMATICA_SOFTWARE_SEGURANCA = 'SOFTWARE SEGURANÇA';
+        
+        const GAMING = 'GAMING';
+            const ACESSORIOS_PLAYSTATION = 'ACESSORIOS PLAYSTATION';
+            const CONSOLAS_PLAYSTATION = 'CONSOLAS PLAYSTATION';
+            const JOGOS_PLAYSTATION = 'JOGOS PLAYSTATION';
+            const ACESSORIOS_PC_GAMING = 'ACESSORIOS PC GAMING';
+        
+        //MEMORIAS
+            const CARTOES_MEMORIA = 'CARTÕES DE MEMÓRIA';
+    
+    
+    
+    
+    
+    
+    
+    
+    const CAMARAS_VIGILANCIA = 'CAMARAS DE VIGILANCIA';
     const BOLSAS_PROTECCOES = 'BOLSAS E PROTECÇÕES';
     const TELEMOVEIS = 'TELEMÓVEIS';
     const TELEMOVEIS_CARTOES = 'TELEMÓVEIS / CARTÕES';
@@ -140,7 +196,7 @@ class ExpertCategories {
     const CONGELADORES_VERTICAIS = 'VERTICAIS';
     const MOVEIS_SUPORTES = 'MÓVEIS / SUPORTES';
     const ACESSORIOS_IMAGEM_E_SOM = 'ACESSÓRIOS IMAGEM E SOM';
-    const IMAGEM_E_SOM = 'IMAGEM E SOM';
+    
     const FOGOES = 'FOGÕES';
     const FOGÕES_C_GÁS = 'FOGÕES C/GÁS';
     const FOGOES_ELECTRICOS = 'FOGÕES - ELÉCTRICOS';
@@ -249,11 +305,8 @@ class ExpertCategories {
     const TABUAS_PASSAR_FERRO = 'TÁBUAS DE PASSAR';
     const FERRO_VIAGEM = 'FERRO DE VIAGEM';
     const FOGAREIROS = 'FOGAREIROS';
-    const TELEVISAO = 'TELEVISÃO';
-    const EQUIPAMENTOS_AUDIO = 'EQUIPAMENTOS AUDIO';
-    const BARRAS_SOM = 'BARRAS DE SOM';
-    const APARELHAGENS_MICROS = 'APARELHAGENS MICROS';
-    const DVD_BLURAY_TDT = 'DVD /BLURAY /TDT';
+    
+    
     const RADIADORES_A_OLEO = 'RADIADORES A OLEO';
     const CONVECTORES_TERMOVENT = 'CONVECTORES/TERMOVENT.';
     const ELECTRICO = 'ELÉCTRICO';
@@ -266,12 +319,36 @@ class ExpertCategories {
     const FOGOES_LENHA = 'FOGÕES A LENHA';
     const FRIGOBAR = 'FRIGOBAR';
     const BALANÇAS_DE_COZINHA = 'BALANÇAS DE COZINHA';
+    const FRIO = 'FRIO';
+    const ACESSORIOS_MAQUINAS_ROUPA = 'ACESSORIOS MAQUINAS ROUPA';
+    const ACESSORIOS_CLIMATIZACAO = 'ACESSORIOS CLIMATIZAÇÃO';
+    const PURIFICADORES_AR = 'PURIFICADORES DE AR';
+    const LAVA_LOUCAS = 'LAVA LOUÇAS';
+    const MISTURADORAS = 'MISTURADORAS';
+    const ACESSORIOS_COZINHA = 'ACESSORIOS APARELHOS COZINHA';
+    const HUMIDIFICADORES = 'HUMIDIFICADORES';
+    const OUTROS_EQUIPAMENTOS_COZINHA = 'OUTROS EQUIPAMENTOS COZINHA';
+    const PUERICULTURA = 'PUERICULTURA';
+    const ESCOVAS_DE_DENTES = 'ESCOVAS DE DENTES';
+    CONST ACESSORIOS_ASSEIO = 'ACESSORIOS DE ASSEIO PESSOAL';
+    const CUIDADOS_MASCULINOS = 'CUIDADOS_MASCULINOS';
+    const SAUDE_BELEZA = 'SAUDE E BELEZA';
+    const MAQUINAS_COSTURA = 'MAQUINAS COSTURA';
+    const ACESSORIOS_CUIDADOS_ROUPA = 'ACESSORIOS CUIDADOS ROUPA';
+    const TIRA_BORBOTOS = 'TIRA BORBOTOS';
+    const MAQUINAS_LIMPEZA_VAPOR = 'MAQ.LIMPEZA A VAPOR';
+    const MAQ_LAVAR_PRESSAO = 'MAQ.LAVAR ALTA PRESSÃO';
+    const ACESSORIOS_APARELHOS_LIMPEZA = 'ACESSÓRIOS APARELHOS LIMPEZA';
+    const OUTROS_APARELHOS_LIMPEZA = 'OUTROS APARELHOS LIMPEZA';
+    const ASPIRADORES = 'ASPIRADORES';
+    const ACESSORIOS_MICROONDAS = 'ACESSÓRIOS MICROONDAS';
+
+
+    
     
     
     public static function setExpertCategories($categories,$logger,$sku) {
-            print_r($categories);
             $pieces = explode("->",$categories);
-            print_r($pieces);
             $gama = $pieces[0];
             $familia = $pieces[1];
             $subFamilia = $pieces[2];
@@ -282,7 +359,7 @@ class ExpertCategories {
                     $gama = self::INFORMATICA;
                     switch ($familia) {
                         case 'Computadores e Tablets':
-                            $familia = self:COMPUTADORES_E_TABLETS;
+                            $familia = self::COMPUTADORES_E_TABLETS;
                             switch ($subFamilia) {
                                 case 'Notebooks':
                                     $subFamilia = self::PORTATEIS_NOTEBOOKS;
@@ -360,7 +437,7 @@ class ExpertCategories {
                                     $subFamilia = self::LEITOR_CARTOES;
                                     return [$gama,$familia,$subFamilia];
                                 case 'Colunas':
-                                    $gama = self::IMAGEM_E_SOM
+                                    $gama = self::IMAGEM_E_SOM;
                                     $familia = self::COLUNAS;
                                     $subFamilia = null;
                                     return [$gama,$familia,$subFamilia];
@@ -369,7 +446,7 @@ class ExpertCategories {
                                 case 'Teclados e Ratos':
                                 case 'drives':
                                 case 'Hubs USB':
-                                    $subFamilia::OUTROS_ACESSORIOS_INFORMATICA;
+                                    $subFamilia = self::OUTROS_ACESSORIOS_INFORMATICA;
                                     $logger->info(self::VERIFICAR_SUBFAMILIA.$sku);
                                     return [$gama,$familia,$subFamilia];
                                 case 'Adaptadores e Cabos':
@@ -635,7 +712,7 @@ class ExpertCategories {
                             $familia = self::CAMARAS_VIDEO;
                             switch ($subFamilia) {
                                 case 'Câmeras de Vigilância':
-                                    $subFamilia = CAMARAS_VIGILANCIA;
+                                    $subFamilia = self::CAMARAS_VIGILANCIA;
                                     return [$gama, $familia, $subFamilia];
                                 case 'Drones':
                                     $subFamilia = self::DRONES;
@@ -647,7 +724,7 @@ class ExpertCategories {
                                     $subFamilia = self::CAMARAS_VIDEO_HD;
                                     return [$gama, $familia, $subFamilia];
                                 case 'Acessórios de vídeo':
-                                    $subFamilia = self::ACESSORIOS_VIDEO;
+                                    $subFamilia = self::ACESSORIOS_CAM_VIDEO;
                                     return [$gama, $familia, $subFamilia];
                                 default:
                                     return [$gama, $familia, $subFamilia];
@@ -683,7 +760,7 @@ class ExpertCategories {
                             $subFamilia = self::CARTOES_MEMORIA;
                             return [$gama, $familia, $subFamilia];
                         case 'Pilhas e Carregadores':
-                            $gama = self::ILUMINACAO_BATERIAS;
+                            $gama = self::ELECTRICIDADE;
                             $familia = self::PILHAS_BATERIAS;
                             $subFamilia = self::PILHAS_RECARREGAVEIS;
                             return [$gama, $familia, $subFamilia];
@@ -694,7 +771,7 @@ class ExpertCategories {
                     }
                 case 'Energia':
                     //Energia->Pilhas e Carregadores->Lítio
-                    $gama = self::ILUMINACAO_BATERIAS;
+                    $gama = self::ELECTRICIDADE;
                     switch ($familia) {
                         case 'Fichas / Tomadas':
                             $familia = self::FICHAS_TOMADAS;
@@ -908,7 +985,7 @@ class ExpertCategories {
                                     $logger->info(self::VERIFICAR_SUBFAMILIA.$sku);
                                     return [$gama, $familia, $subFamilia];
                                 case 'Torneiras':
-                                    $subFamilia = self::MISTURADDORAS;
+                                    $subFamilia = self::MISTURADORAS;
                                     return [$gama, $familia, $subFamilia];
                                 default:
                                     return [$gama, $familia, $subFamilia];
@@ -949,7 +1026,7 @@ class ExpertCategories {
                                 case 'Ar Condicionado':
                                     $familia = self::AR_CONDICIONADO;
                                     $subFamilia = null;
-                                    $logger->(self::VERIFICAR_SUBFAMILIA.$sku);
+                                    $logger->info(self::VERIFICAR_SUBFAMILIA.$sku);
                                     return [$gama,$familia,$subFamilia];
                                 case 'Aquecimento':
                                     $familia = self::AQUECIMENTO;
@@ -1017,7 +1094,7 @@ class ExpertCategories {
                                     return [$gama,$familia,$subFamilia];
                                 case 'Fun Cooking e Diversos':
                                     $subFamilia = self::OUTROS_EQUIPAMENTOS_COZINHA;
-                                    $logger->(self::VERIFICAR_SUBFAMILIA.$sku);
+                                    $logger->info(self::VERIFICAR_SUBFAMILIA.$sku);
                                     return [$gama,$familia,$subFamilia];
                                 case 'Liquidificadoras':
                                     $subFamilia = self::LIQUIDIFICADORAS;
@@ -1141,14 +1218,12 @@ class ExpertCategories {
                                     $subFamilia = self::MAQ_LAVAR_PRESSAO;
                                     return [$gama,$familia,$subFamilia];
                                 case 'Acessórios':
+                                case 'Consumíveis':
                                     $subFamilia = self::ACESSORIOS_APARELHOS_LIMPEZA;
                                     return [$gama,$familia,$subFamilia];
                                 case 'Robot':
                                     $subFamilia = self::ASPIRADORES_ROBOT;
-                                    return [$gama,$familia,$subFamilia];
-                                case 'Consumíveis':
-                                    $subFamilia = self::
-                                    return [$gama,$familia,$subFamilia];
+                                    return [$gama,$familia,$subFamilia];    
                                 case 'Mini-Aspiradores':
                                     $subFamilia = self::ACESSORIOS_APARELHOS_LIMPEZA;
                                     return [$gama,$familia,$subFamilia];

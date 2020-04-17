@@ -4,6 +4,7 @@
 namespace Mlp\Cli\Console\Command;
 
 use \Mlp\Cli\Helper\Category as CategoryManager;
+use \Mlp\Cli\Helper\Expert\ExpertCategories;
 
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Filesystem\DirectoryList;
@@ -14,6 +15,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+
 
 use Mlp\Cli\Helper\Manufacturer as Manufacturer;
 
@@ -26,6 +28,7 @@ class Expert extends Command
     const FILTER_PRODUCTS = 'filter-products';
     const ADD_PRODUCTS = 'add-products';
     const UPDATE_STOCKS = 'update-stocks';
+    const ADD_IMAGES = 'add-images';
 
     private $directory;
     private $categoryManager;
@@ -33,18 +36,23 @@ class Expert extends Command
     private $state;
     private $produtoInterno;
     private $loadCsv;
+    private $imagesHelper;
 
     public function __construct(DirectoryList $directory,
                                 \Mlp\Cli\Helper\Category $categoryManager,                          
                                 \Magento\Framework\App\State $state,
                                 \Mlp\Cli\Model\ProdutoInterno $productoInterno,
-                                \Mlp\Cli\Helper\LoadCsv $loadCsv){
+                                \Mlp\Cli\Helper\LoadCsv $loadCsv,
+                                \Magento\Catalog\Api\ProductRepositoryInterface $productRepository,
+                                \Mlp\Cli\Helper\imagesHelper $imagesHelper){
 
         $this->directory = $directory;
         $this->categoryManager = $categoryManager;
         $this->state = $state;
         $this->produtoInterno = $productoInterno;
         $this->loadCsv = $loadCsv;
+        $this->productRepository = $productRepository;
+        $this->imagesHelper = $imagesHelper;
         parent::__construct();
     }
 
@@ -70,6 +78,12 @@ class Expert extends Command
                     '-u',
                     InputOption::VALUE_NONE,
                     'Update Stocks and State (Active or inactive)'
+                ),
+                new InputOption(
+                    self::ADD_IMAGES,
+                    '-i',
+                    InputOption::VALUE_NONE,
+                    'Add Images'
                 )
             ])->addArgument('categories', InputArgument::OPTIONAL, 'Categories?');
         parent::configure();
@@ -93,6 +107,10 @@ class Expert extends Command
         $updateStocks = $input->getOption(self::UPDATE_STOCKS);
         if ($updateStocks){
             $this->updateStocks();
+        }
+        $addImages = $input->getOption(self::ADD_IMAGES);
+        if ($addImages) {
+            $this->addImages($categories);
         }
         else {
             throw new \InvalidArgumentException('Option ' . self::FILTER_PRODUCTS . ' is missing.');
@@ -139,6 +157,7 @@ class Expert extends Command
             }
             try {
                 print_r(" - Setting stock: ");
+                $this->produtoInterno->updatePrice();
                 $this->produtoInterno->setStock('expert');
                 print_r($this->produtoInterno->stock. "\n");
             } catch (\Exception $ex) {
@@ -211,16 +230,53 @@ class Expert extends Command
         $this->produtoInterno->width = null;
         $this->produtoInterno->height = null;
         $this->produtoInterno->weight = null;
-        $this->produtoInterno->price = (int)trim($data[8]);
+        $this->produtoInterno->price = (int)trim($data[9]);
         $this->produtoInterno->status = $status;
-        $this->produtoInterno->image = $data[12];
-        $this->produtoInterno->classeEnergetica = $data[17];
-        $this->produtoInterno->imageEnergetica = $data[18];
+        $this->produtoInterno->image = $data[13];
+        $this->produtoInterno->classeEnergetica = $data[18];
+        $this->produtoInterno->imageEnergetica = $data[19];
         $this->produtoInterno->stock = $stock;
 
+        
         [$this->produtoInterno->gama,$this->produtoInterno->familia,
-            $this->produtoInterno->subFamilia] = CategoryManager::setExpertCategories($data[2],$logger,
+            $this->produtoInterno->subFamilia] = ExpertCategories::setExpertCategories($data[2],$logger,
                                                                                 $this->produtoInterno->sku);
+    }
+
+    private function addImages($categoriesFilter) 
+    {
+
+        $writer = new \Zend\Log\Writer\Stream($this->directory->getRoot().'/var/log/Expert.log');
+        $logger = new \Zend\Log\Logger();
+        $logger->addWriter($writer);
+
+        
+        $row = 0;
+        foreach ($this->loadCsv->loadCsv('Expert.csv',";") as $data) {
+            $row++;
+            print_r($row." - ");
+            $this->setData($data,$logger);
+            if (strlen($this->produtoInterno->sku) != 13) {
+                print_r("invalid sku - \n");
+                continue;
+            }
+            if (!is_null($categoriesFilter)){
+                if (strcmp($categoriesFilter,$this->produtoInterno->subFamilia) != 0){
+                    print_r($this->produtoInterno->sku . " - Fora de Gama \n");
+                    continue;
+                }
+            }
+            try {
+                print_r($this->produtoInterno->sku);
+                $product = $this -> productRepository -> get($this->produtoInterno->sku, true, null, true);
+                $this->imagesHelper->getImages($product->getSku(), $this->produtoInterno->image, $this->produtoInterno->imageEnergetica);
+                $this->imagesHelper->setImages($product, $logger, $this->produtoInterno->sku);
+                $this->productRepository->save($product);
+                print_r("\n");
+            } catch (\Exception $exception) {
+                print_r($exception->getMessage());
+            }
+        }
     }
 }
 
