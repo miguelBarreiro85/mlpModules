@@ -148,7 +148,7 @@ class ProdutoInterno
         $product->setName($this->name);
         $product->setTypeId(\Magento\Catalog\Model\Product\Type::TYPE_SIMPLE);
         //Set Categories
-        [$pGama,$pFamilia,$pSubFamilia] = $this->categoryManager->setCategories($this->gama, $this->familia, $this->subFamilia, $this->name);
+        //[$pGama,$pFamilia,$pSubFamilia] = $this->categoryManager->setCategories($this->gama, $this->familia, $this->subFamilia, $this->name);
 
         $product->setCustomAttribute('description', $this->description);
         $product->setCustomAttribute('meta_description', $this->meta_description);
@@ -160,7 +160,8 @@ class ProdutoInterno
         $product->setCustomAttribute('tax_class_id', 2); //taxable goods id
         $product->setWeight($this->weight);
         $product->setWebsiteIds([1]);
-        $attributeSetId = $this->attributeManager->getAttributeSetId($pFamilia, $pSubFamilia);
+        $attributeSetId = $this->attributeManager->getAttributeSetId($this->familia, $this->subFamilia);
+        
         $product->setAttributeSetId($attributeSetId); // Attribute set id
         $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
         $product->setTaxClassId(2); // Tax class id
@@ -168,7 +169,7 @@ class ProdutoInterno
         $product->setCreatedAt(date("Y/m/d"));
         $product->setCustomAttribute('news_from_date', date("Y/m/d"));
 
-        $this->setCategories($product, $pGama, $pFamilia, $pSubFamilia);
+        $this->setCategories($product, $this->gama, $this->familia, $this->subFamilia);
         $this->imagesHelper->getImages($this->sku,$this->image,$this->imageEnergetica);
         $this->imagesHelper->setImages($product, $logger, $imgName . "_e.jpeg");
         $this->imagesHelper->setImages($product, $logger, $imgName . ".jpeg");
@@ -190,8 +191,8 @@ class ProdutoInterno
 
         //Adicionar opções de garantia e instalação
         try{
-            $this->productOptions->add_warranty_option($product,$pGama, $pFamilia, $pSubFamilia);
-            $value = $this->productOptions->getInstallationValue($pFamilia);
+            $this->productOptions->add_warranty_option($product,$this->gama, $this->familia, $this->subFamilia);
+            $value = $this->productOptions->getInstallationValue($this->familia);
             if ($value > 0){
                 $this->productOptions->add_installation_option($product,$value);
             }
@@ -221,6 +222,7 @@ class ProdutoInterno
             }
 
         } catch (\Exception $ex) { 
+            
             //Adicionar nova categoria
             try{
                 $this->categoryManager->createCategory($pGama, $pFamilia, $pSubFamilia, $categories);
@@ -294,7 +296,7 @@ class ProdutoInterno
         try{
             $product = $this->productRepositoryInterface->get($this->sku, true, null, true);
             $product->setPrice($this->price);
-            $this->productRepositoryInterface->save($product);
+            $this->productResource->saveAttribute($product,'price');
         }catch (\Exception $ex){
             print_r("update price exception - " . $ex->getMessage() . "\n");
         }

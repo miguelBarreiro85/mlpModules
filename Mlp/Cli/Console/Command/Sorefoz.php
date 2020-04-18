@@ -41,6 +41,7 @@ class Sorefoz extends Command
     private $produtoInterno;
     private $loadCsv;
     private $imagesHelper;
+    private $sorefozCategories;
 
     public function __construct(DirectoryList $directory,
                                 \Mlp\Cli\Helper\Category $categoryManager,
@@ -48,7 +49,8 @@ class Sorefoz extends Command
                                 \Mlp\Cli\Model\ProdutoInterno $produtoInterno,
                                 \Magento\Catalog\Api\ProductRepositoryInterface $productRepositoryInterface,
                                 LoadCsv $loadCsv,
-                                imagesHelper $imagesHelper)
+                                imagesHelper $imagesHelper,
+                                \Mlp\Cli\Helper\Sorefoz\SorefozCategories $sorefozCategories)
     {
 
         $this -> directory = $directory;
@@ -58,6 +60,7 @@ class Sorefoz extends Command
         $this -> produtoInterno = $produtoInterno;
         $this->loadCsv = $loadCsv;
         $this->imagesHelper = $imagesHelper;
+        $this->sorefozCategories = $sorefozCategories;
 
         parent ::__construct();
     }
@@ -136,7 +139,10 @@ class Sorefoz extends Command
         foreach ($this->loadCsv->loadCsv('tot_jlcb_utf.csv',";") as $data) {
             $row++;
             print_r($row." - ");
-            $this->setSorefozData($data);
+            if (!$this->setSorefozData($data)){
+                print_r("\n");
+                continue;
+            }
             if (strlen($this->produtoInterno->sku) != 13) {
                 print_r("invalid sku - \n");
                 continue;
@@ -161,6 +167,7 @@ class Sorefoz extends Command
             if(isset($product)){
                 try {
                     print_r(" - Setting stock: " . $this->produtoInterno->stock . "\n");
+                    $this->produtoInterno->updatePrice();
                     $this->produtoInterno->setStock("sorefoz");
                 } catch (\Exception $ex) {
                     print_r("Update stock exception - " . $ex -> getMessage() . "\n");
@@ -258,12 +265,16 @@ class Sorefoz extends Command
         $functionTim = function ($el){
             return trim($el);
         };
-
+        $data = array_map($functionTim,$data);
 
         if (preg_match("/sim/i",$data[26]) == 1){
             $stock = 1;
         }else {
             $stock = 0;
+        }
+        
+        if ($stock == 0) {
+            return 0;
         }
 
         if (preg_match("/sim/i",$data[16]) == 1) {
@@ -271,12 +282,12 @@ class Sorefoz extends Command
         }else{
             $status = 1;
         }
-        $data = array_map($functionTim,$data);
+        [$gama,$familia,$subFamilia] =  $this->sorefozCategories->getCategoriesSorefoz($data[5],$data[7],$data[9]);        
         $this->produtoInterno->sku = $data[18];
         $this->produtoInterno->name = $data[1];
-        $this->produtoInterno->gama = $data[5];
-        $this->produtoInterno->familia = $data[7];
-        $this->produtoInterno->subFamilia = $data[9];
+        $this->produtoInterno->gama = $gama;
+        $this->produtoInterno->familia = $familia;
+        $this->produtoInterno->subFamilia = $subFamilia;
         $this->produtoInterno->description = $data[25];
         $this->produtoInterno->meta_description = $data[24];
         $this->produtoInterno->manufacturer = $data[3];
@@ -290,13 +301,13 @@ class Sorefoz extends Command
         $this->produtoInterno->classeEnergetica = $data[25];
         $this->produtoInterno->imageEnergetica = $data[28];
         $this->produtoInterno->stock = $stock;
+        return 1;
+        
     }
 
     public function getProductSorefozStatus()
     {
-        if ($this->produtoInterno->status == 1) {
-            return 1;
-        }
+        if ($this->produtoInterno->status == 1) {return 1;}
         else{
             return 0;
         }

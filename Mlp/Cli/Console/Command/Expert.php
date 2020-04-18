@@ -131,7 +131,10 @@ class Expert extends Command
             $row++;
             print_r($row." - ");
             try{
-                $this->setData($data,$logger);
+                if(!$this->setData($data,$logger)){
+                    print_r("\n");
+                    continue;
+                }
             }catch(\Exception $e){
                 $logger->info("Error setData: ".$row);
                 continue;
@@ -208,8 +211,8 @@ class Expert extends Command
         };
 
         $data = array_map($functionTim,$data);
-
-        if (preg_match("/Indisponivel/i",$data[15]) == 1){
+        
+        if (preg_match("/Indisponivel/i",$data[16]) == 1){
             $stock = 0;
             $status = 2;
         }else {
@@ -217,7 +220,9 @@ class Expert extends Command
             $status = 1;
         }
 
-        
+        if ($stock == 0){
+            return 0;
+        }
 
         
         $this->produtoInterno->sku = $data[1];
@@ -241,6 +246,7 @@ class Expert extends Command
         [$this->produtoInterno->gama,$this->produtoInterno->familia,
             $this->produtoInterno->subFamilia] = ExpertCategories::setExpertCategories($data[2],$logger,
                                                                                 $this->produtoInterno->sku);
+        return 1;
     }
 
     private function addImages($categoriesFilter) 

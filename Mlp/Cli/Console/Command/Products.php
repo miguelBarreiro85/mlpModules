@@ -35,6 +35,8 @@ class Products extends Command
     const ANONYMOUS_NAME = 'Anonymous';
 
     const ADD_SOREFOZ_IMAGES = "add-sorefoz-images";
+
+    const CHANGE_PRODUCTS_CATEGORIES = 'change-products-categories';
     /**
      * @var ProductRepositoryInterface
      */
@@ -79,6 +81,10 @@ class Products extends Command
     private $directory;
 
     private $loadCsv;
+
+    
+
+    private $categoryManager;
     public function __construct(
                                 \Magento\Framework\App\ResourceConnection $resourceConnection,
                                 \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory,
@@ -92,6 +98,7 @@ class Products extends Command
                                 \Mlp\Cli\Helper\Data  $dataAttributeOptions,
                                 \Mlp\Cli\Console\Command\Sorefoz $sorefoz,
                                 \Magento\Framework\Filesystem\DirectoryList $directory,
+                                \Mlp\Cli\Helper\Category $categoryManager,
                                 \Mlp\Cli\Helper\LoadCsv $loadCsv)
     {
         $this->productRepository = $productRepository;
@@ -107,6 +114,7 @@ class Products extends Command
         $this->sorefoz = $sorefoz;
         $this->directory = $directory;
         $this->loadCsv = $loadCsv;
+        $this->categoryManager = $categoryManager;
         parent::__construct();
     }
 
@@ -127,9 +135,17 @@ class Products extends Command
                     InputOption::VALUE_NONE,
                     'Add Sorefoz Images'
                 ),
+                new InputOption(
+                    self::CHANGE_PRODUCTS_CATEGORIES,
+                    '-c',
+                    InputOption::VALUE_NONE,
+                    'Add Sorefoz Images'
+                )
             ])
             ->addArgument('oldManufacturer', InputArgument::OPTIONAL, 'oldManufacturer')
-            ->addArgument('newManufacturer', InputArgument::OPTIONAL, 'newManufacturer');
+            ->addArgument('newManufacturer', InputArgument::OPTIONAL, 'newManufacturer')
+            ->addArgument('oldCat', InputArgument::OPTIONAL, 'oldCat')
+            ->addArgument('newCat', InputArgument::OPTIONAL, 'newCat');;
         parent::configure();
     }
 
@@ -149,6 +165,12 @@ class Products extends Command
         $addSorefozImages = $input->getOption(self::ADD_SOREFOZ_IMAGES);
         if($addSorefozImages) {
             $this->addImages(null);
+        }
+        $changeCat = $input->getOption(self::CHANGE_PRODUCTS_CATEGORIES);
+        $oldCat = $input->getArgument('oldCat');
+        $newCat = $input->getArgument('newCat');
+        if($changeCat){
+            $this->changeCategories($oldCat,$newCat);
         }
         else {
             throw new \InvalidArgumentException('Option  ELSE');
@@ -225,6 +247,9 @@ class Products extends Command
         }
     }
     
+    private function changeCategories($oldCat,$newCat){
+        $this->categoryManager->changeProductCategories($oldCat,$newCat);
+    }
 
 
 }
