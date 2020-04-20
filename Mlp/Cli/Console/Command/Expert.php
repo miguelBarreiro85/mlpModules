@@ -139,11 +139,6 @@ class Expert extends Command
                 $logger->info("Error setData: ".$row);
                 continue;
             }
-            if (strlen($this->produtoInterno->sku) != 13) {
-                print_r("Wrong sku - ");
-                $logger->info("Wrong Sku: ".$this->produtoInterno->sku);
-                continue;
-            }
             if (!is_null($categoriesFilter)){
                 if (strcmp($categoriesFilter,$this->produtoInterno->subFamilia) != 0){
                     print_r("wrong familie - ");
@@ -159,9 +154,8 @@ class Expert extends Command
                 //$this -> produtoInterno -> addSpecialAttributesExpert($product, $logger);
             }
             try {
-                print_r(" - Setting stock: ");
+                print_r(" - Setting price: ");
                 $this->produtoInterno->updatePrice();
-                $this->produtoInterno->setStock('expert');
                 print_r($this->produtoInterno->stock. "\n");
             } catch (\Exception $ex) {
                 print_r("Update stock exception - " . $ex -> getMessage() . "\n");
@@ -220,14 +214,30 @@ class Expert extends Command
             $status = 1;
         }
 
+        $this->produtoInterno->sku = $data[1];
+        
+        if (strlen($this->produtoInterno->sku) != 13) {
+            print_r("Wrong sku - ");
+            $logger->info("Wrong Sku: ".$this->produtoInterno->sku);
+            return 0;
+        }
+        $this->produtoInterno->stock = $stock;
+        $this->produtoInterno->status = $status;
+        $this->produtoInterno->price = (int)trim($data[9]);
+        
+        try {
+            $this->produtoInterno->setStock("expert");
+        }catch (\Exception $e){
+            print_r($e->getMessage());
+        }
+        
+
         if ($stock == 0){
+            print_r(" - Indisponivel! -");
             return 0;
         }
 
-        
-        $this->produtoInterno->sku = $data[1];
         $this->produtoInterno->name = $data[5];
-
         $this->produtoInterno->description = $data[10];
         $this->produtoInterno->meta_description = $data[10];
         $this->produtoInterno->manufacturer = $data[7];
@@ -235,17 +245,17 @@ class Expert extends Command
         $this->produtoInterno->width = null;
         $this->produtoInterno->height = null;
         $this->produtoInterno->weight = null;
-        $this->produtoInterno->price = (int)trim($data[9]);
-        $this->produtoInterno->status = $status;
         $this->produtoInterno->image = $data[13];
         $this->produtoInterno->classeEnergetica = $data[18];
         $this->produtoInterno->imageEnergetica = $data[19];
-        $this->produtoInterno->stock = $stock;
-
         
         [$this->produtoInterno->gama,$this->produtoInterno->familia,
             $this->produtoInterno->subFamilia] = ExpertCategories::setExpertCategories($data[2],$logger,
                                                                                 $this->produtoInterno->sku);
+        if(preg_match("/Expert/i",$this->produtoInterno->gama)){
+            print_r(" - gama: expert - ");
+            return 0;
+        }
         return 1;
     }
 

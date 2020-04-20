@@ -295,7 +295,27 @@ class ProdutoInterno
     public function updatePrice(){
         try{
             $product = $this->productRepositoryInterface->get($this->sku, true, null, true);
-            $product->setPrice($this->price);
+            
+
+            //Podemos ver se já temos o produto em stock noutro lado, se tivermos, vemos qual é o mais barato, 
+            //esta função só é chamada se houver produto em stock....
+
+            $filterSku = $this->filterBuilder
+            -> setField("sku")
+            -> setValue($this->sku)
+            -> create();
+
+            $searchC = $this->searchCriteriaBuilder->addFilters([$filterSku]) -> create();
+            $sourceItems = $this -> sourceItemRepositoryI->getList($searchC) -> getItems();
+            $newPrice = $this->price;
+
+            //Para Garantirmos que o preço é sempre o mais baixo e que existe em stock no fornecedor
+            foreach($sourceItems as $item){
+                if ($item->getQuantity() > 0 && $product->getPrice() < $this->price){
+                    $newPrice = $product->getPrice();
+                }
+            }
+            $product->setPrice($newPrice);
             $this->productResource->saveAttribute($product,'price');
         }catch (\Exception $ex){
             print_r("update price exception - " . $ex->getMessage() . "\n");

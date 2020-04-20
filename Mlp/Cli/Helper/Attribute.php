@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: miguel
- * Date: 14-07-2018
- * Time: 12:58
- */
+
 
 namespace Mlp\Cli\Helper;
 

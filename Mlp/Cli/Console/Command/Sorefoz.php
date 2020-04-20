@@ -139,7 +139,7 @@ class Sorefoz extends Command
         foreach ($this->loadCsv->loadCsv('tot_jlcb_utf.csv',";") as $data) {
             $row++;
             print_r($row." - ");
-            if (!$this->setSorefozData($data)){
+            if (!$this->setSorefozData($data,$logger)){
                 print_r("\n");
                 continue;
             }
@@ -152,10 +152,6 @@ class Sorefoz extends Command
                     print_r($this->produtoInterno->sku . " - Fora de Gama \n");
                     continue;
                 }
-            }
-            if($this->getProductSorefozStatus() == 0){
-                print_r(" - disabled\n");
-                continue;
             }
             try {
                 $product = $this -> productRepository -> get($this->produtoInterno->sku, true, null, true);
@@ -261,7 +257,7 @@ class Sorefoz extends Command
     {
     }
 
-    public function setSorefozData($data) {
+    public function setSorefozData($data,$logger) {
         $functionTim = function ($el){
             return trim($el);
         };
@@ -274,6 +270,7 @@ class Sorefoz extends Command
         }
         
         if ($stock == 0) {
+            print_r(" - out of stock -");
             return 0;
         }
 
@@ -282,7 +279,9 @@ class Sorefoz extends Command
         }else{
             $status = 1;
         }
-        [$gama,$familia,$subFamilia] =  $this->sorefozCategories->getCategoriesSorefoz($data[5],$data[7],$data[9]);        
+        [$gama,$familia,$subFamilia] =  $this->sorefozCategories
+                ->getCategoriesSorefoz($data[5],$data[7],$data[9],
+                                $logger,$this->produtoInterno->sku);        
         $this->produtoInterno->sku = $data[18];
         $this->produtoInterno->name = $data[1];
         $this->produtoInterno->gama = $gama;
@@ -305,14 +304,6 @@ class Sorefoz extends Command
         
     }
 
-    public function getProductSorefozStatus()
-    {
-        if ($this->produtoInterno->status == 1) {return 1;}
-        else{
-            return 0;
-        }
-    }
-
     private function addImages($categoriesFilter) 
     {
 
@@ -325,7 +316,7 @@ class Sorefoz extends Command
         foreach ($this->loadCsv->loadCsv('tot_jlcb_utf.csv',";") as $data) {
             $row++;
             print_r($row." - ");
-            $this->setSorefozData($data);
+            $this->setSorefozData($data,$logger);
             if (strlen($this->produtoInterno->sku) != 13) {
                 print_r("invalid sku - \n");
                 continue;
@@ -335,10 +326,6 @@ class Sorefoz extends Command
                     print_r($this->produtoInterno->sku . " - Fora de Gama \n");
                     continue;
                 }
-            }
-            if($this->getProductSorefozStatus() == 0){
-                print_r(" - disabled\n");
-                continue;
             }
             try {
                 print_r($this->produtoInterno->sku);
