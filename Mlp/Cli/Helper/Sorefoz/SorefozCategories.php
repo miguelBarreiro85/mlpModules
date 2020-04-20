@@ -3,6 +3,7 @@
 namespace Mlp\Cli\Helper\Sorefoz;
 
 use Mlp\Cli\Helper\CategoriesConstants as Cat;
+use phpDocumentor\Reflection\DocBlock\Tags\Return_;
 
 class SorefozCategories {
 
@@ -38,18 +39,20 @@ class SorefozCategories {
             case 'GRANDES DOMÉSTICOS':
                 switch ($familia) {
                     case 'ENCASTRE - FORNOS':
+                        $gama = Cat::ENCASTRE;
                         switch ($subFamilia) {
                             case 'INDEPENDENTES - ELÉCTRICOS':
                             case 'PIROLITICOS':
                             case 'INDEPENDENTES C/GÁS':
                             case 'POLIVALENTES':
-                                $familia = Cat::ENCASTRE;
-                                $subfamilia = Cat::FORNOS;
+                                $familia = Cat::FORNOS;
+                                $subfamilia = null;
                                 return [$gama, $familia, $subfamilia];
                             default:
                                 return [$gama,$familia,$subFamilia];
                         }
                     case 'ENCASTRE - MESAS':
+                        $gama = Cat::ENCASTRE;
                         switch ($subFamilia) {
                             case 'CONVENCIONAIS C/GÁS':
                             case 'DE INDUÇÃO':
@@ -58,65 +61,73 @@ class SorefozCategories {
                             case 'VITROCERÂMICAS - ELÉCTRICAS':
                             case 'DOMINÓS - ELÉCTRICOS':                                
                             case 'CONVENCIONAIS - ELÉCTRICAS':
-                                $familia = Cat::ENCASTRE;
-                                $subFamilia = Cat::PLACAS;
+                                $familia = Cat::PLACAS;
+                                $subFamilia = null;
                                 return [$gama,$familia,$subFamilia];
                             default:
                                 return [$gama,$familia,$subFamilia];
                         }
                     case 'ENCASTRE - EXAUSTOR/EXTRATORES':
+                        $gama = Cat::ENCASTRE;
                         switch($subFamilia){
                             case 'EXAUST.DE CHAMINÉ':
                             case 'EXAUST.TELESCÓPICOS':
                             case 'EXAUST.CONVENCIONAIS':
                             case 'EXTRACTORES':
-                                $familia = Cat::ENCASTRE;
-                                $subFamilia = Cat::EXAUSTORES;
+                                $familia = Cat::EXAUSTORES;
+                                $subFamilia = null;
                                 return [$gama,$familia,$subFamilia];
                             default:
                                 return [$gama,$familia,$subFamilia];
                         }
                     case 'ENCASTRE - FRIO':
-                        $familia = Cat::ENCASTRE;
-                        return [$gama,$familia,$subFamilia];
+                        $gama = Cat::ENCASTRE;
+                        $familia = Cat::FRIO_ENCASTRE;
+                        switch($subFamilia){
+                            case 'COMBINADOS':
+                                $subFamilia = Cat::COMBINADOS_ENCASTRE;
+                                return [$gama,$familia,$subFamilia];
+                            case 'CONGELADORES VERTICAIS':
+                                $subFamilia = Cat::CONGELADORES_ENCASTRE;
+                                return [$gama,$familia,$subFamilia];
+                            case 'FRIGORIFICOS':
+                                $subFamilia = Cat::FRIGORIFICOS_ENCASTRE;
+                                return [$gama,$familia,$subFamilia];
+                            case 'GARRAFEIRAS':
+                                $subFamilia = Cat::GARRAFEIRAS_ENCASTRE;
+                                return [$gama,$familia,$subFamilia];
+                            default:
+                                return [$gama,$familia,$subFamilia];    
+                        }
                     case 'ENCASTRE - MAQ.LOUÇA':
-                        switch ($subFamilia) {
-                            case 'MAQ.LAVAR LOUÇA 60 Cm':
-                            case 'MAQ.LAVAR LOUÇA 45 Cm':
-                                $familia = Cat::ENCASTRE;
-                                $subFamilia = Cat::MAQUINAS_DE_LOUCA_ENCASTRE;
+                        $gama = Cat::ENCASTRE;
+                        $familia = Cat::MAQUINAS_DE_LOUCA_ENCASTRE;
+                        $subFamilia = null;
+                        return [$gama,$familia,$subFamilia];
+                    case 'ENCASTRE - MAQ.L.ROUPA':
+                        $gama = Cat::ENCASTRE;
+                        $familia = Cat::MAQ_ROUPA_ENCASTRE;
+                        switch($subFamilia){
+                            case 'MAQ.LAVAR/SECAR ROUPA':
+                                $subFamilia = Cat::MAQ_LAVAR_SECAR_ROUPA_ENCASTRE;
+                                return [$gama,$familia,$subFamilia];
+                            case 'MAQ.LAVAR ROUPA':
+                                $subFamilia = Cat::MAQ_LAVAR_ROUPA_ENCASTRE;
+                                return [$gama,$familia,$subFamilia];
+                            case 'MAQ.SECAR ROUPA':
+                                $subFamilia = Cat::MAQ_SECAR_ROUPA_ENCASTRE;
                                 return [$gama,$familia,$subFamilia];
                             default:
                                 return [$gama,$familia,$subFamilia];
                         }
-                    case 'ENCASTRE - MAQ.L.ROUPA':
-                        $familia = Cat::ENCASTRE;
-                        switch($subFamilia){
-                            case 'MAQ.LAVAR/SECAR ROUPA':
-                                $gama = Cat::ENCASTRE;
-                                $familia = Cat::MAQ_ROUPA_ENCASTRE;
-                                $subFamilia = Cat::MAQ_LAVAR_SECAR_ROUPA_ENCASTRE;
-                                return [$gama,$familia,$subFamilia];
-                            case 'MAQ.LAVAR ROUPA':
-                                $gama = Cat::ENCASTRE;
-                                $familia = Cat::MAQ_ROUPA_ENCASTRE;
-                                $subFamilia = Cat::MAQ_LAVAR_ROUPA_ENCASTRE;
-                                return [$gama,$familia,$subFamilia];
-                            case 'MAQ.SECAR ROUPA':
-                                $gama = Cat::ENCASTRE;
-                                $familia = Cat::MAQ_ROUPA_ENCASTRE;
-                                $subFamilia = Cat::MAQ_LAVAR_ROUPA_ENCASTRE;
-                                return [$gama,$familia,$subFamilia];
-
-                        }
-                        $subFamilia = Cat::MAQ_LAVAR_ROUPA_ENCASTRE;
-                        return [$gama,$familia,$subFamilia];
                     case 'ENCASTRE - MICROONDAS':
-                        $familia = Cat::ENCASTRE;
-                        $subFamilia = Cat::MICROONDAS_ENCASTRE;
+                        $gama = Cat::ENCASTRE;
+                        $familia = Cat::MICROONDAS_ENCASTRE;
+                        $subFamilia = null;
                         return [$gama,$familia,$subFamilia];
                     case 'ENCASTRE - OUTRAS':
-                        $familia = Cat::ENCASTRE;
+                        $gama = Cat::ENCASTRE;
+                        $subFamilia = Cat::OUTRO_ENCASTRE;
                         return [$gama,$familia,$subFamilia];
                     default:
                         return [$gama,$familia,$subFamilia];
@@ -165,6 +176,22 @@ class SorefozCategories {
                         }
                     default:
                         return [$gama,$familia,$subFamilia];
+                }
+            case 'CAR AUDIO':
+                switch ($familia) {
+                    case 'AUTO-RADIOS':
+                        $gama = Cat::IMAGEM_E_SOM;
+                        $familia = Cat::CAR_AUDIO;
+                        $subFamilia = Cat::AUTO_RADIOS;
+                        Return [$gama,$familia,$subFamilia];
+                    case 'COLUNAS':
+                        $gama = Cat::IMAGEM_E_SOM;
+                        $familia = Cat::CAR_AUDIO;
+                        $subFamilia = Cat::COLUNAS_AUTO;
+                        Return [$gama,$familia,$subFamilia];
+                    default:
+                        # code...
+                        break;
                 }
             default:
                 return [$gama,$familia,$subFamilia];

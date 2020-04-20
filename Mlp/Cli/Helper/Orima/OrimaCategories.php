@@ -83,49 +83,56 @@ class OrimaCategories {
                 }
 
             case 'ENCASTRE':
-                $gama = Cat::GRANDES_DOMESTICOS;
+                $gama = Cat::ENCASTRE;
 
                 switch ($familia) {
                     case 'CHAMINES':
                     case 'EXAUSTORES':
-                        $subFamilia = Cat::EXAUSTORES;
-                        return ([$gama, Cat::ENCASTRE, $subFamilia]);
+                        $familia = Cat::EXAUSTORES;
+                        $subFamilia = null;
+                        return ([$gama, $familia, $subFamilia]);
 
                     case 'COMBINADOS ENCASTRE':
+                        $familia = Cat::FRIO_ENCASTRE;
                         $subFamilia = Cat::COMBINADOS_ENCASTRE;
-                        return ([$gama, Cat::ENCASTRE, $subFamilia]);
+                        return ([$gama, $familia, $subFamilia]);
 
                     case 'CONGELADORES VERTICAIS ENCASTRE':
+                        $familia = Cat::FRIO_ENCASTRE;
                         $subFamilia = Cat::CONGELADORES_ENCASTRE;
-                        return ([$gama, Cat::ENCASTRE, $subFamilia]);
+                        return ([$gama, $familia, $subFamilia]);
 
                     case 'MAQUINAS DE CAFE ENCASTRE':
                         $subFamilia = Cat::MAQUINAS_CAFE_ENCASTRE;
-                        return ([$gama, Cat::ENCASTRE, $subFamilia]);
+                        return ([$gama, $familia, $subFamilia]);
 
                     case 'FRIGORIFICOS 1 PORTA ENCASTRE':
                     case 'FRIGORIFICOS 2 PORTAS ENCASTRE':
-                        $familia = Cat::ENCASTRE;
+                        $familia = Cat::FRIO_ENCASTRE;
                         $subFamilia = Cat::FRIGORIFICOS_ENCASTRE;
                         return ([$gama, $familia, $subFamilia]);
                     case 'FORNOS':
-                        $familia = Cat::ENCASTRE;
-                        $subFamilia = Cat::FORNOS;
+                        $familia = Cat::FORNOS;
+                        $subFamilia = null;
                         return ([$gama, $familia, $subFamilia]);
                     case 'MAQUINAS LAVAR LOUÇA ENCASTRE':
-                        $subFamilia = Cat::MAQUINAS_DE_LOUCA_ENCASTRE;
-                        return ([$gama, Cat::ENCASTRE, $subFamilia]);
+                        $familia = Cat::MAQUINAS_DE_LOUCA_ENCASTRE;
+                        $subFamilia = null;
+                        return ([$gama, $familia, $subFamilia]);
 
                     case 'MAQUINAS LAVAR ROUPA ENCASTRE':
+                        $familia = Cat::MAQ_ROUPA_ENCASTRE;
                         $subFamilia = Cat::MAQ_LAVAR_ROUPA_ENCASTRE;
-                        return ([$gama, Cat::ENCASTRE, $subFamilia]);
+                        return ([$gama, $familia, $subFamilia]);
 
                     case 'MAQUINAS LAVAR SECAR ENCASTRE':
+                        $familia = Cat::MAQ_LAVAR_SECAR_ROUPA_ENCASTRE;
                         $subFamilia = Cat::MAQ_LAVAR_SECAR_ROUPA_ENCASTRE;
-                        return ([$gama, Cat::ENCASTRE, $subFamilia]);
+                        return ([$gama, $familia, $subFamilia]);
                     case 'MICRO ONDAS ENCASTRE':
-                        $subFamilia = Cat::MICROONDAS_ENCASTRE;
-                        return ([$gama, Cat::ENCASTRE, $subFamilia]);
+                        $familia = Cat::MICROONDAS_ENCASTRE;
+                        $subFamilia = null;
+                        return ([$gama, $familia, $subFamilia]);
 
                     case 'PLACAS A GAS':
                     case 'PLACAS CRISTAL GAS':
@@ -134,14 +141,15 @@ class OrimaCategories {
                     case 'PLACAS MISTAS':
                     case 'PLACAS VITROCERAMICAS':
                     case 'PLACAS INDUÇAO':
-                        $subFamilia = Cat::PLACAS;
-                        return ([$gama, Cat::ENCASTRE, $subFamilia]);
+                        $familia = Cat::PLACAS;
+                        $subFamilia = null;
+                        return ([$gama, $familia, $subFamilia]);
                     case 'TAMPOS':
                         $subFamilia = Cat::ACESSORIOS_ENCASTRE;
-                        return ([$gama, Cat::ENCASTRE, $subFamilia]);
+                        return ([$gama, $familia, $subFamilia]);
 
                     default:
-                        return ([$gama, Cat::ENCASTRE, $subFamilia]);
+                        return ([$gama, $familia, $subFamilia]);
                 }
 
             case 'FRIO':

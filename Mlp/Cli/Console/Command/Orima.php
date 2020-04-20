@@ -146,7 +146,6 @@ class Orima extends Command
                 try {
                     print_r(" - Setting stock: " . $this->produtoInterno->stock . "\n");
                     $this->produtoInterno->updatePrice();
-                    $this->produtoInterno->setStock("orima");
                 } catch (\Exception $ex) {
                     print_r("Update stock exception - " . $ex -> getMessage() . "\n");
                 }
@@ -190,13 +189,15 @@ class Orima extends Command
          * 12 - manual de instruções
          * 13 - esquema tecnico
          */
+        
         $functionTim = function ($data){
             return trim($data);
         };
 
         $data = array_map($functionTim,$data);
 
-        $this->produtoInterno->sku = $data[18];
+        
+        $this->produtoInterno->sku = $data[8];
         if (strlen($this->produtoInterno->sku) != 13) {
             print_r("Wrong sku - ");
             $logger->info("Wrong Sku: ".$this->produtoInterno->sku);

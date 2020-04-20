@@ -5,7 +5,9 @@ namespace Mlp\Cli\Helper;
 
 class CategoriesConstants {
 
-    
+    const OUTRO_ENCASTRE = "OUTROS EQUIPAMENTOS ENC";
+    const GARRAFEIRAS_ENCASTRE = "GARRAFEIRAS ENC";
+    const MAQ_ROUPA_ENCASTRE = "MÁQUINAS DE ROUPA ENC";
     const OUTROS_ACESSORIOS = "OUTROS ACESSÓRIOS";
     const IMAGEM_E_SOM = "IMAGEM E SOM";
     
@@ -31,7 +33,7 @@ class CategoriesConstants {
         
         //COLUNAS
         const COLUNAS = 'COLUNAS';
-
+        const COLUNAS_AUTO = "COLUNAS AUTO";
         //CAR AUDIO
             const CAR_AUDIO = 'CAR AUDIO';
             const AUTO_RADIOS = 'AUTO RADIOS';

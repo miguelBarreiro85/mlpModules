@@ -267,8 +267,8 @@ class Sorefoz extends Command
             $logger->info("Wrong Sku: ".$this->produtoInterno->sku);
             return 0;
         }
-
-        if (preg_match("/sim/i",$data[26]) == 1){
+        print_r($data[29]);
+        if (preg_match("/sim/i",$data[29]) == 1){
             $stock = 1;
         }else {
             $stock = 0;
@@ -279,12 +279,13 @@ class Sorefoz extends Command
             $status = 1;
         }
 
+        
         $this->produtoInterno->stock = $stock;
         $this->produtoInterno->status = $status;
-        $this->produtoInterno->price = (int)trim($data[9]);
+        $this->produtoInterno->price = (int)trim($data[11]);
 
         print_r(" - setting stock ");
-        $this->produtoInterno->setStock("expert");
+        $this->produtoInterno->setStock("sorefoz");
        
         if($this->produtoInterno->price == 0 || $this->produtoInterno->stock == 0){
             print_r(" - Out of stock or price 0 - ");
