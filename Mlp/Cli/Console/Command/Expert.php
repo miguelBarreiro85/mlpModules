@@ -146,20 +146,20 @@ class Expert extends Command
                 }
             }
             try {
-                $this -> productRepository -> get($this->produtoInterno->sku, true, null, true);
+                $product = $this -> productRepository -> get($this->produtoInterno->sku, true, null, true);
             } catch (NoSuchEntityException $exception) {
                 
                 $this->produtoInterno->manufacturer =  Manufacturer::getExpertManufacturer($this->produtoInterno->manufacturer);
                 $this->produtoInterno -> add_product($logger, $this->produtoInterno->sku);
                 //$this -> produtoInterno -> addSpecialAttributesExpert($product, $logger);
             }
-            try {
-                print_r(" - Setting price: ");
-                $this->produtoInterno->updatePrice();
-                print_r($this->produtoInterno->stock. "\n");
-            } catch (\Exception $ex) {
-                print_r("Update stock exception - " . $ex -> getMessage() . "\n");
-                $logger->info("Setting stock error: ".$this->produtoInterno->sku);
+            if(isset($product)){
+                try {
+                    print_r(" - Setting price: \n");
+                    $this->produtoInterno->updatePrice();
+                } catch (\Exception $ex) {
+                    print_r("Update stock exception - " . $ex -> getMessage() . "\n");
+                }
             }
 
         }
@@ -226,21 +226,22 @@ class Expert extends Command
         $this->produtoInterno->price = (int)trim($data[9]);
         
         try {
+            print_r(" - setting stock ");
             $this->produtoInterno->setStock("expert");
         }catch (\Exception $e){
             print_r($e->getMessage());
         }
         
 
-        if ($stock == 0){
-            print_r(" - Indisponivel! -");
-            return 0;
+        if($this->produtoInterno->price == 0 || $this->produtoInterno->stock == 0){
+            print_r(" - Out of stock or price 0 - ");
+            return  0;
         }
 
         $this->produtoInterno->name = $data[5];
         $this->produtoInterno->description = $data[10];
         $this->produtoInterno->meta_description = $data[10];
-        $this->produtoInterno->manufacturer = $data[7];
+        $this->produtoInterno->manufacturer = $data[4];
         $this->produtoInterno->length = null;
         $this->produtoInterno->width = null;
         $this->produtoInterno->height = null;

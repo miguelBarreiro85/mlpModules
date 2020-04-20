@@ -115,7 +115,7 @@ class Orima extends Command
             $row++;
             print_r($row." - ");
             try{
-                if (!$this->setOrimaData($data)){
+                if (!$this->setOrimaData($data,$logger)){
                     print_r("\n");
                     continue;
                 };
@@ -172,7 +172,7 @@ class Orima extends Command
         return (int)filter_var($stock, FILTER_SANITIZE_NUMBER_INT);;
     }
 
-    private function setOrimaData($data)
+    private function setOrimaData($data,$logger)
     {
         /*
          * 0 - Nome
@@ -196,9 +196,19 @@ class Orima extends Command
 
         $data = array_map($functionTim,$data);
 
-        $this->produtoInterno->sku = $data[8];
+        $this->produtoInterno->sku = $data[18];
+        if (strlen($this->produtoInterno->sku) != 13) {
+            print_r("Wrong sku - ");
+            $logger->info("Wrong Sku: ".$this->produtoInterno->sku);
+            return 0;
+        }
+        
         $this->produtoInterno->price = (int)trim($data[2]) * 1.23 * 1.20;
         $this->produtoInterno->stock = (int)filter_var($data[3], FILTER_SANITIZE_NUMBER_INT);
+       
+        print_r(" - setting stock ");
+        $this->produtoInterno->setStock("orima");
+       
         if($this->produtoInterno->price == 0 || $this->produtoInterno->stock == 0){
             print_r(" - Out of stock or price 0 - ");
             return  0;

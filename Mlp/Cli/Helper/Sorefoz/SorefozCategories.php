@@ -90,6 +90,27 @@ class SorefozCategories {
                                 return [$gama,$familia,$subFamilia];
                         }
                     case 'ENCASTRE - MAQ.L.ROUPA':
+                        $familia = Cat::ENCASTRE;
+                        switch($subFamilia){
+                            case 'MAQ.LAVAR/SECAR ROUPA':
+                                $gama = Cat::ENCASTRE;
+                                $familia = Cat::MAQ_ROUPA_ENCASTRE;
+                                $subFamilia = Cat::MAQ_LAVAR_SECAR_ROUPA_ENCASTRE;
+                                return [$gama,$familia,$subFamilia];
+                            case 'MAQ.LAVAR ROUPA':
+                                $gama = Cat::ENCASTRE;
+                                $familia = Cat::MAQ_ROUPA_ENCASTRE;
+                                $subFamilia = Cat::MAQ_LAVAR_ROUPA_ENCASTRE;
+                                return [$gama,$familia,$subFamilia];
+                            case 'MAQ.SECAR ROUPA':
+                                $gama = Cat::ENCASTRE;
+                                $familia = Cat::MAQ_ROUPA_ENCASTRE;
+                                $subFamilia = Cat::MAQ_LAVAR_ROUPA_ENCASTRE;
+                                return [$gama,$familia,$subFamilia];
+
+                        }
+                        $subFamilia = Cat::MAQ_LAVAR_ROUPA_ENCASTRE;
+                        return [$gama,$familia,$subFamilia];
                     case 'ENCASTRE - MICROONDAS':
                         $familia = Cat::ENCASTRE;
                         $subFamilia = Cat::MICROONDAS_ENCASTRE;

@@ -143,10 +143,7 @@ class Sorefoz extends Command
                 print_r("\n");
                 continue;
             }
-            if (strlen($this->produtoInterno->sku) != 13) {
-                print_r("invalid sku - \n");
-                continue;
-            }
+            
             if (!is_null($categoriesFilter)){
                 if (strcmp($categoriesFilter,$this->produtoInterno->subFamilia) != 0){
                     print_r($this->produtoInterno->sku . " - Fora de Gama \n");
@@ -258,31 +255,47 @@ class Sorefoz extends Command
     }
 
     public function setSorefozData($data,$logger) {
+        //Tirar os espaços em branco
         $functionTim = function ($el){
             return trim($el);
         };
         $data = array_map($functionTim,$data);
+
+        $this->produtoInterno->sku = $data[18];
+        if (strlen($this->produtoInterno->sku) != 13) {
+            print_r("Wrong sku - ");
+            $logger->info("Wrong Sku: ".$this->produtoInterno->sku);
+            return 0;
+        }
 
         if (preg_match("/sim/i",$data[26]) == 1){
             $stock = 1;
         }else {
             $stock = 0;
         }
-        
-        if ($stock == 0) {
-            print_r(" - out of stock -");
-            return 0;
-        }
-
         if (preg_match("/sim/i",$data[16]) == 1) {
             $status = 2;
         }else{
             $status = 1;
         }
+
+        $this->produtoInterno->stock = $stock;
+        $this->produtoInterno->status = $status;
+        $this->produtoInterno->price = (int)trim($data[9]);
+
+        print_r(" - setting stock ");
+        $this->produtoInterno->setStock("expert");
+       
+        if($this->produtoInterno->price == 0 || $this->produtoInterno->stock == 0){
+            print_r(" - Out of stock or price 0 - ");
+            return  0;
+        }
+
+        
         [$gama,$familia,$subFamilia] =  $this->sorefozCategories
                 ->getCategoriesSorefoz($data[5],$data[7],$data[9],
                                 $logger,$this->produtoInterno->sku);        
-        $this->produtoInterno->sku = $data[18];
+        
         $this->produtoInterno->name = $data[1];
         $this->produtoInterno->gama = $gama;
         $this->produtoInterno->familia = $familia;

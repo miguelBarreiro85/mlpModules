@@ -308,8 +308,7 @@ class ProdutoInterno
             $searchC = $this->searchCriteriaBuilder->addFilters([$filterSku]) -> create();
             $sourceItems = $this -> sourceItemRepositoryI->getList($searchC) -> getItems();
             $newPrice = $this->price;
-
-            //Para Garantirmos que o preço é sempre o mais baixo e que existe em stock no fornecedor
+            //Para Garantirmos que o preço é sempre o mais baixo e que existe em stock no fornecedor            
             foreach($sourceItems as $item){
                 if ($item->getQuantity() > 0 && $product->getPrice() < $this->price){
                     $newPrice = $product->getPrice();
