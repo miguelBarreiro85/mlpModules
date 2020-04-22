@@ -3,7 +3,7 @@
 
 namespace Mlp\Cli\Console\Command;
 
-
+use Mlp\Cli\Helper\CategoriesConstants as Cat;
 use Braintree\Exception;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -287,9 +287,12 @@ class Sorefoz extends Command
         print_r(" - setting stock ");
         $this->produtoInterno->setStock("sorefoz");
        
-        if($this->produtoInterno->price == 0 || $this->produtoInterno->stock == 0){
-            print_r(" - Out of stock or price 0 - ");
+        if($this->produtoInterno->price == 0){
+            $logger->info(Cat::PRECO_ZERO.$this->produtoInterno->sku);
             return  0;
+        }
+        if ($this->produtoInterno->stock == 0){
+            return 0;
         }
 
         

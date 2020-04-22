@@ -5,6 +5,7 @@ namespace Mlp\Cli\Helper;
 
 class CategoriesConstants {
 
+    const PRECO_ZERO = "PRODUTO COM PRECO A 0: ";
     const ACESSORIOS_POS = "ACESSORIOS POS";
     const NOT_FUND = " :NOT FOUND";
     const PENS_USB = "PENS USB";

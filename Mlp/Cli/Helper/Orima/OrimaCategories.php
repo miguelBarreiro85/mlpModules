@@ -237,6 +237,7 @@ class OrimaCategories {
                         return ([$gama, $familia, $subFamilia]);
                     case 'MAQUINAS LAVAR LOUÇA BRANCAS':
                     case 'MAQUINAS LAVAR LOUÇA OUTRAS CORES':
+                    case 'MAQUINAS LAVAR LOUÇA INOX':
                         $subFamilia = Cat::MLL_DE_60;
                         return ([$gama, $familia, $subFamilia]);
                     case 'MAQUINAS LAVAR LOUÇA COMPACTAS':

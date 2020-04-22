@@ -129,6 +129,8 @@ class SorefozCategories {
                         $gama = Cat::ENCASTRE;
                         $subFamilia = Cat::OUTRO_ENCASTRE;
                         return [$gama,$familia,$subFamilia];
+                    case 'MAQUINAS LAVAR ROUPA':
+                        $familia 
                     default:
                         return [$gama,$familia,$subFamilia];
                 }        
@@ -148,13 +150,24 @@ class SorefozCategories {
                     
                 }
             case 'INFORMÁTICA':
-                switch ($subFamilia) {
-                    case 'DE SECRETÁRIA':
-                        $subFamilia = Cat::DESKTOPS;
+                $gama = Cat::INFORMATICA;
+                switch ($familia) {
+                    case 'ACESSÓRIOS':
+                        $familia = Cat::ACESSORIOS_INFORMATICA;    
                         return [$gama,$familia,$subFamilia];
+                    case "COMPUTADORES E TABLET'S ":
+                        switch ($subFamilia) {
+                            case 'DE SECRETÁRIA':
+                                $subFamilia = Cat::DESKTOPS;
+                                return [$gama,$familia,$subFamilia];
+                            default:
+                                return [$gama,$familia,$subFamilia];
+                        }
                     default:
-                        return [$gama,$familia,$subFamilia];
+                        # code...
+                        break;
                 }
+                
             case 'CLIMATIZAÇÃO':
                 switch ($subFamilia) {
                     case 'AR COND.INVERTER':
