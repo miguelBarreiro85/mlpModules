@@ -16,26 +16,27 @@ use Vertex\Data\Seller;
 
 class Category
 {
-    private $storeManager;
-    private $state;
+   
     private $categoryFactory;
     private $categoryRepositoryInterface;
     private $categoryLinkManagement;
     private $categoryLinkRepositoryInterface;
+    private $productRepositoryInterface;
+    private $registry;
 
-    public function __construct(\Magento\Store\Model\StoreManagerInterface $storeManager,
-                                \Magento\Framework\App\State $state,
+    public function __construct(\Magento\Framework\Registry $registry,
                                 \Magento\Catalog\Model\CategoryFactory $categoryFactory,
                                 \Magento\Catalog\Api\CategoryRepositoryInterface $categoryRepositoryInterface,
                                 \Magento\Catalog\Api\CategoryLinkManagementInterface $categoryLinkManagement,
-                                \Magento\Catalog\Api\CategoryLinkRepositoryInterface $categoryLinkRepositoryInterface)
+                                \Magento\Catalog\Api\CategoryLinkRepositoryInterface $categoryLinkRepositoryInterface,
+                                \Magento\Catalog\Api\ProductRepositoryInterface $productRepositoryInterface)
     {
-        $this -> storeManager = $storeManager;
-        $this -> state = $state;
         $this -> categoryFactory = $categoryFactory;
         $this -> categoryRepositoryInterface = $categoryRepositoryInterface;
         $this -> categoryLinkManagement = $categoryLinkManagement;
         $this->categoryLinkRepositoryInterface = $categoryLinkRepositoryInterface;
+        $this->productRepositoryInterface = $productRepositoryInterface;
+        $this->registry = $registry;
     }
 
     public function createCategory($gama, $familia, $subfamlia = null, $categorias)
@@ -84,23 +85,37 @@ class Category
         return $categories;
     }
 
-    public function changeProductCategories($oldCat, $newCat) {
-        print_r($oldCat. " - ");
-        $categories = $this->getCategoriesArray();
-        $oldCatID = $categories[$oldCat];
-        $newCatId = $categories[$newCat];
-        $categoryLinks = $this->categoryLinkManagement->getAssignedProducts($oldCatID);
+    public function changeProductCategories($oldCatId, $newCatId) {
+        print_r($oldCatId. " - ");
+        $categoryLinks = $this->categoryLinkManagement->getAssignedProducts($oldCatId);
         $row = 0;
         foreach($categoryLinks as $categoryLink){
             $sku = $categoryLink->getSku();
             print_r($row++." - ".$sku." \n");
             try{
-                $this->categoryLinkRepositoryInterface->deleteByIds($oldCatID, $sku);
+                $this->categoryLinkRepositoryInterface->deleteByIds($oldCatId, $sku);
             }catch(\Exception $e){
                 print_r($e->getMessage());
             }
             $categoryLink->setCategoryId($newCatId);
             $this->categoryLinkRepositoryInterface->save($categoryLink);
+        }
+    }
+
+    public function deleteProductsByCategoryId($catId) {
+        //Para apagar é preciso registar
+        $this->registry->unregister('isSecureArea');
+        $this->registry->register('isSecureArea', true);
+        $categoryLinks = $this->categoryLinkManagement->getAssignedProducts($catId);
+        $row = 0;
+        foreach($categoryLinks as $categoryLink){
+            $sku = $categoryLink->getSku();
+            print_r($row++." - ".$sku." \n");
+            try{
+                $this->productRepositoryInterface->deleteById($sku);
+            }catch(\Exception $e){
+                print_r($e->getMessage());
+            }
         }
     }
 }

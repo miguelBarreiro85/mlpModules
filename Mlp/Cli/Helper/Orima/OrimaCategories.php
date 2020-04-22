@@ -52,9 +52,9 @@ class OrimaCategories {
 
             case 'MAQUINAS ROUPA':
                 $gama = Cat::GRANDES_DOMESTICOS;
+                $familia = Cat::MAQUINAS_ROUPA;
                 switch ($familia) {
                     case 'MAQUINAS LAVAR ROUPA':
-                        $familia = Cat::MAQUINAS_LAVAR_ROUPA;
                         switch ($subFamilia) {
                             case 'MAQUINAS LAVAR ROUPA CARGA SUPERIOR':
                                 $subFamilia = Cat::MAQUINAS_LAVAR_ROUPA_CARGA_SUPERIOR;
@@ -67,15 +67,12 @@ class OrimaCategories {
                         $subFamilia = Cat::MAQUINAS_LAVAR_SECAR_ROUPA;
                         return ([$gama, $familia, $subFamilia]);
                     case 'SECADORES ROUPA BOMBA CALOR':
-                        $familia = Cat::MAQUINAS_SECAR_ROUPA;
                         $subFamilia = Cat::MAQUINAS_SECAR_ROUPA_BC;
                         return ([$gama, $familia, $subFamilia]);
                     case 'SECADORES ROUPA CONDENSAÇAO':
-                        $familia = Cat::MAQUINAS_SECAR_ROUPA;
                         $subFamilia = Cat::MAQUINAS_SECAR_ROUPA_COND;
                         return ([$gama, $familia, $subFamilia]);
                     case 'SECADORES ROUPA VENTILAÇAO':
-                        $familia = Cat::MAQUINAS_SECAR_ROUPA;
                         $subFamilia = Cat::MAQUINAS_SECAR_ROUPA_VENT;
                         return ([$gama, $familia, $subFamilia]);
                     default:
@@ -154,7 +151,7 @@ class OrimaCategories {
 
             case 'FRIO':
                 $gama = Cat::GRANDES_DOMESTICOS;
-                //$familia = Cat::FRIGORIFICOS_COMBINADOS;
+                $familia = Cat::FRIO;
                 switch ($familia) {
                     case 'COMBINADOS':
                         $result = preg_match("/NF/", $subFamilia);
@@ -166,7 +163,7 @@ class OrimaCategories {
                         return ([$gama, Cat::FRIGORIFICOS_COMBINADOS, $subFamilia]);
                     case 'FRIGORIFICOS 1 PORTA':
                         $subFamilia = Cat::FRIGORIF_1_PORTA;
-                        return ([$gama, Cat::FRIGORIFICOS_COMBINADOS, $subFamilia]);
+                        return ([$gama, $familia, $subFamilia]);
 
                     case 'FRIGORIFICOS 2 PORTAS':
                         $result = preg_match("/NF/", $subFamilia);
@@ -175,23 +172,22 @@ class OrimaCategories {
                         } elseif ($result == 0) {
                             $subFamilia = Cat::FRIGORIF_2_PORTAS;
                         }
-                        return ([$gama, Cat::FRIGORIFICOS_COMBINADOS, $subFamilia]);
+                        return ([$gama, $familia, $subFamilia]);
 
                     case 'FRIGORIFICOS SIDE BY SIDE':
                         $subFamilia = Cat::FRIGORIF_AMERICANOS;
-                        return ([$gama, Cat::FRIGORIFICOS_COMBINADOS, $subFamilia]);
+                        return ([$gama, $familia, $subFamilia]);
                     case 'CONGELADORES HORIZONTAIS':
-                        $familia = Cat::CONGELADORES;
                         $subFamilia = Cat::CONGELADORES_HORIZONTAIS;
                         return ([$gama, $familia, $subFamilia]);
                     case 'CONGELADORES VERTICAIS':
-                        $familia = Cat::CONGELADORES;
                         $subFamilia = Cat::CONGELADORES_VERTICAIS;
                         return ([$gama, $familia, $subFamilia]);
                     case 'FRIGORIFICOS MINI-BAR':
-                        return ([$gama,Cat::FRIGORIFICOS_COMBINADOS,Cat::FRIGOBAR]);
+                        $subFamilia = Cat::FRIGOBAR;
+                        return ([$gama, $familia, $subFamilia]);
                     default:
-                    return ([$gama, $familia, $subFamilia]);
+                        return ([$gama, $familia, $subFamilia]);
                 }
 
             case 'AGUAS QUENTES':

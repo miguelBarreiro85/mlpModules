@@ -270,6 +270,8 @@ class ExpertCategories {
                                 case 'CD':
                                     $subFamilia = Cat::LEITOR_DVD;
                                     return [$gama, $familia, $subFamilia];
+                                case 'Acessórios':
+                                    $subFamilia = Cat::ACESSORIOS_LEITORES_GRAVADORES;
                                 default:
                                     return [$gama, $familia, $subFamilia];
                             }
@@ -277,7 +279,7 @@ class ExpertCategories {
                             switch ($subFamilia) {
                                 case 'Electrónica Auto':
                                     $gama = Cat::IMAGEM_E_SOM;
-                                    $subFamilia = Cat::CAR_AUDIO;
+                                    $familia = Cat::CAR_AUDIO;
                                     $subFamilia = Cat::AUTO_RADIOS;
                                     return [$gama, $familia, $subFamilia];
                                     
@@ -293,7 +295,7 @@ class ExpertCategories {
                         case 'Comunicações Móveis':
                             switch ($subFamilia) {
                                 case 'Car Kits':
-                                    $gama = Cat::GRANDES_DOMESTICOS;
+                                    $gama = Cat::IMAGEM_E_SOM;
                                     $familia = Cat::CAR_AUDIO;
                                     $subFamilia = Cat::CAR_KITS;
                                     return [$gama, $familia, $subFamilia];
@@ -408,6 +410,7 @@ class ExpertCategories {
                                 case 'Lentes':
                                 case 'Filtros':
                                 case 'Outros':
+                                case 'Alimentação':
                                     $subFamilia = Cat::OUTROS_ACESSORIOS_IMAGEM_SOM;
                                     return [$gama, $familia, $subFamilia];
                                 
@@ -466,6 +469,7 @@ class ExpertCategories {
                                 case 'Específicas':
                                 case 'Super Alcalinas':
                                 case 'Alcalinas':
+                                case 'Micro Alcalinas':
                                     $subFamilia = Cat::PILHAS;
                                     return [$gama, $familia, $subFamilia];
                                 case 'Recarregáveis':
@@ -514,14 +518,11 @@ class ExpertCategories {
                                 case 'Consumíveis':
                                     $subFamilia = Cat::ACESSORIOS_MLL;
                                     return [$gama, $familia, $subFamilia];
-                                
-                                
                                 default:
                                     $familia = Cat::MAQUINAS_DE_LOUCA;
                                     $subFamilia = null;
                                     $logger->info(Cat::VERIFICAR_SUBFAMILIA.$sku);
-                                    return [$gama, $familia, $subFamilia];
-                                
+                                    return [$gama, $familia, $subFamilia];                     
                             }
                             
                         case 'Máquinas de Roupa':
@@ -542,9 +543,9 @@ class ExpertCategories {
                                     return [$gama, $familia, $subFamilia];
                                 case 'Máquina Lavar e Secar Roupa':
                                     $subFamilia = Cat::MAQUINAS_LAVAR_SECAR_ROUPA;
+                                    return [$gama, $familia, $subFamilia];
                                 default:
-                                    # code...
-                                    break;
+                                    return [$gama, $familia, $subFamilia];
                             }
                         case 'Frio':
                             $familia = Cat::FRIO;

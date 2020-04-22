@@ -42,6 +42,7 @@ class SorefozCategories {
                 $gama = Cat::COMUNICACOES;
                 return [$gama,$familia,$subFamilia];
             case 'GRANDES DOMÉSTICOS':
+                $gama = Cat::GRANDES_DOMESTICOS;
                 switch ($familia) {
                     case 'ENCASTRE - FORNOS':
                         $gama = Cat::ENCASTRE;
@@ -135,11 +136,107 @@ class SorefozCategories {
                         $subFamilia = Cat::OUTRO_ENCASTRE;
                         return [$gama,$familia,$subFamilia];
                     case 'MAQUINAS LAVAR ROUPA':
-                        $familia 
+                        $familia = Cat::GRANDES_DOMESTICOS;
+                        $familia = Cat::MAQUINAS_ROUPA;
+                        $subFamilia = Cat::MAQUINAS_LAVAR_ROUPA;
+                        return [$gama,$familia,$subFamilia];
+                    case 'MAQUINAS SECAR ROUPA':
+                        $gama = Cat::GRANDES_DOMESTICOS;
+                        $familia = Cat::MAQUINAS_ROUPA;
+                        switch ($subFamilia) {
+                            case 'MSR POR EXAUSTÃO':
+                                $subFamilia = Cat::MAQUINAS_SECAR_ROUPA_VENT;
+                                return [$gama,$familia,$subFamilia];
+                            case 'MSR POR CONDENSAÇÃO':
+                                $subFamilia = Cat::MAQUINAS_SECAR_ROUPA_COND;
+                                return [$gama,$familia,$subFamilia];
+                            case 'MSR POR CONDENSAÇÃO BOMBA CALOR':
+                                $subFamilia = Cat::MAQUINAS_SECAR_ROUPA_BC;
+                                return [$gama,$familia,$subFamilia];
+                            default:
+                                return [$gama,$familia,$subFamilia];
+                            }         
+                    case 'MAQUINAS LAVAR SECAR ROUPA':
+                        $familia = Cat::MAQUINAS_ROUPA;
+                        $subFamilia = Cat::MAQUINAS_LAVAR_SECAR_ROUPA;
+                        return [$gama,$familia,$subFamilia];
+                    case 'CONGELADORES':
+                        $familia = Cat::FRIO;
+                        switch ($subFamilia) {
+                            case 'VERTICAIS':
+                                $subFamilia = Cat::CONGELADORES_VERTICAIS;
+                                return [$gama,$familia,$subFamilia];
+                            case 'HORIZONTAIS':
+                                $subFamilia = Cat::CONGELADORES_HORIZONTAIS;
+                                return [$gama,$familia,$subFamilia];
+                            default:
+                                return [$gama,$familia,$subFamilia];
+                        }
+                    case 'FRIGORIFICOS/COMBINADOS':
+                        $familia = Cat::FRIO;
+                        switch ($subFamilia) {
+                            case 'GARRAFEIRA':
+                                $subFamilia = Cat::GARRAFEIRAS;
+                                return [$gama,$familia,$subFamilia];
+                                break;
+                            case 'FRIGORIF.2 PORTAS':
+                                $subFamilia = Cat::FRIGORIF_2_PORTAS;
+                                return [$gama,$familia,$subFamilia];
+                            case 'FRIGORIF.2P NO FROST':
+                                $subFamilia = Cat::FRIGORIF_2P_NO_FROST;
+                                return [$gama,$familia,$subFamilia];
+                            case 'COMB.CONVENCIONAIS':
+                                $subFamilia = Cat::COMBINADOS_CONVENCIONAIS;
+                                return [$gama,$familia,$subFamilia];
+                            case 'FRIGORIF.AMERICANOS':
+                                $subFamilia = Cat::FRIGORIF_AMERICANOS;
+                                return [$gama,$familia,$subFamilia];
+                            case 'COMBINADOS NO FROST':
+                                $subFamilia = Cat::COMBINADOS_NO_FROST;
+                                return [$gama,$familia,$subFamilia];
+                            case 'FRIGORIF.1 PORTA':
+                                $subFamilia = Cat::FRIGORIF_1_PORTA;
+                                return [$gama,$familia,$subFamilia];
+                            case 'FRIGORIF.1P NO FROST':
+                                $subFamilia = Cat::FRIGORIF_1_PORTA_NF;
+                                return [$gama,$familia,$subFamilia];
+                            case 'FRIGOBAR':
+                                $subFamilia = Cat::FRIGOBAR;
+                                return [$gama,$familia,$subFamilia];
+                            default:
+                                return [$gama,$familia,$subFamilia];
+                        }
+                    default:
+                        return [$gama,$familia,$subFamilia];        
+                }
+            case 'IMAGEM E SOM':
+                switch ($familia) {
+                    case 'CÂMARAS':
+                        switch ($subFamilia) {
+                            case 'VIDEO CARTÃO MEMÓRIA':
+                                $subFamilia = Cat::OUTROS_ACESSORIOS_IMAGEM_SOM;
+                                $familia = Cat::ACESSORIOS_IMAGEM_E_SOM;
+                                return [$gama,$familia,$subFamilia];
+                            case 'FOTOS DIGITAL COMPACTA':
+                                $familia = Cat::CAMARAS_FOTOGRAFICAS;
+                                $subFamilia = Cat::FOTOS_DIGITAL_COMPACTA;
+                                return [$gama,$familia,$subFamilia];
+                            case 'FOTOS DIGITAL REFLEX':
+                            case 'FOTOS DIGITAL REFLEX':
+                                $familia = Cat::CAMARAS_FOTOGRAFICAS;
+                                $subFamilia = Cat::CAMARAS_REFLEX;
+                                return [$gama,$familia,$subFamilia];
+                            case 'VIDEO HDD':
+                                $familia = Cat::CAMARAS_VIDEO;
+                                $subFamilia = Cat::CAMARAS_VIDEO_HD;
+                                return [$gama,$familia,$subFamilia];
+                            default:
+                                return [$gama,$familia,$subFamilia];
+                        }
+                        break;                    
                     default:
                         return [$gama,$familia,$subFamilia];
-                }        
-            case 'IMAGEM E SOM':
+                }
                 switch ($subFamilia) {
                     case 'TV LED 46"':
                         $subFamilia = Cat::TV_LED_M46;
@@ -169,8 +266,7 @@ class SorefozCategories {
                                 return [$gama,$familia,$subFamilia];
                         }
                     default:
-                        # code...
-                        break;
+                        return [$gama,$familia,$subFamilia];
                 }
                 
             case 'CLIMATIZAÇÃO':
@@ -213,6 +309,7 @@ class SorefozCategories {
                 }
             default:
                 return [$gama,$familia,$subFamilia];
+        
         }
     }
 

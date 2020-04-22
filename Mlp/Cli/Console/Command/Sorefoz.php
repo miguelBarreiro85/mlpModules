@@ -145,23 +145,21 @@ class Sorefoz extends Command
             }
             
             if (!is_null($categoriesFilter)){
-                if (strcmp($categoriesFilter,$this->produtoInterno->subFamilia) != 0){
-                    print_r($this->produtoInterno->sku . " - Fora de Gama \n");
+                if (strcmp($categoriesFilter,$this->produtoInterno->familia) != 0){
+                    print_r("\n");
                     continue;
                 }
             }
             try {
                 $product = $this -> productRepository -> get($this->produtoInterno->sku, true, null, true);
             } catch (NoSuchEntityException $exception) {
-                $this->produtoInterno->manufacturer = Manufacturer::getSorefozManufacturer($this->produtoInterno->manufacturer);
                 $product = $this->produtoInterno -> add_product($logger, $this->produtoInterno->sku);
                 //$this -> produtoInterno -> addSpecialAttributesSorefoz($product, $logger);
             }
             if(isset($product)){
                 try {
-                    print_r(" - Setting stock: " . $this->produtoInterno->stock . "\n");
+                    print_r(" - Setting price: \n");
                     $this->produtoInterno->updatePrice();
-                    $this->produtoInterno->setStock("sorefoz");
                 } catch (\Exception $ex) {
                     print_r("Update stock exception - " . $ex -> getMessage() . "\n");
                 }
@@ -177,6 +175,7 @@ class Sorefoz extends Command
         print_r("Updating Sorefoz prices" . "\n");
 
         foreach ($this -> loadCsv -> loadCsv('tot_jlcb_utf.csv', ";") as $data) {
+            $this->setSorefozData($data,$logger);
             $this->produtoInterno->updatePrice();
         }
     }
@@ -306,7 +305,7 @@ class Sorefoz extends Command
         $this->produtoInterno->subFamilia = $subFamilia;
         $this->produtoInterno->description = $data[25];
         $this->produtoInterno->meta_description = $data[24];
-        $this->produtoInterno->manufacturer = $data[3];
+        $this->produtoInterno->manufacturer = Manufacturer::getSorefozManufacturer($data[3]);
         $this->produtoInterno->length = (int)$data[20];
         $this->produtoInterno->width = (int)$data[21];
         $this->produtoInterno->height = (int)$data[22];

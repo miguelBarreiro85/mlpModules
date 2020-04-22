@@ -37,6 +37,8 @@ class Products extends Command
     const ADD_SOREFOZ_IMAGES = "add-sorefoz-images";
 
     const CHANGE_PRODUCTS_CATEGORIES = 'change-products-categories';
+
+    const DELETE_PRODUCTS_BY_CATEGORY_ID = 'delete-products-by-category-id';
     /**
      * @var ProductRepositoryInterface
      */
@@ -140,6 +142,12 @@ class Products extends Command
                     '-c',
                     InputOption::VALUE_NONE,
                     'Add Sorefoz Images'
+                ),
+                new InputOption(
+                    self::DELETE_PRODUCTS_BY_CATEGORY_ID,
+                    '-d',
+                    InputOption::VALUE_NONE,
+                    'Delete products by category id'
                 )
             ])
             ->addArgument('oldManufacturer', InputArgument::OPTIONAL, 'oldManufacturer')
@@ -171,6 +179,10 @@ class Products extends Command
         $newCat = $input->getArgument('newCat');
         if($changeCat){
             $this->changeCategories($oldCat,$newCat);
+        }
+        $deleteProductsByCategoryId = $input->getOption(self::DELETE_PRODUCTS_BY_CATEGORY_ID);
+        if($deleteProductsByCategoryId) {
+            $this->categoryManager->deleteProductsByCategoryId($oldCat);
         }
         else {
             throw new \InvalidArgumentException('Option  ELSE');
@@ -250,6 +262,4 @@ class Products extends Command
     private function changeCategories($oldCat,$newCat){
         $this->categoryManager->changeProductCategories($oldCat,$newCat);
     }
-
-
 }
