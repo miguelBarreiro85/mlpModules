@@ -26,6 +26,11 @@ class SorefozCategories {
                                 $subFamilia = Cat::BATERIAS;
                                 $logger->info(Cat::VERIFICAR_SUBFAMILIA.$sku);
                                 return [$gama,$familia,$subFamilia];
+                            case 'LAMPADAS':
+                                $gama = Cat::ELECTRICIDADE;
+                                $familia = Cat::ILUMINACAO;
+                                $subFamilia = Cat::LAMPADAS;
+                                return [$gama,$familia,$subFamilia];
                             default:
                                 return [$gama,$familia,$subFamilia];
                         }
@@ -196,15 +201,15 @@ class SorefozCategories {
                         $gama = Cat::IMAGEM_E_SOM;
                         $familia = Cat::CAR_AUDIO;
                         $subFamilia = Cat::AUTO_RADIOS;
-                        Return [$gama,$familia,$subFamilia];
+                        return [$gama,$familia,$subFamilia];
+                    case 'ALTIFALANTES':
                     case 'COLUNAS':
                         $gama = Cat::IMAGEM_E_SOM;
                         $familia = Cat::CAR_AUDIO;
                         $subFamilia = Cat::COLUNAS_AUTO;
-                        Return [$gama,$familia,$subFamilia];
+                        return [$gama,$familia,$subFamilia];
                     default:
-                        # code...
-                        break;
+                        return [$gama,$familia,$subFamilia];
                 }
             default:
                 return [$gama,$familia,$subFamilia];
