@@ -104,6 +104,7 @@ class Category
 
     public function deleteProductsByCategoryId($catId) {
         //Para apagar é preciso registar
+        print_r(": ".$catId);
         $this->registry->unregister('isSecureArea');
         $this->registry->register('isSecureArea', true);
         $categoryLinks = $this->categoryLinkManagement->getAssignedProducts($catId);

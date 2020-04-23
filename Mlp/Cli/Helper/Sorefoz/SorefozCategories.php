@@ -107,7 +107,7 @@ class SorefozCategories {
                         }
                     case 'ENCASTRE - MAQ.LOUÇA':
                         $gama = Cat::ENCASTRE;
-                        $familia = Cat::MAQUINAS_DE_LOUCA_ENCASTRE;
+                        $familia = Cat::MAQ_DE_LOUCA_ENCASTRE;
                         $subFamilia = null;
                         return [$gama,$familia,$subFamilia];
                     case 'ENCASTRE - MAQ.L.ROUPA':
@@ -137,28 +137,28 @@ class SorefozCategories {
                         return [$gama,$familia,$subFamilia];
                     case 'MAQUINAS LAVAR ROUPA':
                         $familia = Cat::GRANDES_DOMESTICOS;
-                        $familia = Cat::MAQUINAS_ROUPA;
-                        $subFamilia = Cat::MAQUINAS_LAVAR_ROUPA;
+                        $familia = Cat::MAQ_ROUPA;
+                        $subFamilia = Cat::MAQ_LAVAR_ROUPA;
                         return [$gama,$familia,$subFamilia];
                     case 'MAQUINAS SECAR ROUPA':
                         $gama = Cat::GRANDES_DOMESTICOS;
-                        $familia = Cat::MAQUINAS_ROUPA;
+                        $familia = Cat::MAQ_ROUPA;
                         switch ($subFamilia) {
                             case 'MSR POR EXAUSTÃO':
-                                $subFamilia = Cat::MAQUINAS_SECAR_ROUPA_VENT;
+                                $subFamilia = Cat::MAQ_SECAR_ROUPA_VENT;
                                 return [$gama,$familia,$subFamilia];
                             case 'MSR POR CONDENSAÇÃO':
-                                $subFamilia = Cat::MAQUINAS_SECAR_ROUPA_COND;
+                                $subFamilia = Cat::MAQ_SECAR_ROUPA_COND;
                                 return [$gama,$familia,$subFamilia];
                             case 'MSR POR CONDENSAÇÃO BOMBA CALOR':
-                                $subFamilia = Cat::MAQUINAS_SECAR_ROUPA_BC;
+                                $subFamilia = Cat::MAQ_SECAR_ROUPA_BC;
                                 return [$gama,$familia,$subFamilia];
                             default:
                                 return [$gama,$familia,$subFamilia];
                             }         
                     case 'MAQUINAS LAVAR SECAR ROUPA':
-                        $familia = Cat::MAQUINAS_ROUPA;
-                        $subFamilia = Cat::MAQUINAS_LAVAR_SECAR_ROUPA;
+                        $familia = Cat::MAQ_ROUPA;
+                        $subFamilia = Cat::MAQ_LAVAR_SECAR_ROUPA;
                         return [$gama,$familia,$subFamilia];
                     case 'CONGELADORES':
                         $familia = Cat::FRIO;
@@ -206,6 +206,8 @@ class SorefozCategories {
                             default:
                                 return [$gama,$familia,$subFamilia];
                         }
+                    case 'MAQUINAS LAVAR LOUÇA':
+                        $familia = Cat::MAQ_DE_LOUCA;
                     default:
                         return [$gama,$familia,$subFamilia];        
                 }
@@ -234,22 +236,31 @@ class SorefozCategories {
                                 return [$gama,$familia,$subFamilia];
                         }
                         break;                    
+                
+                    case 'TELEVISÃO':
+
+                        switch ($subFamilia) {
+                            case 'TV LED+46"':
+                                $subFamilia = Cat::TVS_GRANDES;
+                                return [$gama,$familia,$subFamilia];
+                            case 'TV LED 27"':
+                            case 'TV LED 32"':
+                            case 'TV LCD 19"':
+                            case 'TV LED 19"':
+                            case 'TV LED 23"':
+                            case 'TV LED 24"':
+                            case 'TV LED 20"':
+                                $subFamilia = Cat::TVS_PEQUENAS;
+                                return [$gama,$familia,$subFamilia];
+                            case 'TV LED 40"':
+                            case 'TV LED 42"':
+                                $subFamilia = Cat::TVS_MEDIAS;
+                                return [$gama,$familia,$subFamilia];
+                            default:
+                                return [$gama,$familia,$subFamilia];
+                            }
                     default:
                         return [$gama,$familia,$subFamilia];
-                }
-                switch ($subFamilia) {
-                    case 'TV LED 46"':
-                        $subFamilia = Cat::TV_LED_M46;
-                        return [$gama,$familia,$subFamilia];
-                    case 'TV LED 27"':
-                        $subFamilia = Cat::TV_LED_28;
-                        return [$gama,$familia,$subFamilia];
-                    case 'TV LED 42"':
-                        $subFamilia = Cat::TV_LED_M42;
-                        return [$gama,$familia,$subFamilia];
-                    default:
-                        return [$gama,$familia,$subFamilia];
-                    
                 }
             case 'INFORMÁTICA':
                 $gama = Cat::INFORMATICA;

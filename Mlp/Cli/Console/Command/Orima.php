@@ -135,6 +135,7 @@ class Orima extends Command
                 }
             }
             try {
+                print_r("getting product");
                 $product = $this ->productRepository -> get($this->produtoInterno->sku, true, null, true);
             } catch (NoSuchEntityException $exception) {
                 $this->setOrimaCategories($logger);

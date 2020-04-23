@@ -52,28 +52,28 @@ class OrimaCategories {
 
             case 'MAQUINAS ROUPA':
                 $gama = Cat::GRANDES_DOMESTICOS;
-                $familia = Cat::MAQUINAS_ROUPA;
+                $familia = Cat::MAQ_ROUPA;
                 switch ($familia) {
                     case 'MAQUINAS LAVAR ROUPA':
                         switch ($subFamilia) {
                             case 'MAQUINAS LAVAR ROUPA CARGA SUPERIOR':
-                                $subFamilia = Cat::MAQUINAS_LAVAR_ROUPA_CARGA_SUPERIOR;
+                                $subFamilia = Cat::MAQ_LAVAR_ROUPA_CARGA_SUPERIOR;
                                 return ([$gama, $familia, $subFamilia]);
                             default:
-                                $subFamilia = Cat::MAQUINAS_LAVAR_ROUPA_CARGA_FRONTAL;
+                                $subFamilia = Cat::MAQ_LAVAR_ROUPA_CARGA_FRONTAL;
                                 return ([$gama, $familia, $subFamilia]);
                         }
                     case 'MAQUINAS LAVAR SECAR ROUPA':
-                        $subFamilia = Cat::MAQUINAS_LAVAR_SECAR_ROUPA;
+                        $subFamilia = Cat::MAQ_LAVAR_SECAR_ROUPA;
                         return ([$gama, $familia, $subFamilia]);
                     case 'SECADORES ROUPA BOMBA CALOR':
-                        $subFamilia = Cat::MAQUINAS_SECAR_ROUPA_BC;
+                        $subFamilia = Cat::MAQ_SECAR_ROUPA_BC;
                         return ([$gama, $familia, $subFamilia]);
                     case 'SECADORES ROUPA CONDENSAÇAO':
-                        $subFamilia = Cat::MAQUINAS_SECAR_ROUPA_COND;
+                        $subFamilia = Cat::MAQ_SECAR_ROUPA_COND;
                         return ([$gama, $familia, $subFamilia]);
                     case 'SECADORES ROUPA VENTILAÇAO':
-                        $subFamilia = Cat::MAQUINAS_SECAR_ROUPA_VENT;
+                        $subFamilia = Cat::MAQ_SECAR_ROUPA_VENT;
                         return ([$gama, $familia, $subFamilia]);
                     default:
                         return ([$gama, $familia, $subFamilia]);
@@ -100,7 +100,7 @@ class OrimaCategories {
                         return ([$gama, $familia, $subFamilia]);
 
                     case 'MAQUINAS DE CAFE ENCASTRE':
-                        $subFamilia = Cat::MAQUINAS_CAFE_ENCASTRE;
+                        $subFamilia = Cat::MAQ_CAFE_ENCASTRE;
                         return ([$gama, $familia, $subFamilia]);
 
                     case 'FRIGORIFICOS 1 PORTA ENCASTRE':
@@ -113,7 +113,7 @@ class OrimaCategories {
                         $subFamilia = null;
                         return ([$gama, $familia, $subFamilia]);
                     case 'MAQUINAS LAVAR LOUÇA ENCASTRE':
-                        $familia = Cat::MAQUINAS_DE_LOUCA_ENCASTRE;
+                        $familia = Cat::MAQ_DE_LOUCA_ENCASTRE;
                         $subFamilia = null;
                         return ([$gama, $familia, $subFamilia]);
 
@@ -226,7 +226,7 @@ class OrimaCategories {
 
             case 'MAQUINAS LOUÇA':
                 $gama = Cat::GRANDES_DOMESTICOS;
-                $familia = Cat::MAQUINAS_DE_LOUCA;
+                $familia = Cat::MAQ_DE_LOUCA;
                 switch ($subFamilia) {
                     case 'MAQUINAS LAVAR LOUÇA 45CM':
                         $subFamilia = Cat::MLL_DE_45;
@@ -249,6 +249,7 @@ class OrimaCategories {
                     case 'LED´S':
                         $familia = Cat::TELEVISAO;
                         $subFamilia = null;
+                        $logger->info(Cat::VERIFICAR_SUBFAMILIA);
                         return ([$gama, $familia, $subFamilia]);
                     case 'SOM & VIDEO':
                         switch ($subFamilia) {
@@ -380,7 +381,7 @@ class OrimaCategories {
                             case 'MAQUINAS DE MOER CARNE':
                             case 'SELADORES DE SACOS':
                             case 'COZEDURA A VAPOR':
-                                $subFamilia = Cat::MAQUINAS_DE_COZINHA;
+                                $subFamilia = Cat::MAQ_DE_COZINHA;
                                 return ([$gama, $familia, $subFamilia]);
                             case 'PANELAS DE PRESSAO':
                                 $familia = Cat::ARTIGOS_DE_MENAGE;
@@ -453,7 +454,7 @@ class OrimaCategories {
                                 return ([$gama, $familia, $subFamilia]);
 
                             case 'MAQUINAS DE CAFE':
-                                $subFamilia = Cat::MAQUINAS_CAFE;
+                                $subFamilia = Cat::MAQ_CAFE;
                                 return ([$gama, $familia, $subFamilia]);
                             case 'MOINHOS DE CAFE':
                                 $subFamilia = Cat::MOINHOS_DE_CAFE;

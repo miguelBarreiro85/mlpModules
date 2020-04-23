@@ -182,6 +182,7 @@ class Products extends Command
         }
         $deleteProductsByCategoryId = $input->getOption(self::DELETE_PRODUCTS_BY_CATEGORY_ID);
         if($deleteProductsByCategoryId) {
+            print_r("delete");
             $this->categoryManager->deleteProductsByCategoryId($oldCat);
         }
         else {
@@ -234,7 +235,7 @@ class Products extends Command
             print_r($data);
             $row++;
             print_r($row." - ");
-            $this->sorefoz->setSorefozData($data);
+            $this->sorefoz->setSorefozData($data,$logger);
             if (strlen($this->productoInterno->sku) != 13) {
                 print_r("invalid sku - \n");
                 continue;
