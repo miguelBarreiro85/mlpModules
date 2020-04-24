@@ -11,25 +11,33 @@ class SorefozCategories {
     {
         switch ($gama) {
             case 'ACESSÓRIOS E BATERIAS':
+                $gama = Cat::ELECTRICIDADE;
                 switch ($familia) {
                     case 'ACESSÓRIOS E BATERIAS':
                         switch ($subFamilia) {
                             case 'ACESSÓRIOS':
-                                $gama = Cat::ELECTRICIDADE;
                                 $familia = Cat::OUTROS_ACESSORIOS;
                                 $subFamilia = null;
                                 $logger->info(Cat::VERIFICAR_SUBFAMILIA.$sku);
                                 return [$gama,$familia,$subFamilia];
                             case 'BATERIAS':
-                                $gama = Cat::ELECTRICIDADE;
                                 $familia = Cat::PILHAS_BATERIAS;
                                 $subFamilia = Cat::BATERIAS;
                                 $logger->info(Cat::VERIFICAR_SUBFAMILIA.$sku);
                                 return [$gama,$familia,$subFamilia];
                             case 'LAMPADAS':
-                                $gama = Cat::ELECTRICIDADE;
                                 $familia = Cat::ILUMINACAO;
                                 $subFamilia = Cat::LAMPADAS;
+                                return [$gama,$familia,$subFamilia];
+                            case 'PROD. P/MAQ.ROUPA E LOUÇA':
+                                $gama = Cat::GRANDES_DOMESTICOS;
+                                $familia = Cat::ACESSORIOS_MLL;
+                                $subFamilia = null;
+                                return [$gama,$familia,$subFamilia];
+                            case 'PROD. P/QUEIMA':
+                                $gama = Cat::GRANDES_DOMESTICOS;
+                                $familia = Cat::ACESSORIOS_QUEIMA;
+                                $subFamilia = null;
                                 return [$gama,$familia,$subFamilia];
                             default:
                                 return [$gama,$familia,$subFamilia];

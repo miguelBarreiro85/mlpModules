@@ -4,6 +4,7 @@
 namespace Mlp\Cli\Helper;
 
 
+use Mlp\Cli\Helper\CategoriesConstants as Cat;
 use Braintree\Exception;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute\Set\CollectionFactory;
 use Mlp\Cli\Helper\Data;
@@ -91,7 +92,7 @@ class Attribute
         try {
             switch ($familia) {
                 //Imagem SOM
-                case 'TELEVISÃO':
+                case Cat::TELEVISAO:
                     $attributeSet = $this->attributeSetCollection->create()
                         ->addFieldToSelect('attribute_set_id')
                         ->addFieldToFilter('attribute_set_name', 'TV')
@@ -99,7 +100,8 @@ class Attribute
                         ->toArray();
                     $attributeSetId = (int)$attributeSet['attribute_set_id'];
                     return $attributeSetId;
-                case 'CÂMARAS':
+                case Cat::CAMARAS_FOTOGRAFICAS:
+                case Cat::CAMARAS_VIDEO:
                     $attributeSet = $this->attributeSetCollection->create()
                         ->addFieldToSelect('attribute_set_id')
                         ->addFieldToFilter('attribute_set_name', 'CAMARAS')

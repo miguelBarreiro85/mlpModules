@@ -304,8 +304,8 @@ class Auferma extends Command
         $this->produtoInterno->gama = $gama;
         $this->produtoInterno->familia = $familia;
         $this->produtoInterno->subFamilia = $subFamilia;
-        $this->produtoInterno->description = strtoupper($data[7]);
-        $this->produtoInterno->meta_description = strtoupper($data[7]);
+        $this->produtoInterno->description = mb_strtoupper($data[7], 'UTF-8');
+        $this->produtoInterno->meta_description = mb_strtoupper($data[7], 'UTF-8');
         $this->produtoInterno->manufacturer = $data[5];
         $this->produtoInterno->length = null;
         $this->produtoInterno->width = null;
