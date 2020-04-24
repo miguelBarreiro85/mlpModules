@@ -607,42 +607,42 @@ class ExpertCategories {
                             $familia = Cat::ENCASTRE;
                             switch ($subFamilia) {
                                 case 'Máquinas de Secar Roupa':
-                                    $subFamilia = Cat::MAQ_SECAR_ROUPA_ENCASTRE;
+                                    $subFamilia = Cat::MAQ_SECAR_ROUPA_ENC;
                                     return [$gama, $familia, $subFamilia];
                                 case 'Exaustores':
                                 case 'Chaminés':
                                     $subFamilia = Cat::EXAUSTORES;
                                     return [$gama, $familia, $subFamilia];
                                 case 'Máquinas Lavar Roupa':
-                                    $subFamilia = Cat::MAQ_LAVAR_ROUPA_ENCASTRE;
+                                    $subFamilia = Cat::MAQ_LAVAR_ROUPA_ENC;
                                     return [$gama, $familia, $subFamilia];
                                 case 'Máquina de Café':
-                                    $subFamilia = Cat::MAQ_CAFE_ENCASTRE;
+                                    $subFamilia = Cat::MAQ_CAFE_ENC;
                                     return [$gama, $familia, $subFamilia];
                                 case 'Fornos':
                                     $subFamilia = Cat::FORNOS;
                                     return [$gama, $familia, $subFamilia];
                                 case 'Acessórios':
                                 case 'Consumíveis':
-                                    $subFamilia = Cat::ACESSORIOS_ENCASTRE;
+                                    $subFamilia = Cat::ACESSORIOS_ENC;
                                     return [$gama, $familia, $subFamilia];
                                 case 'Placas':
                                     $subFamilia = Cat::PLACAS;
                                     return [$gama, $familia, $subFamilia];
                                 case 'Máquinas Lavar Loiça':
-                                    $subFamilia = Cat::MAQ_DE_LOUCA_ENCASTRE;
+                                    $subFamilia = Cat::MAQ_DE_LOUCA_ENC;
                                     return [$gama, $familia, $subFamilia];
                                 case 'Microondas':
-                                    $subFamilia = Cat::MICROONDAS_ENCASTRE;
+                                    $subFamilia = Cat::MICROONDAS_ENC;
                                     return [$gama, $familia, $subFamilia];
                                 case 'Máquinas de Lavar/Secar Roupa':
-                                    $subFamilia = Cat::MAQ_LAVAR_SECAR_ROUPA_ENCASTRE;
+                                    $subFamilia = Cat::MAQ_LAVAR_SECAR_ROUPA_ENC;
                                     return [$gama, $familia, $subFamilia];
                                 case 'Lava-Loiças':
                                     $subFamilia = Cat::LAVA_LOUCAS;
                                     return [$gama, $familia, $subFamilia];
                                 case 'Frio':
-                                    $subFamilia = Cat::FRIO_ENCASTRE;
+                                    $subFamilia = Cat::FRIO_ENC;
                                     $logger->info(Cat::VERIFICAR_SUBFAMILIA.$sku);
                                     return [$gama, $familia, $subFamilia];
                                 case 'Torneiras':

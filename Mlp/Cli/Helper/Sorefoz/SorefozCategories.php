@@ -7,7 +7,7 @@ use phpDocumentor\Reflection\DocBlock\Tags\Return_;
 
 class SorefozCategories {
 
-    public function getCategoriesSorefoz($gama,$familia,$subFamilia,$logger,$sku)
+    public static function getCategoriesSorefoz($gama,$familia,$subFamilia,$logger,$sku)
     {
         switch ($gama) {
             case 'ACESSÓRIOS E BATERIAS':
@@ -40,7 +40,19 @@ class SorefozCategories {
             case 'TELEFONES E TELEMÓVEIS':
             case 'SERVIÇOS TV/INTERNET/OUTROS':
                 $gama = Cat::COMUNICACOES;
-                return [$gama,$familia,$subFamilia];
+                switch ($familia) {
+                    case 'SERVIÇOS INTERNET':
+                    case 'SERVIÇOS TELEVISÃO':
+                        $familia = Cat::SERVICOS_COMUNICACOES;
+                        return [$gama,$familia,$subFamilia];
+                    case 'TELEFONES FIXOS':
+                        $familia = Cat::COMUNICACOES_FIXAS;
+                        $subFamilia = Cat::TELEFONES_FIXOS;
+                        return [$gama,$familia,$subFamilia];
+                    default:
+                        return [$gama,$familia,$subFamilia];
+                }
+                
             case 'GRANDES DOMÉSTICOS':
                 $gama = Cat::GRANDES_DOMESTICOS;
                 switch ($familia) {
@@ -88,52 +100,52 @@ class SorefozCategories {
                         }
                     case 'ENCASTRE - FRIO':
                         $gama = Cat::ENCASTRE;
-                        $familia = Cat::FRIO_ENCASTRE;
+                        $familia = Cat::FRIO_ENC;
                         switch($subFamilia){
                             case 'COMBINADOS':
-                                $subFamilia = Cat::COMBINADOS_ENCASTRE;
+                                $subFamilia = Cat::COMBINADOS_ENC;
                                 return [$gama,$familia,$subFamilia];
                             case 'CONGELADORES VERTICAIS':
-                                $subFamilia = Cat::CONGELADORES_ENCASTRE;
+                                $subFamilia = Cat::CONGELADORES_ENC;
                                 return [$gama,$familia,$subFamilia];
                             case 'FRIGORIFICOS':
-                                $subFamilia = Cat::FRIGORIFICOS_ENCASTRE;
+                                $subFamilia = Cat::FRIGORIFICOS_ENC;
                                 return [$gama,$familia,$subFamilia];
                             case 'GARRAFEIRAS':
-                                $subFamilia = Cat::GARRAFEIRAS_ENCASTRE;
+                                $subFamilia = Cat::GARRAFEIRAS_ENC;
                                 return [$gama,$familia,$subFamilia];
                             default:
                                 return [$gama,$familia,$subFamilia];    
                         }
                     case 'ENCASTRE - MAQ.LOUÇA':
                         $gama = Cat::ENCASTRE;
-                        $familia = Cat::MAQ_DE_LOUCA_ENCASTRE;
+                        $familia = Cat::MAQ_DE_LOUCA_ENC;
                         $subFamilia = null;
                         return [$gama,$familia,$subFamilia];
                     case 'ENCASTRE - MAQ.L.ROUPA':
                         $gama = Cat::ENCASTRE;
-                        $familia = Cat::MAQ_ROUPA_ENCASTRE;
+                        $familia = Cat::MAQ_ROUPA_ENC;
                         switch($subFamilia){
                             case 'MAQ.LAVAR/SECAR ROUPA':
-                                $subFamilia = Cat::MAQ_LAVAR_SECAR_ROUPA_ENCASTRE;
+                                $subFamilia = Cat::MAQ_LAVAR_SECAR_ROUPA_ENC;
                                 return [$gama,$familia,$subFamilia];
                             case 'MAQ.LAVAR ROUPA':
-                                $subFamilia = Cat::MAQ_LAVAR_ROUPA_ENCASTRE;
+                                $subFamilia = Cat::MAQ_LAVAR_ROUPA_ENC;
                                 return [$gama,$familia,$subFamilia];
                             case 'MAQ.SECAR ROUPA':
-                                $subFamilia = Cat::MAQ_SECAR_ROUPA_ENCASTRE;
+                                $subFamilia = Cat::MAQ_SECAR_ROUPA_ENC;
                                 return [$gama,$familia,$subFamilia];
                             default:
                                 return [$gama,$familia,$subFamilia];
                         }
                     case 'ENCASTRE - MICROONDAS':
                         $gama = Cat::ENCASTRE;
-                        $familia = Cat::MICROONDAS_ENCASTRE;
+                        $familia = Cat::MICROONDAS_ENC;
                         $subFamilia = null;
                         return [$gama,$familia,$subFamilia];
                     case 'ENCASTRE - OUTRAS':
                         $gama = Cat::ENCASTRE;
-                        $subFamilia = Cat::OUTRO_ENCASTRE;
+                        $subFamilia = Cat::OUTRO_ENC;
                         return [$gama,$familia,$subFamilia];
                     case 'MAQUINAS LAVAR ROUPA':
                         $familia = Cat::GRANDES_DOMESTICOS;
@@ -208,10 +220,16 @@ class SorefozCategories {
                         }
                     case 'MAQUINAS LAVAR LOUÇA':
                         $familia = Cat::MAQ_DE_LOUCA;
+                        return [$gama,$familia,$subFamilia];        
+                    case 'ENCASTRE - CONJUNTOS':
+                        $familia = Cat::ENCASTRE;
+                        $subFamilia = Cat::CONJUNTOS_ENC;
+                        return [$gama,$familia,$subFamilia];        
                     default:
                         return [$gama,$familia,$subFamilia];        
                 }
             case 'IMAGEM E SOM':
+                $gama = Cat::IMAGEM_E_SOM;
                 switch ($familia) {
                     case 'CÂMARAS':
                         switch ($subFamilia) {
@@ -234,11 +252,9 @@ class SorefozCategories {
                                 return [$gama,$familia,$subFamilia];
                             default:
                                 return [$gama,$familia,$subFamilia];
-                        }
-                        break;                    
-                
+                        }                
                     case 'TELEVISÃO':
-
+                        $familia = Cat::TELEVISAO;
                         switch ($subFamilia) {
                             case 'TV LED+46"':
                                 $subFamilia = Cat::TVS_GRANDES;
@@ -250,6 +266,7 @@ class SorefozCategories {
                             case 'TV LED 23"':
                             case 'TV LED 24"':
                             case 'TV LED 20"':
+                            case 'TV LED 22"':
                                 $subFamilia = Cat::TVS_PEQUENAS;
                                 return [$gama,$familia,$subFamilia];
                             case 'TV LED 40"':

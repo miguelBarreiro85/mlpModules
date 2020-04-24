@@ -315,7 +315,7 @@ class ProdutoInterno
                 }
             }
             $product->setPrice($newPrice);
-            $this->productResource->saveAttribute($product,'price');
+            $this->productRepositoryInterface->save($product);
         }catch (\Exception $ex){
             print_r("update price exception - " . $ex->getMessage() . "\n");
         }

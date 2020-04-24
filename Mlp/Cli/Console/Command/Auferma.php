@@ -14,8 +14,9 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Csv;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use \Magento\Framework\Filesystem\DirectoryList;
+use Magento\Framework\Filesystem\DirectoryList;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Mlp\Cli\Helper\Sorefoz\SorefozCategories as sorefozCategories;
 
 
 /**
@@ -129,7 +130,7 @@ class Auferma extends Command
         foreach ($this->loadCsv->loadCsv('aufermaInterno.csv',",") as $data) {
             $row++;
             print_r($row." - ");
-            $this->setAufermaData($data);
+            $this->setAufermaData($data,$logger);
             if (!is_null($categoriesFilter)){
                 if (strcmp($categoriesFilter,$this->produtoInterno->subFamilia) != 0){
                     print_r("\n");
@@ -137,14 +138,18 @@ class Auferma extends Command
                 }
             }
             try {
-                $this -> productRepository -> get($this->produtoInterno->sku, true, null, true);
+                $product = $this -> productRepository -> get($this->produtoInterno->sku, true, null, true);
             } catch (NoSuchEntityException $exception) {
-                $product = $this->produtoInterno -> add_product($logger, $this->produtoInterno->sku);
+                $this->produtoInterno -> add_product($logger, $this->produtoInterno->sku);
+                $this->produtoInterno->setStock('auferma');
+                print_r("\n");
+                continue;
             }
             if(isset($product)){
                 try {
                     print_r(" - Setting stock: " . $this->produtoInterno->stock . "\n");
-                    $this->produtoInterno->setStock($this->produtoInterno->sku, 'auferma');
+                    $this->produtoInterno->setStock('auferma');
+                    $this->produtoInterno->updatePrice();
                 } catch (\Exception $ex) {
                     print_r("Update stock exception - " . $ex -> getMessage() . "\n");
                 }
@@ -261,7 +266,7 @@ class Auferma extends Command
     }
 
 
-    private function setAufermaData($data) {
+    private function setAufermaData($data,$logger) {
         /*
         0 codigo
         1 nome
@@ -288,14 +293,19 @@ class Auferma extends Command
             $status = 1;
         }
 
-        $data = array_map($functionTrim,$data);
         $this->produtoInterno->sku = $data[0];
-        $this->produtoInterno->name = $data[1];
-        $this->produtoInterno->gama = $data[8];
-        $this->produtoInterno->familia = $data[9];
-        $this->produtoInterno->subFamilia = $data[10];
-        $this->produtoInterno->description = $data[7];
-        $this->produtoInterno->meta_description = $data[7];
+        [$gama,$familia,$subFamilia] =  sorefozCategories::getCategoriesSorefoz(
+                                            $data[8],$data[9],$data[10],
+                                            $logger,$this->produtoInterno->sku);    
+
+        $data = array_map($functionTrim,$data);
+        
+        $this->produtoInterno->name = strtoupper($data[1]);
+        $this->produtoInterno->gama = $gama;
+        $this->produtoInterno->familia = $familia;
+        $this->produtoInterno->subFamilia = $subFamilia;
+        $this->produtoInterno->description = strtoupper($data[7]);
+        $this->produtoInterno->meta_description = strtoupper($data[7]);
         $this->produtoInterno->manufacturer = $data[5];
         $this->produtoInterno->length = null;
         $this->produtoInterno->width = null;
@@ -307,6 +317,8 @@ class Auferma extends Command
         $this->produtoInterno->classeEnergetica = null;
         $this->produtoInterno->imageEnergetica = null;
         $this->produtoInterno->stock = $stock;
+
+
     }
 
 }

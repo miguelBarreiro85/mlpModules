@@ -90,44 +90,44 @@ class OrimaCategories {
                         return ([$gama, $familia, $subFamilia]);
 
                     case 'COMBINADOS ENCASTRE':
-                        $familia = Cat::FRIO_ENCASTRE;
-                        $subFamilia = Cat::COMBINADOS_ENCASTRE;
+                        $familia = Cat::FRIO_ENC;
+                        $subFamilia = Cat::COMBINADOS_ENC;
                         return ([$gama, $familia, $subFamilia]);
 
                     case 'CONGELADORES VERTICAIS ENCASTRE':
-                        $familia = Cat::FRIO_ENCASTRE;
-                        $subFamilia = Cat::CONGELADORES_ENCASTRE;
+                        $familia = Cat::FRIO_ENC;
+                        $subFamilia = Cat::CONGELADORES_ENC;
                         return ([$gama, $familia, $subFamilia]);
 
                     case 'MAQUINAS DE CAFE ENCASTRE':
-                        $subFamilia = Cat::MAQ_CAFE_ENCASTRE;
+                        $subFamilia = Cat::MAQ_CAFE_ENC;
                         return ([$gama, $familia, $subFamilia]);
 
                     case 'FRIGORIFICOS 1 PORTA ENCASTRE':
                     case 'FRIGORIFICOS 2 PORTAS ENCASTRE':
-                        $familia = Cat::FRIO_ENCASTRE;
-                        $subFamilia = Cat::FRIGORIFICOS_ENCASTRE;
+                        $familia = Cat::FRIO_ENC;
+                        $subFamilia = Cat::FRIGORIFICOS_ENC;
                         return ([$gama, $familia, $subFamilia]);
                     case 'FORNOS':
                         $familia = Cat::FORNOS;
                         $subFamilia = null;
                         return ([$gama, $familia, $subFamilia]);
                     case 'MAQUINAS LAVAR LOUÇA ENCASTRE':
-                        $familia = Cat::MAQ_DE_LOUCA_ENCASTRE;
+                        $familia = Cat::MAQ_DE_LOUCA_ENC;
                         $subFamilia = null;
                         return ([$gama, $familia, $subFamilia]);
 
                     case 'MAQUINAS LAVAR ROUPA ENCASTRE':
-                        $familia = Cat::MAQ_ROUPA_ENCASTRE;
-                        $subFamilia = Cat::MAQ_LAVAR_ROUPA_ENCASTRE;
+                        $familia = Cat::MAQ_ROUPA_ENC;
+                        $subFamilia = Cat::MAQ_LAVAR_ROUPA_ENC;
                         return ([$gama, $familia, $subFamilia]);
 
                     case 'MAQUINAS LAVAR SECAR ENCASTRE':
-                        $familia = Cat::MAQ_LAVAR_SECAR_ROUPA_ENCASTRE;
-                        $subFamilia = Cat::MAQ_LAVAR_SECAR_ROUPA_ENCASTRE;
+                        $familia = Cat::MAQ_LAVAR_SECAR_ROUPA_ENC;
+                        $subFamilia = Cat::MAQ_LAVAR_SECAR_ROUPA_ENC;
                         return ([$gama, $familia, $subFamilia]);
                     case 'MICRO ONDAS ENCASTRE':
-                        $familia = Cat::MICROONDAS_ENCASTRE;
+                        $familia = Cat::MICROONDAS_ENC;
                         $subFamilia = null;
                         return ([$gama, $familia, $subFamilia]);
 
@@ -142,7 +142,7 @@ class OrimaCategories {
                         $subFamilia = null;
                         return ([$gama, $familia, $subFamilia]);
                     case 'TAMPOS':
-                        $subFamilia = Cat::ACESSORIOS_ENCASTRE;
+                        $subFamilia = Cat::ACESSORIOS_ENC;
                         return ([$gama, $familia, $subFamilia]);
 
                     default:

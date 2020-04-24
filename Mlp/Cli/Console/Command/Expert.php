@@ -140,7 +140,7 @@ class Expert extends Command
                 continue;
             }
             if (!is_null($categoriesFilter)){
-                if (strcmp($categoriesFilter,$this->produtoInterno->subFamilia) != 0){
+                if (strcmp($categoriesFilter,$this->produtoInterno->familia) != 0){
                     print_r("wrong familie - ");
                     continue;
                 }
@@ -151,6 +151,7 @@ class Expert extends Command
                 
                 $this->produtoInterno->manufacturer =  Manufacturer::getExpertManufacturer($this->produtoInterno->manufacturer);
                 $this->produtoInterno -> add_product($logger, $this->produtoInterno->sku);
+                print_r("\n");
                 //$this -> produtoInterno -> addSpecialAttributesExpert($product, $logger);
             }
             if(isset($product)){
@@ -253,6 +254,8 @@ class Expert extends Command
         [$this->produtoInterno->gama,$this->produtoInterno->familia,
             $this->produtoInterno->subFamilia] = ExpertCategories::setExpertCategories($data[2],$logger,
                                                                                 $this->produtoInterno->sku);
+
+        
         if(preg_match("/Expert/i",$this->produtoInterno->gama)){
             print_r(" - gama: expert - ");
             return 0;
