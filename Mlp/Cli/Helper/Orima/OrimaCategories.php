@@ -52,9 +52,9 @@ class OrimaCategories {
 
             case 'MAQUINAS ROUPA':
                 $gama = Cat::GRANDES_DOMESTICOS;
-                $familia = Cat::MAQ_ROUPA;
                 switch ($familia) {
                     case 'MAQUINAS LAVAR ROUPA':
+                        $familia = Cat::MAQ_ROUPA;
                         switch ($subFamilia) {
                             case 'MAQUINAS LAVAR ROUPA CARGA SUPERIOR':
                                 $subFamilia = Cat::MAQ_LAVAR_ROUPA_CARGA_SUPERIOR;
@@ -64,15 +64,19 @@ class OrimaCategories {
                                 return ([$gama, $familia, $subFamilia]);
                         }
                     case 'MAQUINAS LAVAR SECAR ROUPA':
+                        $familia = Cat::MAQ_ROUPA;
                         $subFamilia = Cat::MAQ_LAVAR_SECAR_ROUPA;
                         return ([$gama, $familia, $subFamilia]);
                     case 'SECADORES ROUPA BOMBA CALOR':
+                        $familia = Cat::MAQ_ROUPA;
                         $subFamilia = Cat::MAQ_SECAR_ROUPA_BC;
                         return ([$gama, $familia, $subFamilia]);
                     case 'SECADORES ROUPA CONDENSAÇAO':
+                        $familia = Cat::MAQ_ROUPA;
                         $subFamilia = Cat::MAQ_SECAR_ROUPA_COND;
                         return ([$gama, $familia, $subFamilia]);
                     case 'SECADORES ROUPA VENTILAÇAO':
+                        $familia = Cat::MAQ_ROUPA;
                         $subFamilia = Cat::MAQ_SECAR_ROUPA_VENT;
                         return ([$gama, $familia, $subFamilia]);
                     default:
@@ -249,7 +253,7 @@ class OrimaCategories {
                     case 'LED´S':
                         $familia = Cat::TELEVISAO;
                         $subFamilia = null;
-                        $logger->info(Cat::VERIFICAR_SUBFAMILIA);
+                        $logger->info(Cat::VERIFICAR_CATEGORIAS);
                         return ([$gama, $familia, $subFamilia]);
                     case 'SOM & VIDEO':
                         switch ($subFamilia) {

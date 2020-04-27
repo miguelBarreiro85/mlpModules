@@ -294,12 +294,13 @@ class Sorefoz extends Command
             return 0;
         }
 
+        $this->produtoInterno->name = $data[1];
         
         [$gama,$familia,$subFamilia] =  $this->sorefozCategories
-                ->getCategoriesSorefoz($data[5],$data[7],$data[9],
-                                $logger,$this->produtoInterno->sku);        
+                ->getCategories($data[5],$data[7],$data[9],
+                                $logger,$this->produtoInterno->sku,$this->produtoInterno->name);        
         
-        $this->produtoInterno->name = $data[1];
+        
         $this->produtoInterno->gama = $gama;
         $this->produtoInterno->familia = $familia;
         $this->produtoInterno->subFamilia = $subFamilia;

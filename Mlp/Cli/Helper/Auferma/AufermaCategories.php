@@ -1,13 +1,13 @@
 <?php 
 
-namespace Mlp\Cli\Helper\Sorefoz;
+namespace Mlp\Cli\Helper\Auferma;
 
 use Mlp\Cli\Helper\CategoriesConstants as Cat;
 use phpDocumentor\Reflection\DocBlock\Tags\Return_;
 
-class SorefozCategories {
+class AufermaCategories {
 
-    public static function getCategories($gama,$familia,$subFamilia,$logger,$sku,$name)
+    public static function getCategories($gama,$familia,$subFamilia,$logger,$sku)
     {
         switch ($gama) {
             case 'ACESSÓRIOS E BATERIAS':
@@ -44,23 +44,7 @@ class SorefozCategories {
                         }
                     default:
                         return [$gama,$familia,$subFamilia];
-                }
-            case 'TELEFONES E TELEMÓVEIS':
-            case 'SERVIÇOS TV/INTERNET/OUTROS':
-                $gama = Cat::COMUNICACOES;
-                switch ($familia) {
-                    case 'SERVIÇOS INTERNET':
-                    case 'SERVIÇOS TELEVISÃO':
-                        $familia = Cat::SERVICOS_COMUNICACOES;
-                        return [$gama,$familia,$subFamilia];
-                    case 'TELEFONES FIXOS':
-                        $familia = Cat::COMUNICACOES_FIXAS;
-                        $subFamilia = Cat::TELEFONES_FIXOS;
-                        return [$gama,$familia,$subFamilia];
-                    default:
-                        return [$gama,$familia,$subFamilia];
-                }
-                
+                }           
             case 'GRANDES DOMÉSTICOS':
                 $gama = Cat::GRANDES_DOMESTICOS;
                 switch ($familia) {
@@ -230,8 +214,8 @@ class SorefozCategories {
                         $familia = Cat::MAQ_DE_LOUCA;
                         return [$gama,$familia,$subFamilia];        
                     case 'ENCASTRE - CONJUNTOS':
-                        $familia = Cat::ENCASTRE;
-                        $subFamilia = Cat::CONJUNTOS_ENC;
+                        $gama = Cat::ENCASTRE;
+                        $familia = Cat::CONJUNTOS_ENC;
                         return [$gama,$familia,$subFamilia];        
                     default:
                         return [$gama,$familia,$subFamilia];        
@@ -291,26 +275,8 @@ class SorefozCategories {
                 $gama = Cat::INFORMATICA;
                 switch ($familia) {
                     case 'ACESSÓRIOS':
-                        switch ($subFamilia) {
-                            case 'ACESSÓRIOS DE SOM':
-                                if (preg_match('/^COLUNA/', $name) == 1) {
-                                    $gama = Cat::IMAGEM_E_SOM;
-                                    $familia = Cat::COLUNAS;
-                                    $subFamilia = null;
-                                    return [$gama,$familia,$subFamilia];
-                                }
-                                if (preg_match('/^AUSC/', $name) == 1) {
-                                    $gama = Cat::IMAGEM_E_SOM;
-                                    $familia = Cat::AUSCULTADORES;
-                                    $subFamilia = null;
-                                    return [$gama,$familia,$subFamilia];
-                                }
-                            default:
-                                $familia = Cat::ACESSORIOS_INFORMATICA;
-                                $subFamilia = Cat::OUTROS_ACESSORIOS_INFORMATICA;
-                                return [$gama,$familia,$subFamilia];
-                        }
-                        
+                        $familia = Cat::ACESSORIOS_INFORMATICA;    
+                        return [$gama,$familia,$subFamilia];
                     case "COMPUTADORES E TABLET'S ":
                         switch ($subFamilia) {
                             case 'DE SECRETÁRIA':
@@ -324,27 +290,14 @@ class SorefozCategories {
                 }
                 
             case 'CLIMATIZAÇÃO':
-                switch ($familia) {
-                    case 'AQUECIMENTO':
-                        if (preg_match('/^CLIMATIZADOR/', $name) == 1) {
-                            $categories['gama'] = 'CLIMATIZAÇÃO';
-                            $categories['familia'] = 'AR CONDICIONADO';
-                            $categories['subfamilia'] = 'CLIMATIZADORES';
-                            return $categories;
-                        }
-                    case 'AR CONDICIONADO':
-                        switch ($subFamilia) {
-                            case 'AR COND.INVERTER':
-                            case 'AR COND.MULTI-SPLIT':
-                                 $subFamilia = Cat::AC_FIXO;
-                                 return [$gama,$familia,$subFamilia];
-                            default:
-                                return [$gama,$familia,$subFamilia];
-                        }
+                switch ($subFamilia) {
+                    case 'AR COND.INVERTER':
+                    case 'AR COND.MULTI-SPLIT':
+                         $subFamilia = Cat::AC_FIXO;
+                         return [$gama,$familia,$subFamilia];
                     default:
                         return [$gama,$familia,$subFamilia];
                 }
-                
             case 'PEQUENOS DOMÉSTICOS':
                 switch ($familia) {
                     case 'APARELHOS DE COZINHA':
@@ -358,25 +311,40 @@ class SorefozCategories {
                     default:
                         return [$gama,$familia,$subFamilia];
                 }
-            case 'CAR AUDIO':
-                switch ($familia) {
-                    case 'AUTO-RADIOS':
-                        $gama = Cat::IMAGEM_E_SOM;
-                        $familia = Cat::CAR_AUDIO;
-                        $subFamilia = Cat::AUTO_RADIOS;
-                        return [$gama,$familia,$subFamilia];
-                    case 'ALTIFALANTES':
-                    case 'COLUNAS':
-                        $gama = Cat::IMAGEM_E_SOM;
-                        $familia = Cat::CAR_AUDIO;
-                        $subFamilia = Cat::COLUNAS_AUTO;
-                        return [$gama,$familia,$subFamilia];
-                    default:
-                        return [$gama,$familia,$subFamilia];
-                }
+        
             default:
-                return [$gama,$familia,$subFamilia];
+                $logger->info(Cat::VERIFICAR_CATEGORIAS.$sku);
         
         }
+    }
+
+    public function setCategories($gama, $familia, $subfamilia, $name,$logger,$sku)
+    {
+        $categories = [];
+        //Especifico para alguns artigos que tem categorias totalmente diferentes
+        //Informatica Acessorios Acessorios de som
+        if (preg_match('/^COLUNA/', $name) == 1) {
+            $categories['gama'] = 'IMAGEM E SOM';
+            $categories['familia'] = 'COLUNAS';
+            $categories['subfamilia'] = null;
+            return $categories;
+        }
+        if (preg_match('/^AUSC/', $name) == 1) {
+            $categories['gama'] = 'IMAGEM E SOM';
+            $categories['familia'] = 'AUSCULTADORES';
+            $categories['subfamilia'] = null;
+            return $categories;
+        }
+        if (preg_match('/^CLIMATIZADOR/', $name) == 1) {
+            $categories['gama'] = 'CLIMATIZAÇÃO';
+            $categories['familia'] = 'AR CONDICIONADO';
+            $categories['subfamilia'] = 'CLIMATIZADORES';
+            return $categories;
+        }
+        $categories = $this->getCategories($gama,$familia,$subfamilia,$logger,$sku);
+        //$categories['gama'] = $this -> setGamaSorefoz($gama);
+        //$categories['familia'] = $this -> setFamiliaSorefoz($familia);
+        //$categories['subfamilia'] = $this -> setSubFamiliaSorefoz($familia,$subfamilia);
+        return $categories;
     }
 }

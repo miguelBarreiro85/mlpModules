@@ -82,11 +82,11 @@ class imagesHelper
             } catch (\RuntimeException $exception) {
                 print_r("run time exception" . $exception->getMessage() . "\n");
             } catch (\Exception $localizedException) {
-                $logger->info($product->getName() . "Image name" . $ImgName . "  Sem Imagem");
+                $logger->info("SEM IMAGEM: " . $product->getSku());
             }
         } else {
             //not a image
-            $logger->info($product->getName() . "Image name" . $ImgName . "  Sem Imagem");
+            $logger->info("SEM IMAGEM: " . $product->getSku());
         }
 
     }

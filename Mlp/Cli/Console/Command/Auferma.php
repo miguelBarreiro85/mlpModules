@@ -16,7 +16,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Csv;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Magento\Framework\Filesystem\DirectoryList;
 use Magento\Framework\Exception\NoSuchEntityException;
-use Mlp\Cli\Helper\Sorefoz\SorefozCategories as sorefozCategories;
+use Mlp\Cli\Helper\Auferma\AufermaCategories as aufermaCategories;
 
 
 /**
@@ -294,7 +294,7 @@ class Auferma extends Command
         }
 
         $this->produtoInterno->sku = $data[0];
-        [$gama,$familia,$subFamilia] =  sorefozCategories::getCategoriesSorefoz(
+        [$gama,$familia,$subFamilia] =  aufermaCategories::getCategories(
                                             $data[8],$data[9],$data[10],
                                             $logger,$this->produtoInterno->sku);    
 
