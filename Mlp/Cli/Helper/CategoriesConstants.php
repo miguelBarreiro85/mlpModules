@@ -4,6 +4,7 @@
 namespace Mlp\Cli\Helper;
 
 class CategoriesConstants {
+    const CLIMATIZADORES = "CLIMATIZADORES";
     const ACESSORIOS_GRANDES_DOMESTICOS = "ACESSÓRIOS GRANDES DOMÉSTICOS";
     const ACESSORIOS_QUEIMA = 'ACESSÓRIOS QUEIMA';
     const CONJUNTOS_ENC = 'PLACA E FORNO';

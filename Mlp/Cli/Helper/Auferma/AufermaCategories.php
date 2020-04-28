@@ -299,11 +299,23 @@ class AufermaCategories {
                 }
                 
             case 'CLIMATIZAÇÃO':
-                switch ($subFamilia) {
-                    case 'AR COND.INVERTER':
-                    case 'AR COND.MULTI-SPLIT':
-                         $subFamilia = Cat::AC_FIXO;
-                         return [$gama,$familia,$subFamilia];
+                switch ($familia) {
+                    case 'AQUECIMENTO':
+                        if (preg_match('/^CLIMATIZADOR/', $name) == 1) {
+                            $gama = Cat::CLIMATIZACAO;
+                            $familia = Cat::AR_CONDICIONADO;
+                            $subFamilia = Cat::CLIMATIZADORES;
+                            return [$gama,$familia,$subFamilia];
+                        }
+                    case 'AR CONDICIONADO':
+                        switch ($subFamilia) {
+                            case 'AR COND.INVERTER':
+                            case 'AR COND.MULTI-SPLIT':
+                                    $subFamilia = Cat::AC_FIXO;
+                                    return [$gama,$familia,$subFamilia];
+                            default:
+                                return [$gama,$familia,$subFamilia];
+                        }
                     default:
                         return [$gama,$familia,$subFamilia];
                 }

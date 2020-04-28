@@ -336,10 +336,10 @@ class SorefozCategories {
                 switch ($familia) {
                     case 'AQUECIMENTO':
                         if (preg_match('/^CLIMATIZADOR/', $name) == 1) {
-                            $categories['gama'] = 'CLIMATIZAÇÃO';
-                            $categories['familia'] = 'AR CONDICIONADO';
-                            $categories['subfamilia'] = 'CLIMATIZADORES';
-                            return $categories;
+                            $gama = Cat::CLIMATIZACAO;
+                            $familia = Cat::AR_CONDICIONADO;
+                            $subFamilia = Cat::CLIMATIZADORES;
+                            return [$gama,$familia,$subFamilia];
                         }
                     case 'AR CONDICIONADO':
                         switch ($subFamilia) {
