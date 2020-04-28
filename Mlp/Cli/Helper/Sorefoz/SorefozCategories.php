@@ -228,7 +228,16 @@ class SorefozCategories {
                         }
                     case 'MAQUINAS LAVAR LOUÇA':
                         $familia = Cat::MAQ_DE_LOUCA;
-                        return [$gama,$familia,$subFamilia];        
+                        switch ($subFamilia) {
+                            case 'MLL DE 60 Cm':
+                                $subFamilia = Cat::MLL_DE_60;
+                                return [$gama,$familia,$subFamilia];
+                            case 'MLL DE 45 Cm':
+                                $subFamilia = Cat::MLL_DE_45;
+                                return [$gama,$familia,$subFamilia];
+                            default:
+                                return [$gama,$familia,$subFamilia];
+                        }    
                     case 'ENCASTRE - CONJUNTOS':
                         $familia = Cat::ENCASTRE;
                         $subFamilia = Cat::CONJUNTOS_ENC;
