@@ -30,11 +30,8 @@ class SorefozCategories {
                                 $subFamilia = Cat::LAMPADAS;
                                 return [$gama,$familia,$subFamilia];
                             case 'PROD. P/MAQ.ROUPA E LOUÇA':
-                                $gama = Cat::GRANDES_DOMESTICOS;
-                                $familia = Cat::ACESSORIOS_GRANDES_DOMESTICOS;
-                                $subFamilia = null;
-                                return [$gama,$familia,$subFamilia];
                             case 'PROD. P/QUEIMA':
+                            case 'PROD. P/FRIGORIFICOS':
                                 $gama = Cat::GRANDES_DOMESTICOS;
                                 $familia = Cat::ACESSORIOS_GRANDES_DOMESTICOS;
                                 $subFamilia = null;

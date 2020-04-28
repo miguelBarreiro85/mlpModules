@@ -141,14 +141,15 @@ class Orima extends Command
                 $this->setOrimaCategories($logger);
                 $this->produtoInterno->manufacturer =  Manufacturer::getOrimaManufacturer($this->produtoInterno->manufacturer);
                 $this->produtoInterno -> add_product($logger, $this->produtoInterno->sku);
+                continue;
                 //$this -> produtoInterno -> addSpecialAttributesOrima($product, $logger);
             }
             if(isset($product)){
                 try {
-                    print_r(" - Setting stock: " . $this->produtoInterno->stock . "\n");
+                    print_r(" - Setting price: \n");
                     $this->produtoInterno->updatePrice();
                 } catch (\Exception $ex) {
-                    print_r("Update stock exception - " . $ex -> getMessage() . "\n");
+                    print_r("Update Price error:" . $ex -> getMessage() . "\n");
                 }
             }
 
