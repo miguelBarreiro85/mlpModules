@@ -152,8 +152,11 @@ class ProdutoInterno
 
         $product->setCustomAttribute('description', $this->description);
         $product->setCustomAttribute('meta_description', $this->meta_description);
-        $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', strval($this->manufacturer));
-        $product->setCustomAttribute('manufacturer', $optionId);
+        if(strlen($this->manufacturer) != 0){
+            $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', strval($this->manufacturer));
+            $product->setCustomAttribute('manufacturer', $optionId);
+            $logger->info("verificar manufacturer: ".$this->sku);
+        }
         $product->setCustomAttribute('ts_dimensions_length', $this->length / 10);
         $product->setCustomAttribute('ts_dimensions_width', $this->width / 10);
         $product->setCustomAttribute('ts_dimensions_height', $this->height / 10);

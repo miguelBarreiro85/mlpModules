@@ -141,6 +141,7 @@ class Orima extends Command
                 $this->setOrimaCategories($logger);
                 $this->produtoInterno->manufacturer =  Manufacturer::getOrimaManufacturer($this->produtoInterno->manufacturer);
                 $this->produtoInterno -> add_product($logger, $this->produtoInterno->sku);
+                print_r("\n");
                 continue;
                 //$this -> produtoInterno -> addSpecialAttributesOrima($product, $logger);
             }

@@ -37,6 +37,8 @@ class SorefozCategories {
                                 $subFamilia = null;
                                 return [$gama,$familia,$subFamilia];
                             default:
+                                $familia = Cat::OUTROS_ACESSORIOS;
+                                $subFamilia = null;
                                 return [$gama,$familia,$subFamilia];
                         }
                     default:
