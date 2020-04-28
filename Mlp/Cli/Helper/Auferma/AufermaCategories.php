@@ -211,18 +211,17 @@ class AufermaCategories {
                                 return [$gama,$familia,$subFamilia];
                         }
                     case 'MAQUINAS LAVAR LOUÇA':
-                        case 'MAQUINAS LAVAR LOUÇA':
-                            $familia = Cat::MAQ_DE_LOUCA;
-                            switch ($subFamilia) {
-                                case 'MLL DE 60 Cm':
-                                    $subFamilia = Cat::MLL_DE_60;
-                                    return [$gama,$familia,$subFamilia];
-                                case 'MLL DE 45 Cm':
-                                    $subFamilia = Cat::MLL_DE_45;
-                                    return [$gama,$familia,$subFamilia];
-                                default:
-                                    return [$gama,$familia,$subFamilia];
-                            }          
+                        $familia = Cat::MAQ_DE_LOUCA;
+                        switch ($subFamilia) {
+                            case 'MLL DE 60 Cm':
+                                $subFamilia = Cat::MLL_DE_60;
+                                return [$gama,$familia,$subFamilia];
+                            case 'MLL DE 45 Cm':
+                                $subFamilia = Cat::MLL_DE_45;
+                                return [$gama,$familia,$subFamilia];
+                            default:
+                                return [$gama,$familia,$subFamilia];
+                        }    
                     case 'ENCASTRE - CONJUNTOS':
                         $gama = Cat::ENCASTRE;
                         $familia = Cat::CONJUNTOS_ENC;
