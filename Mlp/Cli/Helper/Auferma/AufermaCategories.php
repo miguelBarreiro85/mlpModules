@@ -225,6 +225,7 @@ class AufermaCategories {
                     case 'ENCASTRE - CONJUNTOS':
                         $gama = Cat::ENCASTRE;
                         $familia = Cat::CONJUNTOS_ENC;
+                        $subFamilia = null;
                         return [$gama,$familia,$subFamilia];        
                     default:
                         return [$gama,$familia,$subFamilia];        
