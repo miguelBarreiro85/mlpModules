@@ -127,7 +127,7 @@ class Auferma extends Command
         $logger = new \Zend\Log\Logger();
         $logger->addWriter($writer);
         $row = 0;
-        foreach ($this->loadCsv->loadCsv('aufermaInterno.csv',",") as $data) {
+        foreach ($this->loadCsv->loadCsv('/Auferma/aufermaInterno.csv',",") as $data) {
             $row++;
             print_r($row." - ");
             $this->setAufermaData($data,$logger);

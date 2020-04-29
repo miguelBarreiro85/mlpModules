@@ -231,7 +231,7 @@ class Products extends Command
 
         
         $row = 0;
-        foreach ($this->loadCsv->loadCsv('tot_jlcb_utf.csv',";") as $data) {
+        foreach ($this->loadCsv->loadCsv('/Sorefoz/tot_jlcb_utf.csv',";") as $data) {
             print_r($data);
             $row++;
             print_r($row." - ");

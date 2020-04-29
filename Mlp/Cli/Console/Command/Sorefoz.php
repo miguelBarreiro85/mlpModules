@@ -136,7 +136,7 @@ class Sorefoz extends Command
 
         
         $row = 0;
-        foreach ($this->loadCsv->loadCsv('tot_jlcb_utf.csv',";") as $data) {
+        foreach ($this->loadCsv->loadCsv('/Sorefoz/tot_jlcb_utf.csv',";") as $data) {
             $row++;
             print_r($row." - ");
             if (!$this->setSorefozData($data,$logger)){
@@ -334,7 +334,7 @@ class Sorefoz extends Command
 
         
         $row = 0;
-        foreach ($this->loadCsv->loadCsv('tot_jlcb_utf.csv',";") as $data) {
+        foreach ($this->loadCsv->loadCsv('/Sorefoz/tot_jlcb_utf.csv',";") as $data) {
             $row++;
             print_r($row." - ");
             $this->setSorefozData($data,$logger);

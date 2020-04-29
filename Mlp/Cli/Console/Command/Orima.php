@@ -3,6 +3,7 @@
 
 namespace Mlp\Cli\Console\Command;
 
+use Exception;
 use Mlp\Cli\Helper\Orima\OrimaCategories;
 
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -25,7 +26,7 @@ class Orima extends Command
      */
     const FILTER_PRODUCTS = 'filter-products';
     const ADD_PRODUCTS = 'add-products';
-    const UPDATE_STOCKS = 'update-stocks';
+    const UPDATE_INTERNO = 'update-interno';
 
     private $directory;
     private $categoryManager;
@@ -33,8 +34,10 @@ class Orima extends Command
     private $state;
     private $produtoInterno;
     private $loadCsv;
+    private $registry;
 
-    public function __construct(DirectoryList $directory,
+    public function __construct(\Magento\Framework\Registry $registry,
+                                DirectoryList $directory,
                                 \Mlp\Cli\Helper\Category $categoryManager,                          
                                 \Magento\Framework\App\State $state,
                                 \Mlp\Cli\Model\ProdutoInterno $productoInterno,
@@ -47,6 +50,8 @@ class Orima extends Command
         $this->produtoInterno = $productoInterno;
         $this->loadCsv = $loadCsv;
         $this->productRepository = $productRepository;
+        $this->registry = $registry;
+        
         parent::__construct();
     }
 
@@ -68,7 +73,7 @@ class Orima extends Command
                     'Add new Products'
                 ),
                 new InputOption(
-                    self::UPDATE_STOCKS,
+                    self::UPDATE_INTERNO,
                     '-u',
                     InputOption::VALUE_NONE,
                     'Update Stocks and State (Active or inactive)'
@@ -92,9 +97,9 @@ class Orima extends Command
         if ($addProducts) {
             $this->addProducts($categories);
         }
-        $updateStocks = $input->getOption(self::UPDATE_STOCKS);
+        $updateStocks = $input->getOption(self::UPDATE_INTERNO);
         if ($updateStocks){
-            $this->updateStocks();
+            $this->updateInterno();
         }
         else {
             throw new \InvalidArgumentException('Option ' . self::FILTER_PRODUCTS . ' is missing.');
@@ -111,7 +116,7 @@ class Orima extends Command
         $logger->addWriter($writer);
         print_r("Adding Orima products" . "\n");
         $row = 0;
-        foreach ($this->loadCsv->loadCsv('Orima.csv',";") as $data) {
+        foreach ($this->loadCsv->loadCsv('/Orima/OrimaInterno.csv',";") as $data) {
             $row++;
             print_r($row." - ");
             try{
@@ -162,8 +167,72 @@ class Orima extends Command
         
     }
 
-    private function updateStocks()
+    private function updateInterno()
     {
+
+        $this->registry->unregister('isSecureArea');
+        $this->registry->register('isSecureArea', true);
+
+        $orimaLines = 0;
+        $internoLines = 0;
+        $fileUrlOrima = $this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Orima/Orima.csv";
+        $fileUrlInterno = $this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Orima/OrimaInterno.csv";
+      
+        if (($handle = fopen($fileUrlOrima, "r")) !== FALSE) {
+            while (($data = fgetcsv($handle, 5000, ";")) !== FALSE) {
+                $orimaLines++;
+            }
+            fclose($handle);
+        }
+
+        if (($handle = fopen($fileUrlInterno, "r")) !== FALSE) {
+            while (($data = fgetcsv($handle, 5000, ";")) !== FALSE) {
+                $internoLines++;
+            }
+            fclose($handle);
+        }
+
+        print_r("Numero de linhas Orima: ".$orimaLines."\n");
+        print_r("Numero de linhas Interno: ".$internoLines."\n");
+        
+        
+        $linesToRemove = [];
+        $currentLineInterno = 0;
+
+        if (($handleInterno = fopen($fileUrlInterno, "r")) !== FALSE) {
+            while (($internoData = fgetcsv($handleInterno, 5000, ";")) !== FALSE) {
+                if (strlen(trim($internoData[8])) != 13) {
+                    continue;
+                }
+                $currentLineOrima = 1;
+                if (($handleOrima = fopen($fileUrlOrima, "r")) !== FALSE) {
+                    while (($orimaData = fgetcsv($handleOrima, 5000, ";")) !== FALSE) {
+                        print_r($internoData[8]." - Line interno: ".$currentLineInterno." - line: ".$currentLineOrima." - ".$orimaData[8]."\n");
+                        if (strcmp($internoData[8],$orimaData[8]) == 0) {
+                            break;
+                        }
+                        
+                        if ($currentLineOrima == $orimaLines){
+                            //last line, not found, Add to array
+                            $linesToRemove[] = $internoData;
+                        }
+                        $currentLineOrima++;
+                    }
+                    fclose($handleOrima);
+                }
+                $currentLineInterno++;
+            }
+            fclose($handleInterno);
+        }
+
+        foreach($linesToRemove as $data){
+            try {
+                print_r($data[8]."\n");
+                $this->productRepository->deleteById(trim($data[8]));
+            }catch(Exception $e) {
+                print_r("Delete Exception: ".$e->getMessage());
+            }
+        }
     }
 
     private function setOrimaStock($stock)

@@ -127,7 +127,7 @@ class Expert extends Command
         $logger->addWriter($writer);
         print_r("Adding Expert products" . "\n");
         $row = 0;
-        foreach ($this->loadCsv->loadCsv('Expert.csv',";") as $data) {
+        foreach ($this->loadCsv->loadCsv('/Expert/Expert.csv',";") as $data) {
             $row++;
             print_r($row." - ");
             try{
@@ -272,7 +272,7 @@ class Expert extends Command
 
         
         $row = 0;
-        foreach ($this->loadCsv->loadCsv('Expert.csv',";") as $data) {
+        foreach ($this->loadCsv->loadCsv('/Expert/Expert.csv',";") as $data) {
             $row++;
             print_r($row." - ");
             $this->setData($data,$logger);

@@ -61,4 +61,10 @@ class LoadCsv
 
         }
     }
+
+    public function coutCsvLines($csv) {
+        $fileUrl = $this->directory->getRoot()."/app/code/Mlp/Cli/Csv/".$csv;
+        $fp = file($fileUrl);
+        return count($fp);
+    }
 }

@@ -93,7 +93,7 @@ class Jpdi extends Command
         $logger->addWriter($writer);
         print_r("Adding Jpdi products" . "\n");
         $row = 0;
-        foreach ($this->loadCsv->loadCsv('jpdi.csv',";") as $data) {
+        foreach ($this->loadCsv->loadCsv('/Jpdi/jpdi.csv',";") as $data) {
             $row++;
             print_r($row." - ");
             try{
