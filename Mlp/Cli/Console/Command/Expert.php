@@ -125,6 +125,9 @@ class Expert extends Command
         $writer = new \Zend\Log\Writer\Stream($this->directory->getRoot().'/var/log/Expert.log');
         $logger = new \Zend\Log\Logger();
         $logger->addWriter($writer);
+
+        //Download Csv
+        $this->getCsv();
         print_r("Adding Expert products" . "\n");
         $row = 0;
         foreach ($this->loadCsv->loadCsv('/Expert/Expert.csv',";") as $data) {
@@ -169,6 +172,21 @@ class Expert extends Command
 
     }
 
+    private function getCsv(){
+        $ch = curl_init("https://experteletro.pt/webservice.php?key=42b91123-75ba-11ea-8026-a4bf011b03ee&pass=bWlndWVs");
+        $fp = fopen($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/Expert.csv", 'wb');
+        curl_setopt($ch, CURLOPT_FILE, $fp);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,0);
+        curl_setopt($ch,CURLOPT_TIMEOUT,0);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        if (curl_exec($ch)){
+            curl_close($ch);
+            fclose($fp);
+        }else {
+            unlink($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/Expert.csv");
+        }
+    }
     private function setCategories(){
 
     }
