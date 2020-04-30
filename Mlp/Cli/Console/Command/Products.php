@@ -84,10 +84,12 @@ class Products extends Command
 
     private $loadCsv;
 
+    private $sourceItemRepositoryI;
     
 
     private $categoryManager;
     public function __construct(
+                                \Magento\InventoryApi\Api\SourceItemRepositoryInterface $sourceItemRepositoryI,
                                 \Magento\Framework\App\ResourceConnection $resourceConnection,
                                 \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory,
                                 \Mlp\Cli\Model\ProdutoInterno $productoInterno,
@@ -117,6 +119,7 @@ class Products extends Command
         $this->directory = $directory;
         $this->loadCsv = $loadCsv;
         $this->categoryManager = $categoryManager;
+        $this->sourceItemRepositoryI = $sourceItemRepositoryI;
         parent::__construct();
     }
 
@@ -262,5 +265,25 @@ class Products extends Command
     
     private function changeCategories($oldCat,$newCat){
         $this->categoryManager->changeProductCategories($oldCat,$newCat);
+    }
+
+    private function disableOutOfStockProducts(){
+        $searchCriteria = $this->searchCriteriaBuilder->addFilter('status',1)->create();
+        $products = $this->productRepository->getList($searchCriteria);
+        foreach ($products as $product) {
+            $searchC = $this->searchCriteriaBuilder->addFilter('sku',$product->getSku()) -> create();
+            $sourceItems = $this -> sourceItemRepositoryI->getList($searchC) -> getItems();
+            foreach ($sourceItems as $item) {
+                print_r("sku: ".$product->getSku()." - source: ".$item->getSourceCode(). " - Quantity: ".$item->getQuantity()."\n");
+                if ($item->getQuantity() != 0){
+                    $product->setStatus(1);
+                    $this->productRepository->save($product);
+                    break;
+                }
+            }
+            //Se não saiu no break é porque os stocks estão todos a 0 podemos fazer disabled para remover mais tarde
+            $product->setStatus(2);
+            $this->productRepository->save($product);
+        }
     }
 }

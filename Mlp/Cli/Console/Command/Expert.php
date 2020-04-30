@@ -227,7 +227,7 @@ class Expert extends Command
         
         if (preg_match("/Indisponivel/i",$data[16]) == 1){
             $stock = 0;
-            $status = 2;
+            $status = 1;
         }else {
             $stock = 1;
             $status = 1;
