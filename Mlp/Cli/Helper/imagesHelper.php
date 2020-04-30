@@ -24,8 +24,8 @@ class imagesHelper
                 $fp = fopen($this->directory->getRoot()."/pub/media/catalog/product/" . $sku. '_e.jpeg', 'wb');
                 curl_setopt($ch, CURLOPT_FILE, $fp);
                 curl_setopt($ch, CURLOPT_HEADER, 0);
-                curl_setopt($ch,CURLOPT_TIMEOUT,2);
-                curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,1);
+                curl_setopt($ch,CURLOPT_TIMEOUT,0);
+                curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,0);
                 curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
                 if (curl_exec($ch)){
                     curl_close($ch);
@@ -44,8 +44,8 @@ class imagesHelper
                 $fp = fopen($this->directory->getRoot()."/pub/media/catalog/product/" . $sku . ".jpeg", 'wb');
                 curl_setopt($ch, CURLOPT_FILE, $fp);
                 curl_setopt($ch, CURLOPT_HEADER, 0);
-                curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,1);
-                curl_setopt($ch,CURLOPT_TIMEOUT,2);
+                curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,0);
+                curl_setopt($ch,CURLOPT_TIMEOUT,0);
                 curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
                 if (curl_exec($ch)){
                     curl_close($ch);

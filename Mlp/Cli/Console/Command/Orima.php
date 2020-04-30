@@ -51,7 +51,7 @@ class Orima extends Command
         $this->loadCsv = $loadCsv;
         $this->productRepository = $productRepository;
         $this->registry = $registry;
-        
+
         parent::__construct();
     }
 
@@ -162,11 +162,6 @@ class Orima extends Command
         }
     }
 
-
-    protected function desativateProducts() {
-        
-    }
-
     private function updateInterno()
     {
 
@@ -214,7 +209,7 @@ class Orima extends Command
                         
                         if ($currentLineOrima == $orimaLines){
                             //last line, not found, Add to array
-                            $linesToRemove[] = $internoData;
+                            $linesToRemove[] = [trim($internoData[8]),trim($internoData[0])];
                         }
                         $currentLineOrima++;
                     }
@@ -225,10 +220,11 @@ class Orima extends Command
             fclose($handleInterno);
         }
 
+        print_r($linesToRemove);
         foreach($linesToRemove as $data){
             try {
-                print_r($data[8]."\n");
-                $this->productRepository->deleteById(trim($data[8]));
+                print_r($data[0]."\n");
+                $this->productRepository->deleteById(trim($data[0]));
             }catch(Exception $e) {
                 print_r("Delete Exception: ".$e->getMessage());
             }
@@ -243,20 +239,20 @@ class Orima extends Command
     private function setOrimaData($data,$logger)
     {
         /*
-         * 0 - Nome
-         * 1 - ref orima
-         * 2 - preço liquido
-         * 3 - stock
-         * 4 - gama
-         * 5 - familia
-         * 6 - subfamilia
-         * 7 - marca
-         * 8 - EAN
-         * 9 - Detalhes
-         * 10 - Imagem
-         * 11 - etiqueta energetica
-         * 12 - manual de instruções
-         * 13 - esquema tecnico
+         * 0 A- Nome
+         * 1 B- ref orima
+         * 2 C- preço liquido
+         * 3 d- stock
+         * 4 e- gama
+         * 5 f- familia
+         * 6 g- subfamilia
+         * 7 h- marca
+         * 8 i- EAN
+         * 9 j- Detalhes
+         * 10 k- Imagem
+         * 11 l- etiqueta energetica
+         * 12 m- manual de instruções
+         * 13 n- esquema tecnico
          */
         
         $functionTim = function ($data){
