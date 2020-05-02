@@ -39,6 +39,8 @@ class Products extends Command
     const CHANGE_PRODUCTS_CATEGORIES = 'change-products-categories';
 
     const DELETE_PRODUCTS_BY_CATEGORY_ID = 'delete-products-by-category-id';
+
+    const DISABLE_PRODUCTS_WITHOUT_STOCK = 'disable-products-without-stock';
     /**
      * @var ProductRepositoryInterface
      */
@@ -151,6 +153,12 @@ class Products extends Command
                     '-d',
                     InputOption::VALUE_NONE,
                     'Delete products by category id'
+                ),
+                new InputOption(
+                    self::DISABLE_PRODUCTS_WITHOUT_STOCK,
+                    '-D',
+                    InputOption::VALUE_NONE,
+                    'Disable products without stock'
                 )
             ])
             ->addArgument('oldManufacturer', InputArgument::OPTIONAL, 'oldManufacturer')
@@ -187,6 +195,11 @@ class Products extends Command
         if($deleteProductsByCategoryId) {
             print_r("delete");
             $this->categoryManager->deleteProductsByCategoryId($oldCat);
+        }
+        $disableProductsWithoutStock = $input->getOption(self::DISABLE_PRODUCTS_WITHOUT_STOCK);
+        if ($disableProductsWithoutStock) {
+            print_r("Disabling products without stock");
+            $this->disableOutOfStockProducts();
         }
         else {
             throw new \InvalidArgumentException('Option  ELSE');
@@ -271,6 +284,7 @@ class Products extends Command
         $searchCriteria = $this->searchCriteriaBuilder->addFilter('status',1)->create();
         $products = $this->productRepository->getList($searchCriteria);
         foreach ($products as $product) {
+            //print_r($product->getSku());
             $searchC = $this->searchCriteriaBuilder->addFilter('sku',$product->getSku()) -> create();
             $sourceItems = $this -> sourceItemRepositoryI->getList($searchC) -> getItems();
             foreach ($sourceItems as $item) {
