@@ -223,8 +223,11 @@ class Orima extends Command
         print_r($linesToRemove);
         foreach($linesToRemove as $data){
             try {
+                //Vamos por o produto com stock Orima a 0, se tiver a 0 em todos os fornecedores podemos apagar (Cron Semanal por exemplo)
                 print_r($data[0]."\n");
-                $this->productRepository->deleteById(trim($data[0]));
+                $this->produtoInterno->sku = $data[0];
+                $this->produtoInterno->stock = 0;
+                $this->produtoInterno->setStock('orima');
             }catch(Exception $e) {
                 print_r("Delete Exception: ".$e->getMessage());
             }

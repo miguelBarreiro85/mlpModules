@@ -281,10 +281,12 @@ class Products extends Command
     }
 
     private function disableOutOfStockProducts(){
-        $searchCriteria = $this->searchCriteriaBuilder->addFilter('status',1)->create();
-        $products = $this->productRepository->getList($searchCriteria);
+        $searchCriteria = $this->searchCriteriaBuilder->addFilter('status',1,'in')->create();
+        $products = $this->productRepository->getList($searchCriteria)->getItems();
+        print_r("Products: ".count($products));
         foreach ($products as $product) {
             //print_r($product->getSku());
+            print_r($product->getSku()."\n");
             $searchC = $this->searchCriteriaBuilder->addFilter('sku',$product->getSku()) -> create();
             $sourceItems = $this -> sourceItemRepositoryI->getList($searchC) -> getItems();
             foreach ($sourceItems as $item) {
