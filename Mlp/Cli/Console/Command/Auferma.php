@@ -32,6 +32,7 @@ class Auferma extends Command
     const ADD_PRODUCTS = 'add-products';
     const ADD_PRODUCTS_XLSX = 'add-products-xlsx';
     const UPDATE_STOCKS_XLSX = 'update-stocks-xlsx';
+    const GET_PRODUCT_IMAGES = 'get-product-images';
 
     const AUFERMA_INTERNO_XLSX = '/app/code/Mlp/Cli/Csv/aufermaInterno.xlsx';
     const AUFERMA_STOCK_XLSX = '/app/code/Mlp/Cli/Csv/aufermaStock.xlsx';
@@ -85,6 +86,12 @@ class Auferma extends Command
                     '-ux',
                     InputOption::VALUE_NONE,
                     'Update Stocks and State (Active or inactive) on XLSX and Csv' 
+                ),
+                new InputOption(
+                    self::GET_PRODUCT_IMAGES,
+                    '-I',
+                    InputOption::VALUE_NONE,
+                    'GET PRODUCT IMAGES' 
                 )
             ])->addArgument('categories', InputArgument::OPTIONAL, 'Categories?');;
         parent::configure();
@@ -95,12 +102,16 @@ class Auferma extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $writer = new \Zend\Log\Writer\Stream($this->directory->getRoot().'/var/log/Auferma.log');
+        $logger = new \Zend\Log\Logger();
+        $logger->addWriter($writer);
+
         $this->state->setAreaCode(\Magento\Framework\App\Area::AREA_GLOBAL);
         $categories = $input->getArgument('categories');
         $addProducts = $input->getOption(self::ADD_PRODUCTS);
         if ($addProducts) {
             print_r("Adding products");
-            $this->addAufermaProducts($categories);
+            $this->addAufermaProducts($logger, $categories);
             print_r("finished");
             exit;
         }
@@ -117,15 +128,17 @@ class Auferma extends Command
             print_r("finished");
             exit;
         }
+        $getProductImages = $input->getOption(self::GET_PRODUCT_IMAGES);
+        if($getProductImages) {
+            $this->getProductImages($logger);
+        }
         else {
             throw new \InvalidArgumentException('Option is missing.');
         }
     }
 
-    protected function addAufermaProducts($categoriesFilter) {
-        $writer = new \Zend\Log\Writer\Stream($this->directory->getRoot().'/var/log/Auferma.log');
-        $logger = new \Zend\Log\Logger();
-        $logger->addWriter($writer);
+    protected function addAufermaProducts($logger,$categoriesFilter) {
+
         $row = 0;
         foreach ($this->loadCsv->loadCsv('/Auferma/aufermaInterno.csv',",") as $data) {
             $row++;
@@ -321,4 +334,35 @@ class Auferma extends Command
 
     }
 
+    private function getProductImages($logger) {
+        $fileUrl = $this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Auferma/aufermaInterno.csv";
+        if (($handleCsv = fopen($fileUrl, "r")) !== FALSE) {
+            fgetcsv($handleCsv, 5000, ",");
+            while (($data = fgetcsv($handleCsv, 5000, ",")) !== FALSE) {
+                if (preg_match("/Beko (.*)$/",$data[1],$codeMatches) == 1){
+                    $code = str_replace(" ","",$codeMatches[1]);
+                    $jsonProduct = $this->getImage($code);
+                    $product = json_decode($jsonProduct,true);
+                    try{
+                        print_r($product["data"]["Image"]["HighPic"]."\n");
+                    }catch(\Exception $e) {
+                        print_r($e->getMessage());
+                    }
+                    
+                    
+                }
+            }
+        }
+    }
+
+    private function getImage($code) {
+        $ch = curl_init("https://live.icecat.biz/api/?UserName=mlpbarreiro&Language=en&Brand=beko&ProductCode=".$code);            
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch,CURLOPT_TIMEOUT,0);
+        curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,0);
+        $jsonProduct = curl_exec($ch);
+        curl_close($ch);
+        return $jsonProduct;
+    }
 }
