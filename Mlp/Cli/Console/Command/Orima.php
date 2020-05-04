@@ -164,10 +164,6 @@ class Orima extends Command
 
     private function updateInterno()
     {
-
-        $this->registry->unregister('isSecureArea');
-        $this->registry->register('isSecureArea', true);
-
         $orimaLines = 0;
         $internoLines = 0;
         $fileUrlOrima = $this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Orima/Orima.csv";
@@ -195,12 +191,15 @@ class Orima extends Command
         $currentLineInterno = 0;
 
         if (($handleInterno = fopen($fileUrlInterno, "r")) !== FALSE) {
+            //ignora a 1ª linha
+            fgetcsv($handleInterno, 5000, ";");
             while (($internoData = fgetcsv($handleInterno, 5000, ";")) !== FALSE) {
                 if (strlen(trim($internoData[8])) != 13) {
                     continue;
                 }
                 $currentLineOrima = 1;
                 if (($handleOrima = fopen($fileUrlOrima, "r")) !== FALSE) {
+                    fgetcsv($handleOrima, 5000, ";");
                     while (($orimaData = fgetcsv($handleOrima, 5000, ";")) !== FALSE) {
                         print_r($internoData[8]." - Line interno: ".$currentLineInterno." - line: ".$currentLineOrima." - ".$orimaData[8]."\n");
                         if (strcmp($internoData[8],$orimaData[8]) == 0) {
@@ -228,7 +227,7 @@ class Orima extends Command
                 $this->produtoInterno->sku = $data[0];
                 $this->produtoInterno->stock = 0;
                 $this->produtoInterno->setStock('orima');
-            }catch(Exception $e) {
+            }catch(\Exception $e) {
                 print_r("Delete Exception: ".$e->getMessage());
             }
         }

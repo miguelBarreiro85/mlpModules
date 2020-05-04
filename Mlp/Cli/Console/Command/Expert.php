@@ -29,6 +29,7 @@ class Expert extends Command
     const ADD_PRODUCTS = 'add-products';
     const UPDATE_STOCKS = 'update-stocks';
     const ADD_IMAGES = 'add-images';
+    const UPDATE_REMOVED_PRODUCTS_STOCK = 'update-removed-products-stock';
 
     private $directory;
     private $categoryManager;
@@ -84,6 +85,12 @@ class Expert extends Command
                     '-i',
                     InputOption::VALUE_NONE,
                     'Add Images'
+                ),
+                new InputOption(
+                    self::UPDATE_REMOVED_PRODUCTS_STOCK,
+                    '-U',
+                    InputOption::VALUE_NONE,
+                    'Update removed products stock'
                 )
             ])->addArgument('categories', InputArgument::OPTIONAL, 'Categories?');
         parent::configure();
@@ -94,6 +101,10 @@ class Expert extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $writer = new \Zend\Log\Writer\Stream($this->directory->getRoot().'/var/log/Expert.log');
+        $logger = new \Zend\Log\Logger();
+        $logger->addWriter($writer);
+
         $this->state->setAreaCode(\Magento\Framework\App\Area::AREA_GLOBAL);
         $categories = $input->getArgument('categories');
         $filterProducts = $input->getOption(self::FILTER_PRODUCTS);
@@ -102,7 +113,7 @@ class Expert extends Command
         }
         $addProducts = $input->getOption(self::ADD_PRODUCTS);
         if ($addProducts) {
-            $this->addProducts($categories);
+            $this->addProducts($logger, $categories);
         }
         $updateStocks = $input->getOption(self::UPDATE_STOCKS);
         if ($updateStocks){
@@ -111,6 +122,10 @@ class Expert extends Command
         $addImages = $input->getOption(self::ADD_IMAGES);
         if ($addImages) {
             $this->addImages($categories);
+        }
+        $updateRemovedProductsStock = $input->getOption(self::UPDATE_REMOVED_PRODUCTS_STOCK);
+        if ($updateRemovedProductsStock) {
+            $this->updateRemovedProductsStock($logger);
         }
         else {
             throw new \InvalidArgumentException('Option ' . self::FILTER_PRODUCTS . ' is missing.');
@@ -121,13 +136,9 @@ class Expert extends Command
 
     }
 
-    protected function addProducts($categoriesFilter){
-        $writer = new \Zend\Log\Writer\Stream($this->directory->getRoot().'/var/log/Expert.log');
-        $logger = new \Zend\Log\Logger();
-        $logger->addWriter($writer);
-
-        //Download Csv
-        $this->getCsv();
+    protected function addProducts($logger, $categoriesFilter = null){
+       
+        
         print_r("Adding Expert products" . "\n");
         $row = 0;
         foreach ($this->loadCsv->loadCsv('/Expert/Expert.csv',";") as $data) {
@@ -172,20 +183,28 @@ class Expert extends Command
 
     }
 
-    private function getCsv(){
-        $ch = curl_init("https://experteletro.pt/webservice.php?key=42b91123-75ba-11ea-8026-a4bf011b03ee&pass=bWlndWVs");
-        $fp = fopen($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/Expert.csv", 'wb');
-        curl_setopt($ch, CURLOPT_FILE, $fp);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,0);
-        curl_setopt($ch,CURLOPT_TIMEOUT,0);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        if (curl_exec($ch)){
-            curl_close($ch);
-            fclose($fp);
+    private function getCsv($logger){
+    
+        copy($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertNovo.csv",$this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/OldCsv/ExpertVelho".date("Y-m-d").".csv");
+        if (rename($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertNovo.csv",$this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertVelho.csv"))
+        {
+            $ch = curl_init("https://experteletro.pt/webservice.php?key=42b91123-75ba-11ea-8026-a4bf011b03ee&pass=bWlndWVs");
+            $fp = fopen($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertNovo.csv", 'wb');
+            curl_setopt($ch, CURLOPT_FILE, $fp);
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+            curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,0);
+            curl_setopt($ch,CURLOPT_TIMEOUT,0);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            if (curl_exec($ch)){
+                curl_close($ch);
+                fclose($fp);
+            }else {
+                unlink($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertNovo.csv");
+            }
         }else {
-            unlink($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/Expert.csv");
+            $logger->info("Could not Rename file");
         }
+        
     }
     private function setCategories(){
 
@@ -279,6 +298,83 @@ class Expert extends Command
             return 0;
         }
         return 1;
+    }
+
+    private function updateRemovedProductsStock($logger)
+    {
+        // Coloca o stock da expert a 0 dos productos que eles removeram (fora de gama etc...)
+        //Download Csv
+        $this->getCsv($logger);
+        $novoLines = 0;
+        $velhoLines = 0;
+        $fileUrlNovo = $this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertNovo.csv";
+        $fileUrlVelho = $this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertVelho.csv";
+      
+        if (($handle = fopen($fileUrlNovo, "r")) !== FALSE) {
+            while (($data = fgetcsv($handle, 5000, ";")) !== FALSE) {
+                $novoLines++;
+            }
+            fclose($handle);
+        }
+
+        if (($handle = fopen($fileUrlVelho, "r")) !== FALSE) {
+            while (($data = fgetcsv($handle, 5000, ";")) !== FALSE) {
+                $velhoLines++;
+            }
+            fclose($handle);
+        }
+
+        print_r("Numero de linhas Novo: ".$novoLines."\n");
+        print_r("Numero de linhas Velho: ".$velhoLines."\n");
+        
+        
+        $linesToRemove = [];
+        $currentLineVelho = 0;
+
+        if (($handleVelho = fopen($fileUrlVelho, "r")) !== FALSE) {
+            //ignorar a 1ª linha,
+            fgetcsv($handleVelho, 5000, ";");
+            while (($velhoData = fgetcsv($handleVelho, 5000, ";")) !== FALSE) {
+                if (strlen(trim($velhoData[1])) != 13) {
+                    $currentLineVelho++;
+                    continue;
+                }
+                $currentLineNovo = 0;
+
+                if (($handleNovo = fopen($fileUrlNovo, "r")) !== FALSE) {
+                    //ignorar a 1ª linha,
+                    fgetcsv($handleNovo, 5000, ";");
+                    while (($novoData = fgetcsv($handleNovo, 5000, ";")) !== FALSE) {
+                        print_r($velhoData[1]." - Line Velho: ".$currentLineVelho." - line: ".$currentLineNovo." - ".$novoData[1]."\n");
+                        if (strcmp($velhoData[1],$novoData[1]) == 0) {
+                            break;
+                        }
+                        
+                        if ($currentLineNovo == $novoLines){
+                            //last line, not found, Add to array
+                            $linesToRemove[] = [trim($velhoData[1]),trim($velhoData[5])];
+                        }
+                        $currentLineNovo++;
+                    }
+                    fclose($handleNovo);
+                }
+                $currentLineVelho++;
+            }
+            fclose($handleVelho);
+        }
+
+        print_r($linesToRemove);
+        foreach($linesToRemove as $data){
+            try {
+                //Vamos por o produto com stock Orima a 0, se tiver a 0 em todos os fornecedores podemos apagar (Cron Semanal por exemplo)
+                print_r($data[0]."\n");
+                $this->produtoInterno->sku = $data[0];
+                $this->produtoInterno->stock = 0;
+                $this->produtoInterno->setStock('expert');
+            }catch(\Exception $e) {
+                print_r("Delete Exception: ".$e->getMessage());
+            }
+        }
     }
 
     private function addImages($categoriesFilter) 
