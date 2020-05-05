@@ -18,6 +18,7 @@ class imagesHelper
     }
 
     public function getImages($sku, $img = null, $etiqueta = null){
+        print_r($sku." - ".$img."\n");
         try {
             if (preg_match('/^http/', (string)$etiqueta) == 1) {
                 $ch = curl_init($etiqueta);

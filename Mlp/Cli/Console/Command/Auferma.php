@@ -17,7 +17,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Magento\Framework\Filesystem\DirectoryList;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Mlp\Cli\Helper\Auferma\AufermaCategories as aufermaCategories;
-
+use Mlp\Cli\Helper\imagesHelper as imagesHelper;
 
 /**
  * Copyright © 2016 Magento. All rights reserved.
@@ -45,9 +45,10 @@ class Auferma extends Command
     private $state;
     private $produtoInterno;
     private $loadCsv;
+    private $imagesHelper;
 
-
-    public function __construct(DirectoryList $directory,
+    public function __construct(imagesHelper $imagesHelper,
+                                DirectoryList $directory,
                                 \Mlp\Cli\Helper\Category $categoryManager,
                                 \Magento\Framework\App\State $state,
                                 \Mlp\Cli\Model\ProdutoInterno $productoInterno,
@@ -61,6 +62,8 @@ class Auferma extends Command
         $this -> state = $state;
         $this -> produtoInterno = $productoInterno;
         $this->loadCsv = $loadCsv;
+        $this->imagesHelper = $imagesHelper;
+
         parent ::__construct();
     }
 
@@ -326,36 +329,40 @@ class Auferma extends Command
         $this->produtoInterno->weight = (int)$data[4];
         $this->produtoInterno->price = (int)trim($data[3]);
         $this->produtoInterno->status = $status;
-        $this->produtoInterno->image = $data[10];
-        $this->produtoInterno->classeEnergetica = null;
+        [$this->produtoInterno->image, $this->produtoInterno->classeEnergetica] = $this->getProductImages($logger,$data[1]);
         $this->produtoInterno->imageEnergetica = null;
         $this->produtoInterno->stock = $stock;
 
 
     }
 
-    private function getProductImages($logger) {
-        $fileUrl = $this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Auferma/aufermaInterno.csv";
-        if (($handleCsv = fopen($fileUrl, "r")) !== FALSE) {
-            fgetcsv($handleCsv, 5000, ",");
-            while (($data = fgetcsv($handleCsv, 5000, ",")) !== FALSE) {
-                if (preg_match("/Beko (.*)$/",$data[1],$codeMatches) == 1){
-                    $code = str_replace(" ","",$codeMatches[1]);
-                    $jsonProduct = $this->getImage($code);
-                    $product = json_decode($jsonProduct,true);
-                    try{
-                        print_r($product["data"]["Image"]["HighPic"]."\n");
-                    }catch(\Exception $e) {
-                        print_r($e->getMessage());
+    private function getProductImages($logger, $name) {
+        if (preg_match("/Beko (.*)$/",$name,$codeMatches) == 1){
+            //Por cada linha do csv auferma vamos tentar extrair o codigo que é usado no icecat
+            $code = str_replace(" ","",$codeMatches[1]);
+            $jsonProduct = $this->getImageUrl($code);
+            $product = json_decode($jsonProduct,true);
+            try{
+                $imageUrl = $product["data"]["Image"]["HighPic"];
+                foreach($product["data"]["Multimedia"] as $multimedia) {
+                    if (preg_match("/EU Energy Label/i",$multimedia["Type"]) == 1) {
+                        $energyLabelUrl = $multimedia["URL"];
+                        break;
                     }
-                    
-                    
                 }
+                return [$imageUrl, $energyLabelUrl];
+            }catch(\Exception $e) {
+                print_r($e->getMessage());
+                $logger->info("Get Images Url Error: ".$name);
+                return [null, null];
             }
+            
+            
         }
+         
     }
 
-    private function getImage($code) {
+    private function getImageUrl($code) {
         $ch = curl_init("https://live.icecat.biz/api/?UserName=mlpbarreiro&Language=en&Brand=beko&ProductCode=".$code);            
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
