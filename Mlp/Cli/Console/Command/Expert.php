@@ -261,7 +261,7 @@ class Expert extends Command
         }
         $this->produtoInterno->stock = $stock;
         $this->produtoInterno->status = $status;
-        $this->produtoInterno->price = (int)trim($data[9]);
+        $this->produtoInterno->price = $this->produtoInterno->getPrice((int)trim($data[9]));
         
         try {
             print_r(" - setting stock ");

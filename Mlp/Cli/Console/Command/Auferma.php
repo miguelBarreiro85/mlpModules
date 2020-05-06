@@ -3,7 +3,7 @@
 
 namespace Mlp\Cli\Console\Command;
 
-
+use Amazon\Core\Logger\Logger;
 use PhpOffice\PhpSpreadsheet\Reader\Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -131,10 +131,6 @@ class Auferma extends Command
             print_r("finished");
             exit;
         }
-        $getProductImages = $input->getOption(self::GET_PRODUCT_IMAGES);
-        if($getProductImages) {
-            $this->getProductImages($logger);
-        }
         else {
             throw new \InvalidArgumentException('Option is missing.');
         }
@@ -156,6 +152,10 @@ class Auferma extends Command
             try {
                 $product = $this -> productRepository -> get($this->produtoInterno->sku, true, null, true);
             } catch (NoSuchEntityException $exception) {
+                [$this->produtoInterno->image, $this->produtoInterno->imageEnergetica, 
+                    $this->produtoInterno->height, $this->produtoInterno->width, $this->produtoInterno->length, 
+                    $this->produtoInterno->weight, $this->produtoInterno->classeEnergetica] = $this->getProductInfo($logger,trim($data[1]));                
+                
                 $this->produtoInterno -> add_product($logger, $this->produtoInterno->sku);
                 $this->produtoInterno->setStock('auferma');
                 print_r("\n");
@@ -303,7 +303,7 @@ class Auferma extends Command
 
         if (preg_match("/sim/i",$data[11]) == 1){
             $stock = 1;
-            $status = 2;
+            $status = 1;
         }else {
             $stock = 0;
             $status = 1;
@@ -326,35 +326,77 @@ class Auferma extends Command
         $this->produtoInterno->length = null;
         $this->produtoInterno->width = null;
         $this->produtoInterno->height = null;
-        $this->produtoInterno->weight = (int)$data[4];
+        $this->produtoInterno->classeEnergetica = null;
+        $this->produtoInterno->weight = null;
         $this->produtoInterno->price = (int)trim($data[3]);
         $this->produtoInterno->status = $status;
-        [$this->produtoInterno->image, $this->produtoInterno->classeEnergetica] = $this->getProductImages($logger,$data[1]);
-        $this->produtoInterno->imageEnergetica = null;
         $this->produtoInterno->stock = $stock;
 
 
     }
 
-    private function getProductImages($logger, $name) {
+    private function getProductInfo($logger, $name) {
         if (preg_match("/Beko (.*)$/",$name,$codeMatches) == 1){
             //Por cada linha do csv auferma vamos tentar extrair o codigo que é usado no icecat
             $code = str_replace(" ","",$codeMatches[1]);
             $jsonProduct = $this->getImageUrl($code);
             $product = json_decode($jsonProduct,true);
+
+            $imageUrl = $energyLabelUrl = $altura = $largura = $comprimento = $peso = $classeEnergetica = null;
             try{
-                $imageUrl = $product["data"]["Image"]["HighPic"];
+                if($product["data"]["Image"]["HighPic"]){
+                    $imageUrl = $product["data"]["Image"]["HighPic"];
+                }else{
+                    print_r(" - Sem imagem - ");
+                    $logger->info("Sem imagem: ".$name);
+                }
                 foreach($product["data"]["Multimedia"] as $multimedia) {
                     if (preg_match("/EU Energy Label/i",$multimedia["Type"]) == 1) {
                         $energyLabelUrl = $multimedia["URL"];
                         break;
                     }
                 }
-                return [$imageUrl, $energyLabelUrl];
+                foreach($product["data"]["FeaturesGroups"] as $featureGroup){
+                    if((int)$featureGroup["ID"] == 6747) {
+                        foreach($featureGroup["Features"] as $feature){
+                            if ((int)$feature["Feature"]["ID"] == 1464) {
+                                //altura
+                                $altura = $feature["Value"];
+                                continue;
+                            }
+                            if ((int)$feature["Feature"]["ID"] == 1650) {
+                                //largura
+                                $largura = $feature["Value"];
+                                continue;
+                            }
+                            if ((int)$feature["Feature"]["ID"] == 1649) {
+                                //comprimento
+                                $comprimento = $feature["Value"];
+                                continue;
+                            }
+                            if ((int)$feature["Feature"]["ID"] == 94) {
+                                //peso
+                                $peso = $feature["Value"];
+                                continue;
+                            }
+                        }
+                    }
+                    if ((int)$featureGroup["ID"] == 6755) {
+                        //classe energética
+                        foreach($featureGroup["Features"] as $feature){
+                            if ($feature["Feature"]["ID"] == 2705)
+                            $classeEnergetica = $feature["Value"];
+                            continue 2;
+                        }
+                        
+                    }
+                    
+                }
+                return [$imageUrl, $energyLabelUrl, $altura, $largura, $comprimento, $peso, $classeEnergetica];
             }catch(\Exception $e) {
                 print_r($e->getMessage());
                 $logger->info("Get Images Url Error: ".$name);
-                return [null, null];
+                return [$imageUrl, $energyLabelUrl, $altura, $largura, $comprimento, $peso, $classeEnergetica];
             }
             
             

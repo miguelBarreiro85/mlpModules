@@ -155,9 +155,9 @@ class OrimaCategories {
 
             case 'FRIO':
                 $gama = Cat::GRANDES_DOMESTICOS;
-                $familia = Cat::FRIO;
-                switch ($familia) {
+                switch ($familia) {                    
                     case 'COMBINADOS':
+                        $familia = Cat::FRIO;
                         $result = preg_match("/NF/", $subFamilia);
                         if ($result == 1) {
                             $subFamilia = Cat::COMBINADOS_NO_FROST;
@@ -166,10 +166,12 @@ class OrimaCategories {
                         }
                         return ([$gama, Cat::FRIGORIFICOS_COMBINADOS, $subFamilia]);
                     case 'FRIGORIFICOS 1 PORTA':
+                        $familia = Cat::FRIO;
                         $subFamilia = Cat::FRIGORIF_1_PORTA;
                         return ([$gama, $familia, $subFamilia]);
 
                     case 'FRIGORIFICOS 2 PORTAS':
+                        $familia = Cat::FRIO;
                         $result = preg_match("/NF/", $subFamilia);
                         if ($result == 1) {
                             $subFamilia = Cat::FRIGORIF_2P_NO_FROST;
@@ -179,15 +181,19 @@ class OrimaCategories {
                         return ([$gama, $familia, $subFamilia]);
 
                     case 'FRIGORIFICOS SIDE BY SIDE':
+                        $familia = Cat::FRIO;
                         $subFamilia = Cat::FRIGORIF_AMERICANOS;
                         return ([$gama, $familia, $subFamilia]);
                     case 'CONGELADORES HORIZONTAIS':
+                        $familia = Cat::FRIO;
                         $subFamilia = Cat::CONGELADORES_HORIZONTAIS;
                         return ([$gama, $familia, $subFamilia]);
                     case 'CONGELADORES VERTICAIS':
+                        $familia = Cat::FRIO;
                         $subFamilia = Cat::CONGELADORES_VERTICAIS;
                         return ([$gama, $familia, $subFamilia]);
                     case 'FRIGORIFICOS MINI-BAR':
+                        $familia = Cat::FRIO;
                         $subFamilia = Cat::FRIGOBAR;
                         return ([$gama, $familia, $subFamilia]);
                     default:

@@ -271,7 +271,7 @@ class Orima extends Command
             return 0;
         }
         
-        $this->produtoInterno->price = (int)trim($data[2]) * 1.23 * 1.20;
+        $this->produtoInterno->price = $this->produtoInterno->getPrice((int)$data[2]);
         $this->produtoInterno->stock = (int)filter_var($data[3], FILTER_SANITIZE_NUMBER_INT);
        
         print_r(" - setting stock ");

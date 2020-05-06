@@ -93,6 +93,12 @@ class Sorefoz extends Command
                     '-i',
                     InputOption::VALUE_NONE,
                     'Add images to products'
+                ),
+                new InputOption(
+                    self::DISABLE_PRODUCTS,
+                    '-d',
+                    InputOption::VALUE_NONE,
+                    'Add images to products'
                 )
             ])->addArgument('categories', InputArgument::OPTIONAL, 'Categories?');
         parent::configure();
@@ -193,36 +199,31 @@ class Sorefoz extends Command
                 $row = 0;
                 if (($handle = fopen($this->directory->getRoot()."/app/code/Mlp/Cli/Console/Command/tot_jlcb_utf.csv", "r")) !== FALSE) {
                     print_r("abri ficheiro\n");
+                    fgetcsv($handle, 4000, ";");
                     while (!feof($handle)) {
                         if (($data = fgetcsv($handle, 4000, ";")) !== FALSE) {
                             $row++;
-                            if ($row == 1) {
-                                continue;
-                            }
                             print_r($row . "\n");
-                            if (strcmp($data[5], "ACESSÓRIOS E BATERIAS") == 0 || strcmp($data[7], "MAT. PROMOCIONAL / PUBLICIDADE") == 0
-                                || strcmp($data[7], "FERRAMENTAS") == 0 || strcmp(trim($data[16]), "sim") != 0) {
-                                continue;
-                            }
                             $sku = trim($data[18]);
                             if (strlen($sku) == 13) {
-                                try {
-                                    $product = $this->productRepository->get($sku, true, null, true);
-                                    if ($product->getStatus() != 2) {
-                                        $product->setStatus(Status::STATUS_DISABLED);
-                                        try {
-                                            $this->productRepository->save($product);
-                                        } catch (\Exception $ex) {
-                                            print_r("save: " . $ex->getMessage() . "\n");
+                                if (preg_match("/sim/i",$data[16]) == 1) {
+                                    try {
+                                        $product = $this->productRepository->get($sku, true, null, true);
+                                        if ($product->getStatus() != 2) {
+                                            $product->setStatus(Status::STATUS_DISABLED);
+                                            try {
+                                                $this->productRepository->save($product);
+                                            } catch (\Exception $ex) {
+                                                print_r("save: " . $ex->getMessage() . "\n");
+                                            }
+                                            continue;
+                                        } else {
+                                            continue;
                                         }
-                                        continue;
-                                    } else {
+                                    } catch (NoSuchEntityException $exception) {
                                         continue;
                                     }
-                                } catch (NoSuchEntityException $exception) {
-                                    continue;
                                 }
-
                             }
                         }
                     }
@@ -274,24 +275,24 @@ class Sorefoz extends Command
         }
         if (preg_match("/sim/i",$data[16]) == 1) {
             $status = 2;
+            return 0;
         }else{
             $status = 1;
         }
-
         
-        $this->produtoInterno->stock = $stock;
         $this->produtoInterno->status = $status;
+
+
+        $this->produtoInterno->stock = $stock;
         $this->produtoInterno->price = (int)trim($data[11]);
 
         print_r(" - setting stock ");
         $this->produtoInterno->setStock("sorefoz");
        
         if($this->produtoInterno->price == 0){
+            //Se o preço for 0 desativar produto e ver o que se passa
             $logger->info(Cat::PRECO_ZERO.$this->produtoInterno->sku);
-            return  0;
-        }
-        if ($this->produtoInterno->stock == 0){
-            return 0;
+            $this->produtoInterno->status = 2;
         }
 
         $this->produtoInterno->name = $data[1];
@@ -315,7 +316,7 @@ class Sorefoz extends Command
         $this->produtoInterno->width = (int)$data[21];
         $this->produtoInterno->height = (int)$data[22];
         $this->produtoInterno->weight = (int)$data[19];
-        $this->produtoInterno->price = (int)str_replace(".", "", $data[12]) * 1.23 * 1.30;
+        $this->produtoInterno->price = $this->produtoInterno->getPrice(str_replace(".", "", $data[12]));
         $this->produtoInterno->status = $status;
         $this->produtoInterno->image = $data[24];
         $this->produtoInterno->classeEnergetica = $data[25];
@@ -325,6 +326,7 @@ class Sorefoz extends Command
         
     }
 
+    
     private function addImages($categoriesFilter) 
     {
 

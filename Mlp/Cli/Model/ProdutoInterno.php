@@ -157,9 +157,9 @@ class ProdutoInterno
             $product->setCustomAttribute('manufacturer', $optionId);
             $logger->info("verificar manufacturer: ".$this->sku);
         }
-        $product->setCustomAttribute('ts_dimensions_length', $this->length / 10);
-        $product->setCustomAttribute('ts_dimensions_width', $this->width / 10);
-        $product->setCustomAttribute('ts_dimensions_height', $this->height / 10);
+        $product->setCustomAttribute('ts_dimensions_length', $this->length);
+        $product->setCustomAttribute('ts_dimensions_width', $this->width);
+        $product->setCustomAttribute('ts_dimensions_height', $this->height);
         $product->setCustomAttribute('tax_class_id', 2); //taxable goods id
         $product->setWeight($this->weight);
         $product->setWebsiteIds([1]);
@@ -324,6 +324,27 @@ class ProdutoInterno
         }
     }
 
+    public function getPrice($precoCusto) {
+        if ($precoCusto < 100) {
+            $preco = $precoCusto * 1.23 * 1.30;
+            return $preco;
+        }
+        if ($precoCusto < 250) {
+            $preco = $precoCusto * 1.23 * 1.25;
+            return $preco;
+        }
+        if ($precoCusto < 500) {
+            $preco = $precoCusto * 1.23 * 1.20;
+            return $preco;
+        }
+        if ($precoCusto < 700) {
+            $preco = $precoCusto * 1.23 * 1.15;
+            return $preco;
+        }else {
+            $preco = $precoCusto * 1.23 * 1.10;
+            return $preco;
+        }
+    }
 }
 
 
