@@ -32,6 +32,7 @@ class Sorefoz extends Command
     const ADD_PRODUCTS = 'add-products';
     const UPDATE_STOCKS = 'update-stocks';
     const ADD_IMAGES = 'add-images';
+    const DISABLE_PRODUCTS = 'disable-products';
 
     private $directory;
 
@@ -98,7 +99,7 @@ class Sorefoz extends Command
                     self::DISABLE_PRODUCTS,
                     '-d',
                     InputOption::VALUE_NONE,
-                    'Add images to products'
+                    'Disable Products'
                 )
             ])->addArgument('categories', InputArgument::OPTIONAL, 'Categories?');
         parent::configure();
@@ -126,6 +127,10 @@ class Sorefoz extends Command
         $addImages = $input->getOption(self::ADD_IMAGES);
         if($addImages) {
             $this->addImages($categories);
+        }
+        $disableProducts = $input->getOption(self::DISABLE_PRODUCTS);
+        if($disableProducts) {
+            $this->disableSorefozProducts();
         }
         else {
             throw new \InvalidArgumentException('Option  is missing.');
@@ -197,34 +202,42 @@ class Sorefoz extends Command
                 $logger->addWriter($writer);
                 print_r("Disable Sorefoz products" . "\n");
                 $row = 0;
-                if (($handle = fopen($this->directory->getRoot()."/app/code/Mlp/Cli/Console/Command/tot_jlcb_utf.csv", "r")) !== FALSE) {
+                if (($handle = fopen($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Sorefoz/tot_jlcb_utf.csv", "r")) !== FALSE) {
                     print_r("abri ficheiro\n");
                     fgetcsv($handle, 4000, ";");
                     while (!feof($handle)) {
                         if (($data = fgetcsv($handle, 4000, ";")) !== FALSE) {
                             $row++;
-                            print_r($row . "\n");
+                            print_r($row);
                             $sku = trim($data[18]);
                             if (strlen($sku) == 13) {
                                 if (preg_match("/sim/i",$data[16]) == 1) {
                                     try {
+                                        print_r(" - ".$sku);
                                         $product = $this->productRepository->get($sku, true, null, true);
                                         if ($product->getStatus() != 2) {
                                             $product->setStatus(Status::STATUS_DISABLED);
                                             try {
                                                 $this->productRepository->save($product);
+                                                print_r(" - disabled\n");
                                             } catch (\Exception $ex) {
                                                 print_r("save: " . $ex->getMessage() . "\n");
                                             }
                                             continue;
                                         } else {
+                                            print_r("\n");
                                             continue;
                                         }
                                     } catch (NoSuchEntityException $exception) {
+                                        print_r(" - não existe\n");
                                         continue;
                                     }
+                                }else {
+                                    print_r(" - Em Gama\n");
                                 }
+
                             }
+                            print_r("\n");
                         }
                     }
                 }
