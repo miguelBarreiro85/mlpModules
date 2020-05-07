@@ -346,7 +346,7 @@ class ProdutoInterno
                 return $preco;
             }
         }catch (\Exception $e){
-            print_r("Preco error: ".$preco);
+            print_r("Preco error: ".$precoCusto);
         }
         
     }
