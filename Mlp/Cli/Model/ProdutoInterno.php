@@ -7,7 +7,7 @@
  */
 
 namespace Mlp\Cli\Model;
-
+use Mlp\Cli\Helper\CategoriesConstants as Cat;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product\Media\Config;
 use Magento\Catalog\Model\Product\OptionFactory;
@@ -155,7 +155,7 @@ class ProdutoInterno
         if(strlen($this->manufacturer) != 0){
             $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', strval($this->manufacturer));
             $product->setCustomAttribute('manufacturer', $optionId);
-            $logger->info("verificar manufacturer: ".$this->sku);
+            $logger->info(Cat::ERROR_VERIFICAR_MANUFACTURER.$this->sku);
         }
         $product->setCustomAttribute('ts_dimensions_length', $this->length);
         $product->setCustomAttribute('ts_dimensions_width', $this->width);
@@ -187,7 +187,7 @@ class ProdutoInterno
             $product = $this->productRepositoryInterface->save($product);
             print_r($product->getSku()." - ");
         } catch (\Exception $exception) {
-            $logger->info(" - " . $this->sku . " Save product: Exception:  " . $exception->getMessage());
+            $logger->info(Cat::ERROR_SAVE_PRODUCT." - ".$this->sku." - ".$exception->getMessage());
             print_r("- " . $exception->getMessage() . " Save product exception" . "\n");
             return null;
         }
@@ -204,6 +204,7 @@ class ProdutoInterno
 
             return $product;
         }catch (\Exception $e){
+            logger->info(Cat::)
             print_r("add options exception - ".$e->getMessage());
         }
 

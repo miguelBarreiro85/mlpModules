@@ -288,6 +288,7 @@ class Sorefoz extends Command
         }
         if (preg_match("/sim/i",$data[16]) == 1) {
             $status = 2;
+            print_r("fora gama - ");
             return 0;
         }else{
             $status = 1;
@@ -304,7 +305,7 @@ class Sorefoz extends Command
        
         if($this->produtoInterno->price == 0){
             //Se o preço for 0 desativar produto e ver o que se passa
-            $logger->info(Cat::PRECO_ZERO.$this->produtoInterno->sku);
+            $logger->info(Cat::ERROR_PRECO_ZERO.$this->produtoInterno->sku);
             $this->produtoInterno->status = 2;
         }
 
@@ -315,6 +316,7 @@ class Sorefoz extends Command
                 ->getCategories($data[5],$data[7],$data[9],
                                 $logger,$this->produtoInterno->sku,$this->produtoInterno->name);        
         }catch (Exception $e) {
+            $logger->info(Cat::ERROR_GET_CATEGORIAS.$this->produtoInterno->sku." - ".$e->getMessage());
             return 0;
         }
         
