@@ -325,25 +325,30 @@ class ProdutoInterno
     }
 
     public function getPrice($precoCusto) {
-        if ($precoCusto < 100) {
-            $preco = $precoCusto * 1.23 * 1.30;
-            return $preco;
+        try{
+            if ($precoCusto < 100) {
+                $preco = $precoCusto * 1.23 * 1.30;
+                return $preco;
+            }
+            if ($precoCusto < 250) {
+                $preco = $precoCusto * 1.23 * 1.25;
+                return $preco;
+            }
+            if ($precoCusto < 500) {
+                $preco = $precoCusto * 1.23 * 1.20;
+                return $preco;
+            }
+            if ($precoCusto < 700) {
+                $preco = $precoCusto * 1.23 * 1.15;
+                return $preco;
+            }else {
+                $preco = $precoCusto * 1.23 * 1.10;
+                return $preco;
+            }
+        }catch (\Exception $e){
+            print_r("Preco error: ".$preco);
         }
-        if ($precoCusto < 250) {
-            $preco = $precoCusto * 1.23 * 1.25;
-            return $preco;
-        }
-        if ($precoCusto < 500) {
-            $preco = $precoCusto * 1.23 * 1.20;
-            return $preco;
-        }
-        if ($precoCusto < 700) {
-            $preco = $precoCusto * 1.23 * 1.15;
-            return $preco;
-        }else {
-            $preco = $precoCusto * 1.23 * 1.10;
-            return $preco;
-        }
+        
     }
 }
 
