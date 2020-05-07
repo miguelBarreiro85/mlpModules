@@ -141,7 +141,7 @@ class Expert extends Command
         
         print_r("Adding Expert products" . "\n");
         $row = 0;
-        foreach ($this->loadCsv->loadCsv('Expert/Expert.csv',";") as $data) {
+        foreach ($this->loadCsv->loadCsv('Expert/ExpertNovo.csv',";") as $data) {
             $row++;
             print_r($row." - ");
             try{
