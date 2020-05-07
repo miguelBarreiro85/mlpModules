@@ -204,7 +204,7 @@ class ProdutoInterno
 
             return $product;
         }catch (\Exception $e){
-            logger->info(Cat::)
+            $logger->info(Cat::ERROR_ADD_PRODUCT_OPTIONS);
             print_r("add options exception - ".$e->getMessage());
         }
 
