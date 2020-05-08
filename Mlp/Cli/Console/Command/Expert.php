@@ -259,6 +259,20 @@ class Expert extends Command
             $logger->info("Wrong Sku: ".$this->produtoInterno->sku);
             return 0;
         }
+        $this->produtoInterno->manufacturer = $data[4];
+        print_r($data[4]);
+        if (
+            !preg_match("/HISENSE/i", $data[4]) && 
+            !preg_match("/SAMSUNG/i", $data[4]) &&
+            !preg_match("/DENON/i", $data[4]) &&
+            !preg_match("/YAMAHA/i", $data[4]) &&
+            !preg_match("/FLECK/i", $data[4]) &&
+            !preg_match("/PURO/i", $data[4]) &&
+            !preg_match("/MAXELL/i", $data[4]) &&
+            !preg_match("/VIVANCO/i", $data[4]) 
+        ) {
+            return 0;
+        }
         $this->produtoInterno->stock = $stock;
         $this->produtoInterno->status = $status;
         $this->produtoInterno->price = $this->produtoInterno->getPrice((int)trim($data[9]));
@@ -279,7 +293,7 @@ class Expert extends Command
         $this->produtoInterno->name = $data[5];
         $this->produtoInterno->description = $data[10];
         $this->produtoInterno->meta_description = $data[10];
-        $this->produtoInterno->manufacturer = $data[4];
+        
         $this->produtoInterno->length = null;
         $this->produtoInterno->width = null;
         $this->produtoInterno->height = null;

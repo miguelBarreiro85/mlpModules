@@ -271,6 +271,12 @@ class Orima extends Command
             return 0;
         }
         
+        $this->produtoInterno->manufacturer = Manufacturer::getOrimaManufacturer($data[7]);
+        if (!preg_match("/ORIMA/i", $this->produtoInterno->manufacturer)) {
+            print_r($data[7]);
+            return 0;
+        }
+        
         $this->produtoInterno->price = $this->produtoInterno->getPrice((int)$data[2]);
         $this->produtoInterno->stock = (int)filter_var($data[3], FILTER_SANITIZE_NUMBER_INT);
        
@@ -289,7 +295,7 @@ class Orima extends Command
         $this->produtoInterno->subFamilia = $data[6];
         $this->produtoInterno->description = $data[9];
         $this->produtoInterno->meta_description = $data[9];
-        $this->produtoInterno->manufacturer = $data[7];
+        
         $this->produtoInterno->length = null;
         $this->produtoInterno->width = null;
         $this->produtoInterno->height = null;

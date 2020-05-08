@@ -41,6 +41,7 @@ class Products extends Command
     const DELETE_PRODUCTS_BY_CATEGORY_ID = 'delete-products-by-category-id';
 
     const DISABLE_PRODUCTS_WITHOUT_STOCK = 'disable-products-without-stock';
+    const UNIQUE_PRODUCTS_MANUFACTURER_BY_VENDOR = 'list-unique-manufacturers-by-vendor';
     /**
      * @var ProductRepositoryInterface
      */
@@ -159,6 +160,12 @@ class Products extends Command
                     '-D',
                     InputOption::VALUE_NONE,
                     'Disable products without stock'
+                ),
+                new InputOption(
+                    self::UNIQUE_PRODUCTS_MANUFACTURER_BY_VENDOR,
+                    '-U',
+                    InputOption::VALUE_NONE,
+                    'SHOW UNIQUE MANUFACTURER BY VENDOR'
                 )
             ])
             ->addArgument('oldManufacturer', InputArgument::OPTIONAL, 'oldManufacturer')
@@ -200,6 +207,10 @@ class Products extends Command
         if ($disableProductsWithoutStock) {
             print_r("Disabling products without stock");
             $this->disableOutOfStockProducts();
+        }
+        $uniqueManufacturer = $input->getOption(self::UNIQUE_PRODUCTS_MANUFACTURER_BY_VENDOR);
+        if($uniqueManufacturer) {
+            $this->detectUniqueManufaturers();
         }
         else {
             throw new \InvalidArgumentException('Option  ELSE');
@@ -301,5 +312,47 @@ class Products extends Command
             $product->setStatus(2);
             $this->productRepository->save($product);
         }
+    }
+
+
+    private function detectUniqueManufaturers(){
+        $sorefozManufacturers = $this->getManufacturers('sorefoz');
+        print_r($sorefozManufacturers);
+
+        $expertManufacturers = $this->getManufacturers('expert');
+        print_r($expertManufacturers);
+
+        $expertUniqueManufacturer = [];
+        foreach($expertManufacturers as $key => $value) {
+            if (!array_key_exists($key, $sorefozManufacturers)) {
+                $expertUniqueManufacturer[$key] = $expertManufacturer;
+            }
+        }
+        print_r($expertUniqueManufacturer);
+    }
+
+    private function getManufacturers($vendor) {
+        $manufacturers = [];
+        if (preg_match("/sorefoz/", $vendor) == 1) {
+            $fileUrl = $this->directory->getRoot() ."/app/code/Mlp/Cli/Csv/Sorefoz/tot_jlcb_utf.csv";
+            $manufacturerColumn = 3;
+        }elseif (preg_match("/expert/", $vendor) == 1) {
+            $fileUrl = $this->directory->getRoot() ."/app/code/Mlp/Cli/Csv/Expert/ExpertNovo.csv";
+            $manufacturerColumn = 4;
+        }
+
+        if (($handle = fopen($fileUrl, "r")) !== FALSE) {
+            //ignorar a 1ª linha,
+            fgetcsv($handle, 5000, ";");
+            while (($data = fgetcsv($handle, 5000, ";")) !== FALSE) {
+                if (!array_key_exists(trim($data[$manufacturerColumn]),$manufacturers)){
+                    $manufacturers[trim($data[$manufacturerColumn])] = 1; 
+                }else {
+                    $manufacturers[trim($data[$manufacturerColumn])] = $manufacturers[trim($data[$manufacturerColumn])] + 1;
+                }
+            }
+            fclose($handle);
+        }
+        return $manufacturers;
     }
 }
