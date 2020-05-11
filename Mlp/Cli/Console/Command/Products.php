@@ -325,7 +325,10 @@ class Products extends Command
         $expertUniqueManufacturer = [];
         foreach($expertManufacturers as $key => $value) {
             if (!array_key_exists($key, $sorefozManufacturers)) {
-                $expertUniqueManufacturer[$key] = $expertManufacturer;
+                if ((int)$value > 50){
+                    $expertUniqueManufacturer[$key] = $value;
+                }
+                
             }
         }
         print_r($expertUniqueManufacturer);

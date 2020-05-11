@@ -262,14 +262,24 @@ class Expert extends Command
         $this->produtoInterno->manufacturer = $data[4];
         print_r($data[4]);
         if (
-            !preg_match("/HISENSE/i", $data[4]) && 
-            !preg_match("/SAMSUNG/i", $data[4]) &&
-            !preg_match("/DENON/i", $data[4]) &&
-            !preg_match("/YAMAHA/i", $data[4]) &&
-            !preg_match("/FLECK/i", $data[4]) &&
-            !preg_match("/PURO/i", $data[4]) &&
             !preg_match("/MAXELL/i", $data[4]) &&
-            !preg_match("/VIVANCO/i", $data[4]) 
+            !preg_match("/SAMSUNG/i", $data[4]) &&
+            !preg_match("/PURO/i", $data[4]) &&
+            !preg_match("/VIVANCO/i", $data[4]) &&
+            !preg_match("/HISENSE/i", $data[4]) && 
+            !preg_match("/TECNOGAS/i", $data[4]) &&
+            !preg_match("/CASO/i", $data[4]) &&
+            !preg_match("/FULLWAT/i", $data[4]) &&
+            !preg_match("/CANON/i", $data[4]) &&
+            !preg_match("/KEF/i", $data[4]) &&
+            !preg_match("/G3 FERRARI/i", $data[4]) &&
+            !preg_match("/R. HOBBS/i", $data[4]) &&
+            !preg_match("/LE CREUSET/i", $data[4]) &&
+            !preg_match("/KENWOOD/i", $data[4]) &&
+            !preg_match("/ONE FOR ALL/i", $data[4]) &&
+            !preg_match("/PLAYSTATION/i", $data[4]) &&
+            !preg_match("/FLECK/i", $data[4])
+            
         ) {
             return 0;
         }
