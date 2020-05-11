@@ -327,6 +327,14 @@ class ProdutoInterno
 
     public function getPrice($precoCusto) {
         try{
+            if ($precoCusto < 20){
+                $preco = $precoCusto * 1.23 * 1.50;
+                return $preco;
+            }
+            if ($precoCusto < 50){
+                $preco = $precoCusto * 1.23 * 1.40;
+                return $preco;
+            }
             if ($precoCusto < 100) {
                 $preco = $precoCusto * 1.23 * 1.30;
                 return $preco;

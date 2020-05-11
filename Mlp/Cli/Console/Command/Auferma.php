@@ -18,6 +18,7 @@ use Magento\Framework\Filesystem\DirectoryList;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Mlp\Cli\Helper\Auferma\AufermaCategories as aufermaCategories;
 use Mlp\Cli\Helper\imagesHelper as imagesHelper;
+use Mlp\Cli\Helper\CategoriesConstants as Cat;
 
 /**
  * Copyright © 2016 Magento. All rights reserved.
@@ -310,6 +311,19 @@ class Auferma extends Command
         }
 
         $this->produtoInterno->sku = $data[0];
+        $this->produtoInterno->manufacturer = $data[5];
+        $this->produtoInterno->price = (int)trim($data[3]);
+        if($this->produtoInterno->price == 0) {
+            $logger->info(Cat::ERROR_PRECO_ZERO.$this->produtoInterno->sku);
+            $stock = 0;
+        }
+        if (
+            !preg_match("/BEKO/i", $data[5]) &&
+            !preg_match("/GRUNDIG/i", $data[5])           
+        ) {
+            return 0;
+        }
+        
         [$gama,$familia,$subFamilia] =  aufermaCategories::getCategories(
                                             $data[8],$data[9],$data[10],
                                             $logger,$this->produtoInterno->sku);    
@@ -322,13 +336,13 @@ class Auferma extends Command
         $this->produtoInterno->subFamilia = $subFamilia;
         $this->produtoInterno->description = mb_strtoupper($data[7], 'UTF-8');
         $this->produtoInterno->meta_description = mb_strtoupper($data[7], 'UTF-8');
-        $this->produtoInterno->manufacturer = $data[5];
+        
         $this->produtoInterno->length = null;
         $this->produtoInterno->width = null;
         $this->produtoInterno->height = null;
         $this->produtoInterno->classeEnergetica = null;
         $this->produtoInterno->weight = null;
-        $this->produtoInterno->price = (int)trim($data[3]);
+        
         $this->produtoInterno->status = $status;
         $this->produtoInterno->stock = $stock;
 
