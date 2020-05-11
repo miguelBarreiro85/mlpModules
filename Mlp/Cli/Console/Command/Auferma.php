@@ -171,8 +171,9 @@ class Auferma extends Command
                         print_r("Update stock exception - " . $ex -> getMessage() . "\n");
                     }
                 }
-            };
-            
+            }else {
+                print_r("\n");
+            }
         }
     }
 
@@ -348,6 +349,7 @@ class Auferma extends Command
         
         $this->produtoInterno->status = $status;
         $this->produtoInterno->stock = $stock;
+        return 1;
 
 
     }
