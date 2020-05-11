@@ -143,34 +143,36 @@ class Auferma extends Command
         foreach ($this->loadCsv->loadCsv('/Auferma/aufermaInterno.csv',",") as $data) {
             $row++;
             print_r($row." - ");
-            $this->setAufermaData($data,$logger);
-            if (!is_null($categoriesFilter)){
-                if (strcmp($categoriesFilter,$this->produtoInterno->subFamilia) != 0){
+            if($this->setAufermaData($data,$logger)){
+                if (!is_null($categoriesFilter)){
+                    if (strcmp($categoriesFilter,$this->produtoInterno->subFamilia) != 0){
+                        print_r("\n");
+                        continue;
+                    }
+                }
+                try {
+                    $product = $this -> productRepository -> get($this->produtoInterno->sku, true, null, true);
+                } catch (NoSuchEntityException $exception) {
+                    [$this->produtoInterno->image, $this->produtoInterno->imageEnergetica, 
+                        $this->produtoInterno->height, $this->produtoInterno->width, $this->produtoInterno->length, 
+                        $this->produtoInterno->weight, $this->produtoInterno->classeEnergetica] = $this->getProductInfo($logger,trim($data[1]));                
+                    
+                    $this->produtoInterno -> add_product($logger, $this->produtoInterno->sku);
+                    $this->produtoInterno->setStock('auferma');
                     print_r("\n");
                     continue;
                 }
-            }
-            try {
-                $product = $this -> productRepository -> get($this->produtoInterno->sku, true, null, true);
-            } catch (NoSuchEntityException $exception) {
-                [$this->produtoInterno->image, $this->produtoInterno->imageEnergetica, 
-                    $this->produtoInterno->height, $this->produtoInterno->width, $this->produtoInterno->length, 
-                    $this->produtoInterno->weight, $this->produtoInterno->classeEnergetica] = $this->getProductInfo($logger,trim($data[1]));                
-                
-                $this->produtoInterno -> add_product($logger, $this->produtoInterno->sku);
-                $this->produtoInterno->setStock('auferma');
-                print_r("\n");
-                continue;
-            }
-            if(isset($product)){
-                try {
-                    print_r(" - Setting stock: " . $this->produtoInterno->stock . "\n");
-                    $this->produtoInterno->setStock('auferma');
-                    $this->produtoInterno->updatePrice();
-                } catch (\Exception $ex) {
-                    print_r("Update stock exception - " . $ex -> getMessage() . "\n");
+                if(isset($product)){
+                    try {
+                        print_r(" - Setting stock: " . $this->produtoInterno->stock . "\n");
+                        $this->produtoInterno->setStock('auferma');
+                        $this->produtoInterno->updatePrice();
+                    } catch (\Exception $ex) {
+                        print_r("Update stock exception - " . $ex -> getMessage() . "\n");
+                    }
                 }
-            }
+            };
+            
         }
     }
 
@@ -302,6 +304,8 @@ class Auferma extends Command
             return trim($data);
         };
 
+        $data = array_map($functionTrim,$data);
+
         if (preg_match("/sim/i",$data[11]) == 1){
             $stock = 1;
             $status = 1;
@@ -313,6 +317,7 @@ class Auferma extends Command
         $this->produtoInterno->sku = $data[0];
         $this->produtoInterno->manufacturer = $data[5];
         $this->produtoInterno->price = (int)trim($data[3]);
+
         if($this->produtoInterno->price == 0) {
             $logger->info(Cat::ERROR_PRECO_ZERO.$this->produtoInterno->sku);
             $stock = 0;
@@ -327,9 +332,7 @@ class Auferma extends Command
         [$gama,$familia,$subFamilia] =  aufermaCategories::getCategories(
                                             $data[8],$data[9],$data[10],
                                             $logger,$this->produtoInterno->sku);    
-
-        $data = array_map($functionTrim,$data);
-        
+ 
         $this->produtoInterno->name = strtoupper($data[1]);
         $this->produtoInterno->gama = $gama;
         $this->produtoInterno->familia = $familia;
