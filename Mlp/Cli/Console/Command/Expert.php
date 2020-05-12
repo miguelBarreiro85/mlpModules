@@ -125,7 +125,7 @@ class Expert extends Command
         }
         $updateRemovedProductsStock = $input->getOption(self::UPDATE_REMOVED_PRODUCTS_STOCK);
         if ($updateRemovedProductsStock) {
-            $this->updateRemovedProductsStock($logger);
+            
         }
         else {
             throw new \InvalidArgumentException('Option ' . self::FILTER_PRODUCTS . ' is missing.');
@@ -138,7 +138,9 @@ class Expert extends Command
 
     protected function addProducts($logger, $categoriesFilter = null){
        
-        
+        print_r("Getting Csv\n");
+        $this->getCsv($logger);
+        $this->disableOldProducts($logger);
         print_r("Adding Expert products" . "\n");
         $row = 0;
         foreach ($this->loadCsv->loadCsv('Expert/ExpertNovo.csv',";") as $data) {
@@ -186,8 +188,11 @@ class Expert extends Command
     private function getCsv($logger){
     
         copy($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertNovo.csv",$this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/OldCsv/ExpertVelho".date("Y-m-d").".csv");
+        print_r("Copied old Csv\n");
+        print_r("Renaming ExpertNovo to ExpertVelho\n");
         if (rename($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertNovo.csv",$this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertVelho.csv"))
         {
+            print_r("ok\nDownloading new Csv\n");
             $ch = curl_init("https://experteletro.pt/webservice.php?key=42b91123-75ba-11ea-8026-a4bf011b03ee&pass=bWlndWVs");
             $fp = fopen($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertNovo.csv", 'wb');
             curl_setopt($ch, CURLOPT_FILE, $fp);
@@ -196,13 +201,15 @@ class Expert extends Command
             curl_setopt($ch,CURLOPT_TIMEOUT,0);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
             if (curl_exec($ch)){
+                print_r("OK\n");
                 curl_close($ch);
                 fclose($fp);
             }else {
+                print_r("Download Error");
                 unlink($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertNovo.csv");
             }
         }else {
-            $logger->info("Could not Rename file");
+            $logger->info("Could not Rename file\n");
         }
         
     }
@@ -324,11 +331,10 @@ class Expert extends Command
         return 1;
     }
 
-    private function updateRemovedProductsStock($logger)
+    private function disableOldProducts($logger)
     {
         // Coloca o stock da expert a 0 dos productos que eles removeram (fora de gama etc...)
         //Download Csv
-        $this->getCsv($logger);
         $novoLines = 0;
         $velhoLines = 0;
         $fileUrlNovo = $this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertNovo.csv";
@@ -390,11 +396,12 @@ class Expert extends Command
         print_r($linesToRemove);
         foreach($linesToRemove as $data){
             try {
-                //Vamos por o produto com stock Orima a 0, se tiver a 0 em todos os fornecedores podemos apagar (Cron Semanal por exemplo)
+                //Vamos por o produto com stock a 0, e escrever um ficheiro com numeros ean para remover depois 2 ou 3 vezes por ano
                 print_r($data[0]."\n");
                 $this->produtoInterno->sku = $data[0];
                 $this->produtoInterno->stock = 0;
                 $this->produtoInterno->setStock('expert');
+                fopen($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/oldEan","a+");
             }catch(\Exception $e) {
                 print_r("Delete Exception: ".$e->getMessage());
             }
