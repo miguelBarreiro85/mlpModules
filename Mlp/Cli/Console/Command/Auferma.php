@@ -35,9 +35,9 @@ class Auferma extends Command
     const UPDATE_STOCKS_XLSX = 'update-stocks-xlsx';
     const GET_PRODUCT_IMAGES = 'get-product-images';
 
-    const AUFERMA_INTERNO_XLSX = '/app/code/Mlp/Cli/Csv/aufermaInterno.xlsx';
-    const AUFERMA_STOCK_XLSX = '/app/code/Mlp/Cli/Csv/aufermaStock.xlsx';
-    const AUFERMA_INTERNO_CSV = '/app/code/Mlp/Cli/Csv/aufermaInterno.csv';
+    const AUFERMA_INTERNO_XLSX = '/app/code/Mlp/Cli/Csv/Auferma/aufermaInterno.xlsx';
+    const AUFERMA_STOCK_XLSX = '/app/code/Mlp/Cli/Csv/Auferma/aufermaStock.xlsx';
+    const AUFERMA_INTERNO_CSV = '/app/code/Mlp/Cli/Csv/Auferma/aufermaInterno.csv';
 
     private $directory;
 
@@ -75,7 +75,7 @@ class Auferma extends Command
             ->setDefinition([
                 new InputOption(
                     self::ADD_PRODUCTS_XLSX,
-                    '-ax',
+                    '-A',
                     InputOption::VALUE_NONE,
                     'ADD NEW PRODUCTS TO XLSX'
                 ),
@@ -87,7 +87,7 @@ class Auferma extends Command
                 ),
                 new InputOption(
                     self::UPDATE_STOCKS_XLSX,
-                    '-ux',
+                    '-u',
                     InputOption::VALUE_NONE,
                     'Update Stocks and State (Active or inactive) on XLSX and Csv' 
                 ),
@@ -190,8 +190,8 @@ class Auferma extends Command
         }catch (\Exception $e){
             print_r($e->getMessage());
         }
-        print_r("Interno: ".$intSheet->getHighestRow()."\n");
-        print_r("Stocks: ".$aSheet->getHighestRow()."\n");
+        print_r("Interno: ".$intSheet->getHighestRow(1)."\n");
+        print_r("Stocks: ".$aSheet->getHighestRow(1)."\n");
         try{
             foreach ($aSheet->getRowIterator() as $aRow) {
                 if ($aRow->getRowIndex() == 1) {
@@ -270,7 +270,7 @@ class Auferma extends Command
                     $intSheet->setCellValue('L'.$iRow->getRowIndex(),'sim');
                     break;
                 }elseif ($aRow->getRowIndex() == $aSheet->getHighestRow()){
-                    print_r("Sem Codigo->".$codProdAuf."\n");
+                    print_r("Sem Codigo->".$codProduto."\n");
                 }
             }
         }

@@ -16,7 +16,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-
+use Mlp\Cli\Helper\CategoriesConstants as Cat;
 use Mlp\Cli\Helper\Manufacturer as Manufacturer;
 
 class Expert extends Command
@@ -107,10 +107,7 @@ class Expert extends Command
 
         $this->state->setAreaCode(\Magento\Framework\App\Area::AREA_GLOBAL);
         $categories = $input->getArgument('categories');
-        $filterProducts = $input->getOption(self::FILTER_PRODUCTS);
-        if ($filterProducts) {
-            $this->filterProducts();
-        }
+
         $addProducts = $input->getOption(self::ADD_PRODUCTS);
         if ($addProducts) {
             $this->addProducts($logger, $categories);
@@ -132,9 +129,7 @@ class Expert extends Command
         }
     }
 
-    private function filterProducts(){
 
-    }
 
     protected function addProducts($logger, $categoriesFilter = null){
        
@@ -213,9 +208,7 @@ class Expert extends Command
         }
         
     }
-    private function setCategories(){
 
-    }
     private function updateStocks(){
 
     }
@@ -394,14 +387,22 @@ class Expert extends Command
         }
 
         print_r($linesToRemove);
+        print_r("Open file to append EAN");
         foreach($linesToRemove as $data){
             try {
+                //Backup do ficheiro velho
+                copy($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/oldEan",$this->directory->getRoot()."/app/code/Mlp/Cli/Csv/oldEan.bak");
                 //Vamos por o produto com stock a 0, e escrever um ficheiro com numeros ean para remover depois 2 ou 3 vezes por ano
                 print_r($data[0]."\n");
                 $this->produtoInterno->sku = $data[0];
                 $this->produtoInterno->stock = 0;
                 $this->produtoInterno->setStock('expert');
-                fopen($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/oldEan","a+");
+                
+                if(file_put_contents ( $this->directory->getRoot()."/app/code/Mlp/Cli/Csv/oldEan" , $data[0] , FILE_APPEND | LOCK_EX)){
+                    print_r($data[0]."ok\n");
+                }else {
+                    $logger->info(Cat::ERROR_ADD_EAN_TO_OLD_EANFILE.$data[0]);
+                }
             }catch(\Exception $e) {
                 print_r("Delete Exception: ".$e->getMessage());
             }
