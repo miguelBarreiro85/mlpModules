@@ -145,7 +145,7 @@ class Sorefoz extends Command
         $logger = new \Zend\Log\Logger();
         $logger->addWriter($writer);
 
-        
+        $this->getCsvFromFTP($logger);
         $row = 0;
         foreach ($this->loadCsv->loadCsv('/Sorefoz/tot_jlcb_utf.csv',";") as $data) {
             $row++;
@@ -375,5 +375,46 @@ class Sorefoz extends Command
                 print_r($exception->getMessage());
             }
         }
+    }
+
+    private function getCsvFromFTP($logger) {
+        $file = 'tot_jlcb.csv';
+        $local_file = $this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Sorefoz/".$file;
+        // set up basic connection
+        $conn_id = ftp_connect('www.sorefoz.pt');
+
+        // login with username and password
+        if (ftp_login($conn_id, 'loj0078', 'nyvt64#')){
+            ftp_pasv($conn_id, true);
+            if (ftp_get($conn_id, $local_file, $file)) {
+                print_r( "Successfully written to $local_file\n");
+            } else {
+                print_r("ftp_get problem\n");
+            }
+        } else {
+            print_r("ftp_login Connection problem\n");
+        }
+
+        // try to download $server_file and save to $local_file
+        
+
+        // close the connection
+        ftp_close($conn_id);
+
+        $local_utf_file = $this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Sorefoz/tot_jlcb_utf.csv";
+        
+        //Convet to csv to UTF-8
+        $in = fopen($local_file, "r");
+        $out = fopen($local_utf_file, "w+");
+
+        $start = microtime(true);
+
+        while(($line = fgets($in)) !== false) {
+            $converted = iconv("ISO-8859-1","UTF-8",$line);
+            fwrite($out, $converted);
+        }
+
+        $elapsed = microtime(true) - $start;
+        print_r("Iconv took $elapsed seconds\n");
     }
 }
