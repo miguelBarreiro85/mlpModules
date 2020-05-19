@@ -132,7 +132,8 @@ class Expert extends Command
 
 
     protected function addProducts($logger, $categoriesFilter = null){
-       
+        print_r("Rotate Logs");
+        $this->rotateLogs();
         print_r("Getting Csv\n");
         $this->getCsv($logger);
         $this->disableOldProducts($logger);
@@ -407,6 +408,17 @@ class Expert extends Command
                 print_r("Delete Exception: ".$e->getMessage());
             }
         }
+    }
+
+    private function rotateLogs(){
+        //Copiar log antigo para o arquivo tar logs
+        //Guardamos os ultimos 5 logs
+        copy($this->directory->getRoot()."/var/log/Expert.log", $this->directory->getRoot()."/var/log/Expert".date("m.d.y")."log");
+
+        $fileToRotate = $this->directory->getRoot()."/var/log/Expert".date("m.d.y").".log"; 
+        $tarArchive = $this->directory->getRoot()."/var/log/mlp_cli.tar";
+        $result = exec("tar -rf $tarArchive $fileToRotate");
+        print_r($result);
     }
 
     private function addImages($categoriesFilter) 

@@ -423,6 +423,13 @@ class Auferma extends Command
          
     }
 
+    private function rotateLogs(){
+        //Copiar log antigo para o arquivo tar logs 
+        $fileToRotate = $this->directory->getRoot()."/var/log/Auferma.log"; 
+        $tarArchive = $this->directory->getRoot()."/var/log/mlp_cli.tar";
+        exec("tar -rf $tarArchive $fileToRotate");
+    }
+    
     private function getImageUrl($code) {
         $ch = curl_init("https://live.icecat.biz/api/?UserName=mlpbarreiro&Language=en&Brand=beko&ProductCode=".$code);            
         curl_setopt($ch, CURLOPT_HEADER, 0);
