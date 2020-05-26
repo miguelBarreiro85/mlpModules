@@ -7,6 +7,8 @@
  */
 
 namespace Mlp\Cli\Model;
+
+use Magento\Catalog\Api\Data\ProductInterface;
 use Mlp\Cli\Helper\CategoriesConstants as Cat;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product\Media\Config;
@@ -163,9 +165,11 @@ class ProdutoInterno
         $product->setCustomAttribute('tax_class_id', 2); //taxable goods id
         $product->setWeight($this->weight);
         $product->setWebsiteIds([1]);
-        $attributeSetId = $this->attributeManager->getAttributeSetId($this->familia, $this->subFamilia);
+        //$attributeSetId = $this->attributeManager->getAttributeSetId($this->familia, $this->subFamilia);
+        //$product->setAttributeSetId($attributeSetId); // Attribute set id
         
-        $product->setAttributeSetId($attributeSetId); // Attribute set id
+        $product->setAttributeSetId(4); //Default
+
         $product->setVisibility(4); // visibilty of product (catalog / search / catalog, search / Not visible individually)
         $product->setTaxClassId(2); // Tax class id
         $product->setTypeId('simple'); // type of product (simple/virtual/downloadable/configurable)
@@ -186,9 +190,32 @@ class ProdutoInterno
             print_r("saving product.. - ");
             $product = $this->productRepositoryInterface->save($product);
             print_r($product->getSku()." - ");
-        } catch (\Exception $exception) {
-            $logger->info(Cat::ERROR_SAVE_PRODUCT." - ".$this->sku." - ".$exception->getMessage());
-            print_r("- " . $exception->getMessage() . " Save product exception" . "\n");
+        } catch (\Magento\Framework\Exception\CouldNotSaveException $exception) {
+            print_r("- " . $exception->getCode()." - ".$exception->getMessage() . " Save product exception" . "\n");
+            return null;
+            //if same url delete old save new
+            /*
+            if($exception->getCode() ==) {
+                $searchCriteria = $this->searchCriteriaBuilder->addFilter(ProductInterface::NAME,$this->name,'like')->create();
+                $products = $this->productRepositoryInterface->getList($searchCriteria)->getItems();
+                foreach($products as $productToDelete){
+                    $this->productRepositoryInterface->delete($productToDelete);
+                }
+                try {
+                    print_r("saving product.. - ");
+                    $product = $this->productRepositoryInterface->save($product);
+                    print_r($product->getSku()." - ");
+                }catch (\Exception $e) {
+                    print_r("- " . $exception->getMessage() . " Save product exception" . "\n");
+                    $logger->info(Cat::ERROR_SAVE_PRODUCT." - ".$this->sku." - ".$exception->getCode(). " - " .$exception->getMessage());
+                    return null;
+                }
+            }
+            */
+            
+        } catch(\Exception $e){
+            print_r("- " . $exception->getCode()." - ".$exception->getMessage() . " Save product exception" . "\n");
+            $logger->info(Cat::ERROR_SAVE_PRODUCT." - ".$this->sku." - ".$exception->getCode(). " - " .$exception->getMessage());
             return null;
         }
 
