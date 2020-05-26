@@ -191,17 +191,17 @@ class ProdutoInterno
             $product = $this->productRepositoryInterface->save($product);
             print_r($product->getSku()." - ");
         } catch (\Magento\Framework\Exception\CouldNotSaveException $exception) {
-            print_r("- " . $exception->getCode()." - ".$exception->getMessage() . " Save product exception" . "\n");
-            $logger->info(Cat::ERROR_SAVE_PRODUCT." - ".$this->sku." - ".$exception->getCode(). " - " .$exception->getMessage());
-            return null;
             //if same url delete old save new
-            /*
-            if($exception->getCode() ==) {
+            if($exception->getCode() == 0) {
                 $searchCriteria = $this->searchCriteriaBuilder->addFilter(ProductInterface::NAME,$this->name,'like')->create();
                 $products = $this->productRepositoryInterface->getList($searchCriteria)->getItems();
                 foreach($products as $productToDelete){
+                    $this->registry->unregister('isSecureArea');
+                    $this->registry->register('isSecureArea', true);
+                    $logger->info(Cat::WARN_DELETING_PRODUCT." - ".$productToDelete->getSku()." - ".$productToDelete->getName());
                     $this->productRepositoryInterface->delete($productToDelete);
                 }
+                $this->registry->unregister('isSecureArea');
                 try {
                     print_r("saving product.. - ");
                     $product = $this->productRepositoryInterface->save($product);
@@ -212,8 +212,6 @@ class ProdutoInterno
                     return null;
                 }
             }
-            */
-            
         } catch(\Exception $exception){
             print_r("- " . $exception->getCode()." - ".$exception->getMessage() . " Save product exception" . "\n");
             $logger->info(Cat::ERROR_SAVE_PRODUCT." - ".$this->sku." - ".$exception->getCode(). " - " .$exception->getMessage());

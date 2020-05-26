@@ -4,6 +4,8 @@
 namespace Mlp\Cli\Helper;
 
 class CategoriesConstants {
+    const WARN_DELETING_PRODUCT = "WARNING : DELETING PRODUCT : ";
+    
     const ERROR_PRECO_ZERO = "ERRO : PRODUTO COM PRECO A 0 : ";
     const ERROR_GET_CATEGORIAS = "ERRO : GET CATEGORIES : ";
     const ERROR_VERIFICAR_MANUFACTURER = "ERRO : VERIFICAR MANUFACTURER : ";
