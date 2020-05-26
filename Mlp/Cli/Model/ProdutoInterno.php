@@ -64,8 +64,10 @@ class ProdutoInterno
     private $imagesHelper;
     private $productResource;
     private $productOptions;
+    private $registry;
 
-    public function __construct( ProductFactory $productFactory,
+    public function __construct(\Magento\Framework\Registry $registry,
+                                ProductFactory $productFactory,
                                 CategoryManager $categoryManager,
                                 DataAttributeOptions $dataAttributeOptions,
                                 Attribute $attributeManager,
@@ -101,6 +103,7 @@ class ProdutoInterno
         $this->imagesHelper = $imagesHelper;
         $this->productResource = $productResource;
         $this->productOptions = $productOptions;
+        $this->registry = $registry;
     }
 
     public function setData($sku, $name, $gama, $familia, $subfamilia,
@@ -216,6 +219,8 @@ class ProdutoInterno
                     $logger->info(Cat::ERROR_SAVE_PRODUCT." - ".$this->sku." - ".$exception->getCode(). " - " .$exception->getMessage());
                     return null;
                 }
+            }else {
+                $logger->info(Cat::ERROR_SAVE_PRODUCT." - ".$this->sku." - ".$exception->getCode(). " - " .$exception->getMessage());
             }
         } 
         //Adicionar opções de garantia e instalação
