@@ -195,12 +195,17 @@ class ProdutoInterno
             if($exception->getCode() == 0) {
                 $searchCriteria = $this->searchCriteriaBuilder->addFilter(ProductInterface::NAME,$this->name,'like')->create();
                 $products = $this->productRepositoryInterface->getList($searchCriteria)->getItems();
-                foreach($products as $productToDelete){
-                    $this->registry->unregister('isSecureArea');
-                    $this->registry->register('isSecureArea', true);
-                    $logger->info(Cat::WARN_DELETING_PRODUCT." - ".$productToDelete->getSku()." - ".$productToDelete->getName());
-                    $this->productRepositoryInterface->delete($productToDelete);
+                if($products){
+                    foreach($products as $productToDelete){
+                        $this->registry->unregister('isSecureArea');
+                        $this->registry->register('isSecureArea', true);
+                        $logger->info(Cat::WARN_DELETING_PRODUCT." - ".$productToDelete->getSku()." - ".$productToDelete->getName());
+                        $this->productRepositoryInterface->delete($productToDelete);
+                    }
+                }else {
+                    $logger->info(Cat::WARN_DIDNT_FOUND_PRODUCTS. " - ".$this->name);
                 }
+                
                 $this->registry->unregister('isSecureArea');
                 try {
                     print_r("saving product.. - ");
