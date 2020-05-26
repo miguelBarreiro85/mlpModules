@@ -275,9 +275,9 @@ class Sorefoz extends Command
         $data = array_map($functionTim,$data);
 
         $this->produtoInterno->sku = $data[18];
-        if (strlen($this->produtoInterno->sku) != 13) {
+        if (strlen($this->produtoInterno->sku) < 12) {
             print_r("Wrong sku - ");
-            $logger->info("Wrong Sku: ".$this->produtoInterno->sku);
+            $logger->info(Cat::ERROR_WRONG_SKU.$this->produtoInterno->sku);
             return 0;
         }
         print_r($data[29]);
