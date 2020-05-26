@@ -192,6 +192,7 @@ class ProdutoInterno
             print_r($product->getSku()." - ");
         } catch (\Magento\Framework\Exception\CouldNotSaveException $exception) {
             print_r("- " . $exception->getCode()." - ".$exception->getMessage() . " Save product exception" . "\n");
+            $logger->info(Cat::ERROR_SAVE_PRODUCT." - ".$this->sku." - ".$exception->getCode(). " - " .$exception->getMessage());
             return null;
             //if same url delete old save new
             /*
