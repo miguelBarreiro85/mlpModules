@@ -190,7 +190,7 @@ class ProdutoInterno
             print_r("saving product.. - ");
             $product = $this->productRepositoryInterface->save($product);
             print_r($product->getSku()." - ");
-        } catch (\Magento\Framework\Exception\CouldNotSaveException $exception) {
+        } catch (\Exception $exception) {
             //if same url delete old save new
             if($exception->getCode() == 0) {
                 $searchCriteria = $this->searchCriteriaBuilder->addFilter(ProductInterface::NAME,$this->name,'like')->create();
@@ -217,12 +217,7 @@ class ProdutoInterno
                     return null;
                 }
             }
-        } catch(\Exception $exception){
-            print_r("- " . $exception->getCode()." - ".$exception->getMessage() . " Save product exception" . "\n");
-            $logger->info(Cat::ERROR_SAVE_PRODUCT." - ".$this->sku." - ".$exception->getCode(). " - " .$exception->getMessage());
-            return null;
-        }
-
+        } 
         //Adicionar opções de garantia e instalação
         try{
             $this->productOptions->add_warranty_option($product,$this->gama, $this->familia, $this->subFamilia);
