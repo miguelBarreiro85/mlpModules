@@ -213,7 +213,7 @@ class ProdutoInterno
             }
             */
             
-        } catch(\Exception $e){
+        } catch(\Exception $exception){
             print_r("- " . $exception->getCode()." - ".$exception->getMessage() . " Save product exception" . "\n");
             $logger->info(Cat::ERROR_SAVE_PRODUCT." - ".$this->sku." - ".$exception->getCode(). " - " .$exception->getMessage());
             return null;
