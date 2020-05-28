@@ -167,7 +167,7 @@ class Expert extends Command
             if(isset($product)){
                 try {
                     print_r(" - Setting price: \n");
-                    $this->produtoInterno->updatePrice();
+                    $this->produtoInterno->updatePrice($logger);
                 } catch (\Exception $ex) {
                     print_r("Update stock exception - " . $ex -> getMessage() . "\n");
                 }

@@ -170,7 +170,7 @@ class Sorefoz extends Command
             if(isset($product)){
                 try {
                     print_r(" - Setting price: \n");
-                    $this->produtoInterno->updatePrice();
+                    $this->produtoInterno->updatePrice($logger);
                 } catch (\Exception $ex) {
                     print_r("Update stock exception - " . $ex -> getMessage() . "\n");
                 }
@@ -187,7 +187,7 @@ class Sorefoz extends Command
 
         foreach ($this -> loadCsv -> loadCsv('tot_jlcb_utf.csv', ";") as $data) {
             $this->setSorefozData($data,$logger);
-            $this->produtoInterno->updatePrice();
+            $this->produtoInterno->updatePrice($logger);
         }
     }
 
@@ -275,9 +275,10 @@ class Sorefoz extends Command
         $data = array_map($functionTim,$data);
 
         $this->produtoInterno->sku = $data[18];
+        $this->produtoInterno->name = $data[1];
         if (strlen($this->produtoInterno->sku) < 12) {
             print_r("Wrong sku - ");
-            $logger->info(Cat::ERROR_WRONG_SKU.$this->produtoInterno->sku);
+            $logger->info(Cat::ERROR_WRONG_SKU.$this->produtoInterno->sku." - ".$this->produtoInterno->name);
             return 0;
         }
         print_r($data[29]);
@@ -295,8 +296,6 @@ class Sorefoz extends Command
         }
         
         $this->produtoInterno->status = $status;
-
-
         $this->produtoInterno->stock = $stock;
         $this->produtoInterno->price = (int)trim($data[11]);
 
@@ -308,8 +307,6 @@ class Sorefoz extends Command
             $logger->info(Cat::ERROR_PRECO_ZERO.$this->produtoInterno->sku);
             $this->produtoInterno->status = 2;
         }
-
-        $this->produtoInterno->name = $data[1];
 
         try {
             [$gama,$familia,$subFamilia] =  $this->sorefozCategories

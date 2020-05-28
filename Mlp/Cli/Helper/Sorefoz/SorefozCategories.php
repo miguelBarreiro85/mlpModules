@@ -18,12 +18,10 @@ class SorefozCategories {
                             case 'ACESSÓRIOS':
                                 $familia = Cat::OUTROS_ACESSORIOS;
                                 $subFamilia = null;
-                                $logger->info(Cat::VERIFICAR_CATEGORIAS.$sku);
                                 return [$gama,$familia,$subFamilia];
                             case 'BATERIAS':
                                 $familia = Cat::PILHAS_BATERIAS;
                                 $subFamilia = Cat::BATERIAS;
-                                $logger->info(Cat::VERIFICAR_CATEGORIAS.$sku);
                                 return [$gama,$familia,$subFamilia];
                             case 'LAMPADAS':
                                 $familia = Cat::ILUMINACAO;

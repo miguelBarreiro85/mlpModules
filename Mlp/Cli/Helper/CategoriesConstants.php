@@ -6,7 +6,8 @@ namespace Mlp\Cli\Helper;
 class CategoriesConstants {
     const WARN_DIDNT_FOUND_PRODUCTS = "WARNING : DID NOT FOUND PRODUCT : ";
     const WARN_DELETING_PRODUCT = "WARNING : DELETING PRODUCT : ";
-
+    const WARN_PRODUCT_ADDED = "WARNING : PRODUCT ADDED : ";
+    const ERROR_UPDATE_PRICE = "ERRO : UPDATE PRICE :";
     const ERROR_WRONG_SKU = "ERRO : WRONG SKU : ";
     const ERROR_PRECO_ZERO = "ERRO : PRODUTO COM PRECO A 0 : ";
     const ERROR_GET_CATEGORIAS = "ERRO : GET CATEGORIES : ";

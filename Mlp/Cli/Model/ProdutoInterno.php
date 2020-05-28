@@ -158,8 +158,13 @@ class ProdutoInterno
         $product->setCustomAttribute('description', $this->description);
         $product->setCustomAttribute('meta_description', $this->meta_description);
         if(strlen($this->manufacturer) != 0){
-            $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', strval($this->manufacturer));
-            $product->setCustomAttribute('manufacturer', $optionId);
+            try{
+                $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', strval($this->manufacturer));
+                $product->setCustomAttribute('manufacturer', $optionId);
+            }catch (\Exception $e){
+                $logger->info(Cat::ERROR_VERIFICAR_MANUFACTURER.$this->sku." : ".$e->getMessage());
+            }
+        } else {
             $logger->info(Cat::ERROR_VERIFICAR_MANUFACTURER.$this->sku);
         }
         $product->setCustomAttribute('ts_dimensions_length', $this->length);
@@ -193,6 +198,7 @@ class ProdutoInterno
             print_r("saving product.. - ");
             $product = $this->productRepositoryInterface->save($product);
             print_r($product->getSku()." - ");
+            $logger->info(Cat::WARN_PRODUCT_ADDED.$product->getSku());
         } catch (\Exception $exception) {
             //if same url delete old save new
             if($exception->getCode() == 0) {
@@ -327,7 +333,7 @@ class ProdutoInterno
         }
     }
 
-    public function updatePrice(){
+    public function updatePrice($logger){
         try{
             $product = $this->productRepositoryInterface->get($this->sku, true, null, true);
             
@@ -353,6 +359,7 @@ class ProdutoInterno
             $this->productRepositoryInterface->save($product);
         }catch (\Exception $ex){
             print_r("update price exception - " . $ex->getMessage() . "\n");
+            $logger->info(Cat::ERROR_UPDATE_PRICE.$product->getSku()." - ".$ex->getMessage());
         }
     }
 
