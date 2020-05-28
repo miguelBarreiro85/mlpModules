@@ -17,7 +17,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 use Mlp\Cli\Helper\Manufacturer as Manufacturer;
-
+use Mlp\Cli\Helper\CategoriesConstants as Cat;
 class Orima extends Command
 {
 
@@ -87,6 +87,10 @@ class Orima extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $writer = new \Zend\Log\Writer\Stream($this->directory->getRoot().'/var/log/Orima.log');
+        $logger = new \Zend\Log\Logger();
+        $logger->addWriter($writer);
+
         $this->state->setAreaCode(\Magento\Framework\App\Area::AREA_GLOBAL);
         $categories = $input->getArgument('categories');
         $filterProducts = $input->getOption(self::FILTER_PRODUCTS);
@@ -95,11 +99,11 @@ class Orima extends Command
         }
         $addProducts = $input->getOption(self::ADD_PRODUCTS);
         if ($addProducts) {
-            $this->addProducts($categories);
+            $this->addProducts($logger, $categories);
         }
         $updateStocks = $input->getOption(self::UPDATE_INTERNO);
         if ($updateStocks){
-            $this->updateInterno();
+            $this->updateInterno($logger);
         }
         else {
             throw new \InvalidArgumentException('Option ' . self::FILTER_PRODUCTS . ' is missing.');
@@ -110,10 +114,7 @@ class Orima extends Command
     {
     }
 
-    protected function addProducts($categoriesFilter = null){
-        $writer = new \Zend\Log\Writer\Stream($this->directory->getRoot().'/var/log/Orima.log');
-        $logger = new \Zend\Log\Logger();
-        $logger->addWriter($writer);
+    protected function addProducts($logger, $categoriesFilter = null){    
         print_r("Adding Orima products" . "\n");
         $row = 0;
         foreach ($this->loadCsv->loadCsv('/Orima/OrimaInterno.csv',";") as $data) {
@@ -125,12 +126,7 @@ class Orima extends Command
                     continue;
                 };
             }catch(\Exception $e){
-                $logger->info("Error setOrimaData: ".$row);
-                continue;
-            }
-            if (strlen($this->produtoInterno->sku) != 13) {
-                print_r("Wrong sku - ");
-                $logger->info("Wrong Sku: ".$this->produtoInterno->sku."\n");
+                $logger->info(Cat::ERROR_SET_PRODUCT_DATA.$row);
                 continue;
             }
             if (!is_null($categoriesFilter)){
@@ -151,18 +147,14 @@ class Orima extends Command
                 //$this -> produtoInterno -> addSpecialAttributesOrima($product, $logger);
             }
             if(isset($product)){
-                try {
-                    print_r(" - Setting price: \n");
-                    $this->produtoInterno->updatePrice();
-                } catch (\Exception $ex) {
-                    print_r("Update Price error:" . $ex -> getMessage() . "\n");
-                }
+                print_r(" - Setting price: \n");
+                $this->produtoInterno->updatePrice($logger);
             }
 
         }
     }
 
-    private function updateInterno()
+    private function updateInterno($logger)
     {
         $orimaLines = 0;
         $internoLines = 0;
@@ -203,6 +195,7 @@ class Orima extends Command
                     while (($orimaData = fgetcsv($handleOrima, 5000, ";")) !== FALSE) {
                         print_r($internoData[8]." - Line interno: ".$currentLineInterno." - line: ".$currentLineOrima." - ".$orimaData[8]."\n");
                         if (strcmp($internoData[8],$orimaData[8]) == 0) {
+                            $logger->info(Cat::FOUND_PRODUCT_SKU.$internoData[8]);
                             break;
                         }
                         
@@ -226,7 +219,8 @@ class Orima extends Command
                 print_r($data[0]."\n");
                 $this->produtoInterno->sku = $data[0];
                 $this->produtoInterno->stock = 0;
-                $this->produtoInterno->setStock('orima');
+                $this->produtoInterno->setStock($logger,'orima');
+                $logger->info(Cat::WARN_OLD_PRODUCT.$this->produtoInterno->sku);
             }catch(\Exception $e) {
                 print_r("Delete Exception: ".$e->getMessage());
             }
@@ -265,27 +259,33 @@ class Orima extends Command
 
         
         $this->produtoInterno->sku = $data[8];
-        if (strlen($this->produtoInterno->sku) != 13) {
+        if (strlen($this->produtoInterno->sku) < 13) {
             print_r("Wrong sku - ");
-            $logger->info("Wrong Sku: ".$this->produtoInterno->sku);
+            $logger->info(Cat::ERROR_WRONG_SKU.$this->produtoInterno->sku);
             return 0;
         }
         
         $this->produtoInterno->manufacturer = Manufacturer::getOrimaManufacturer($data[7]);
+        /*
         if (!preg_match("/ORIMA/i", $this->produtoInterno->manufacturer)) {
             print_r($data[7]);
             return 0;
-        }
+        }*/
         
         $this->produtoInterno->price = $this->produtoInterno->getPrice((int)$data[2]);
         $this->produtoInterno->stock = (int)filter_var($data[3], FILTER_SANITIZE_NUMBER_INT);
        
         print_r(" - setting stock ");
-        $this->produtoInterno->setStock("orima");
+        $this->produtoInterno->setStock($logger,"orima");
        
-        if($this->produtoInterno->price == 0 || $this->produtoInterno->stock == 0){
-            print_r(" - Out of stock or price 0 - ");
+        if($this->produtoInterno->price == 0){
+            print_r(" - price 0 - ");
+            $logger->info(Cat::ERROR_PRICE_ZERO.$this->produtoInterno->sku);
             return  0;
+        }
+        if($this->produtoInterno->stock == 0){
+            print_r(" - Out of stock - ");
+            return 0;
         }
 
         
@@ -319,11 +319,12 @@ class Orima extends Command
                 $this->produtoInterno->subFamilia,
                 $logger,
                 $this->produtoInterno->sku);
+            $this->produtoInterno->gama = $mlpGama;
+            $this->produtoInterno->familia = $mlpFamilia;
+            $this->produtoInterno->subFamilia = $mlpSubFamilia;
         } catch (\Exception $e) {
-
+            $logger->info(Cat::ERROR_GET_CATEGORIAS.$this->produtoInterno->sku);
         }
-        $this->produtoInterno->gama = $mlpGama;
-        $this->produtoInterno->familia = $mlpFamilia;
-        $this->produtoInterno->subFamilia = $mlpSubFamilia;
+        
     }
 }

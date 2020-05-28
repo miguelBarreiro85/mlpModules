@@ -288,7 +288,7 @@ class Expert extends Command
         
         try {
             print_r(" - setting stock ");
-            $this->produtoInterno->setStock("expert");
+            $this->produtoInterno->setStock($logger,"expert");
         }catch (\Exception $e){
             print_r($e->getMessage());
         }
@@ -395,7 +395,7 @@ class Expert extends Command
                 print_r($data[0]."\n");
                 $this->produtoInterno->sku = $data[0];
                 $this->produtoInterno->stock = 0;
-                $this->produtoInterno->setStock('expert');
+                $this->produtoInterno->setStock($logger,'expert');
                 
                 if(file_put_contents ( $this->directory->getRoot()."/app/code/Mlp/Cli/Csv/oldEan" , $data[0] , FILE_APPEND | LOCK_EX)){
                     print_r($data[0]."ok\n");

@@ -286,7 +286,7 @@ class ProdutoInterno
         }
     }
 
-    public function setStock($source)
+    public function setStock($logger, $source)
     {
         $filterSku = $this->filterBuilder
             -> setField("sku")
@@ -312,10 +312,13 @@ class ProdutoInterno
                 $this -> sourceItemSaveI -> execute([$item]);
             } catch (CouldNotSaveException $e) {
                 print_r($e->getMessage());
+                $logger->info(Cat::ERROR_UPDATE_STOCK.$this->sku." : ".$e->getMessage());
             } catch (InputException $e) {
                 print_r($e->getMessage());
+                $logger->info(Cat::ERROR_UPDATE_STOCK.$this->sku." : ".$e->getMessage());
             } catch (ValidationException $e) {
                 print_r($e->getMessage());
+                $logger->info(Cat::ERROR_UPDATE_STOCK.$this->sku." : ".$e->getMessage());
             }
         } else {
             foreach ($sourceItem as $item) {

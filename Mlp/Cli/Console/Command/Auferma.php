@@ -158,15 +158,15 @@ class Auferma extends Command
                         $this->produtoInterno->weight, $this->produtoInterno->classeEnergetica] = $this->getProductInfo($logger,trim($data[1]));                
                     
                     $this->produtoInterno -> add_product($logger, $this->produtoInterno->sku);
-                    $this->produtoInterno->setStock('auferma');
+                    $this->produtoInterno->setStock($logger, 'auferma');
                     print_r("\n");
                     continue;
                 }
                 if(isset($product)){
                     try {
                         print_r(" - Setting stock: " . $this->produtoInterno->stock . "\n");
-                        $this->produtoInterno->setStock('auferma');
-                        $this->produtoInterno->updatePrice();
+                        $this->produtoInterno->setStock($logger, 'auferma');
+                        $this->produtoInterno->updatePrice($logger);
                     } catch (\Exception $ex) {
                         print_r("Update stock exception - " . $ex -> getMessage() . "\n");
                     }
@@ -320,7 +320,7 @@ class Auferma extends Command
         $this->produtoInterno->price = (int)trim($data[3]);
 
         if($this->produtoInterno->price == 0) {
-            $logger->info(Cat::ERROR_PRECO_ZERO.$this->produtoInterno->sku);
+            $logger->info(Cat::ERROR_PRICE_ZERO.$this->produtoInterno->sku);
             $stock = 0;
         }
         if (
