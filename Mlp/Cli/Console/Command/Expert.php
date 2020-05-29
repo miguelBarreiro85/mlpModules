@@ -253,13 +253,14 @@ class Expert extends Command
 
         $this->produtoInterno->sku = $data[1];
         
-        if (strlen($this->produtoInterno->sku) != 13) {
+        if (strlen($this->produtoInterno->sku) < 12) {
             print_r("Wrong sku - ");
-            $logger->info("Wrong Sku: ".$this->produtoInterno->sku);
+            $logger->info(Cat::ERROR_WRONG_SKU.$this->produtoInterno->sku);
             return 0;
         }
         $this->produtoInterno->manufacturer = $data[4];
         print_r($data[4]);
+        /*
         if (
             !preg_match("/MAXELL/i", $data[4]) &&
             !preg_match("/SAMSUNG/i", $data[4]) &&
@@ -281,22 +282,22 @@ class Expert extends Command
             
         ) {
             return 0;
-        }
+        }*/
         $this->produtoInterno->stock = $stock;
         $this->produtoInterno->status = $status;
         $this->produtoInterno->price = $this->produtoInterno->getPrice((int)trim($data[7]));
         
-        try {
-            print_r(" - setting stock ");
-            $this->produtoInterno->setStock($logger,"expert");
-        }catch (\Exception $e){
-            print_r($e->getMessage());
-        }
-        
+       
+        print_r(" - setting stock ");
+        $this->produtoInterno->setStock($logger,"expert");
 
-        if($this->produtoInterno->price == 0 || $this->produtoInterno->stock == 0){
+        if($this->produtoInterno->price == 0){
             print_r(" - Out of stock or price 0 - ");
+            $logger->info(Cat::ERROR_PRICE_ZERO.$this->produtoInterno->sku);
             return  0;
+        }
+        if($this->produtoInterno->stock == 0){
+            return 0;
         }
 
         $this->produtoInterno->name = $data[5];
@@ -369,11 +370,13 @@ class Expert extends Command
                     while (($novoData = fgetcsv($handleNovo, 5000, ";")) !== FALSE) {
                         print_r($velhoData[1]." - Line Velho: ".$currentLineVelho." - line: ".$currentLineNovo." - ".$novoData[1]."\n");
                         if (strcmp($velhoData[1],$novoData[1]) == 0) {
+                            $logger->info(Cat::WARN_FOUND_PRODUCT_SKU.$velhoData[1]);
                             break;
                         }
                         
                         if ($currentLineNovo == $novoLines){
                             //last line, not found, Add to array
+                            $logger->info(Cat::ERROR_ADD_EAN_TO_OLD_EANFILE.$velhoData[1]);
                             $linesToRemove[] = [trim($velhoData[1]),trim($velhoData[5])];
                         }
                         $currentLineNovo++;
@@ -386,24 +389,17 @@ class Expert extends Command
         }
 
         print_r($linesToRemove);
-        print_r("Open file to append EAN");
         foreach($linesToRemove as $data){
             try {
-                //Backup do ficheiro velho
-                copy($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/oldEan",$this->directory->getRoot()."/app/code/Mlp/Cli/Csv/oldEan.bak");
-                //Vamos por o produto com stock a 0, e escrever um ficheiro com numeros ean para remover depois 2 ou 3 vezes por ano
+    
                 print_r($data[0]."\n");
                 $this->produtoInterno->sku = $data[0];
                 $this->produtoInterno->stock = 0;
                 $this->produtoInterno->setStock($logger,'expert');
                 
-                if(file_put_contents ( $this->directory->getRoot()."/app/code/Mlp/Cli/Csv/oldEan" , $data[0] , FILE_APPEND | LOCK_EX)){
-                    print_r($data[0]."ok\n");
-                }else {
-                    $logger->info(Cat::ERROR_ADD_EAN_TO_OLD_EANFILE.$data[0]);
-                }
+                
             }catch(\Exception $e) {
-                print_r("Delete Exception: ".$e->getMessage());
+                print_r(Cat::ERROR_SET_STOCK_ZERO_TO_REMOVE.$e->getMessage());
             }
         }
     }

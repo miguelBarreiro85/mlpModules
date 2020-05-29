@@ -195,12 +195,13 @@ class Orima extends Command
                     while (($orimaData = fgetcsv($handleOrima, 5000, ";")) !== FALSE) {
                         print_r($internoData[8]." - Line interno: ".$currentLineInterno." - line: ".$currentLineOrima." - ".$orimaData[8]."\n");
                         if (strcmp($internoData[8],$orimaData[8]) == 0) {
-                            $logger->info(Cat::FOUND_PRODUCT_SKU.$internoData[8]);
+                            $logger->info(Cat::WARN_FOUND_PRODUCT_SKU.$internoData[8]);
                             break;
                         }
                         
                         if ($currentLineOrima == $orimaLines){
                             //last line, not found, Add to array
+                            $logger->info(Cat::ERROR_ADD_EAN_TO_OLD_EANFILE.$internoData[8]);
                             $linesToRemove[] = [trim($internoData[8]),trim($internoData[0])];
                         }
                         $currentLineOrima++;
@@ -220,9 +221,9 @@ class Orima extends Command
                 $this->produtoInterno->sku = $data[0];
                 $this->produtoInterno->stock = 0;
                 $this->produtoInterno->setStock($logger,'orima');
-                $logger->info(Cat::WARN_OLD_PRODUCT.$this->produtoInterno->sku);
+                //$logger->info(Cat::WARN_OLD_PRODUCT.$this->produtoInterno->sku);
             }catch(\Exception $e) {
-                print_r("Delete Exception: ".$e->getMessage());
+                print_r(Cat::ERROR_SET_STOCK_ZERO_TO_REMOVE.$e->getMessage());
             }
         }
     }
