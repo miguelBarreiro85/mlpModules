@@ -180,18 +180,22 @@ class Expert extends Command
     }
 
     private function getCsv($logger){
-        
-        if (copy($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertNovo.csv",$this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/OldCsv/ExpertVelho".date("Y-m-d").".csv")){
-            print_r("Copied old Csv\n");
-            print_r("Renaming ExpertNovo to ExpertVelho\n");
-            if (rename($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertNovo.csv",$this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertVelho.csv"))
-            {
-                $this->downloadCsv($logger);
+        try {
+            if (copy($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertNovo.csv",$this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/OldCsv/ExpertVelho".date("Y-m-d").".csv")){
+                print_r("Copied old Csv\n");
+                print_r("Renaming ExpertNovo to ExpertVelho\n");
+                if (rename($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertNovo.csv",$this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertVelho.csv"))
+                {
+                    $this->downloadCsv($logger);
+                }else {
+                    $logger->info(Cat::ERROR_RENAMING_CSV);
+                }
             }else {
-                $logger->info(Cat::ERROR_RENAMING_CSV);
+                //File not copied download new 
+                $this->downloadCsv($logger);
             }
-        }else {
-            //File not copied download new 
+        }catch(\Exception $e) {
+            $logger->info(Cat::ERROR_RENAMING_CSV.$e->getMessage()." - Attempting to download new file");
             $this->downloadCsv($logger);
         }
         
