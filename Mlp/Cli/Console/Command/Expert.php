@@ -180,34 +180,42 @@ class Expert extends Command
     }
 
     private function getCsv($logger){
-    
-        copy($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertNovo.csv",$this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/OldCsv/ExpertVelho".date("Y-m-d").".csv");
-        print_r("Copied old Csv\n");
-        print_r("Renaming ExpertNovo to ExpertVelho\n");
-        if (rename($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertNovo.csv",$this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertVelho.csv"))
-        {
-            print_r("ok\nDownloading new Csv\n");
-            $ch = curl_init("https://experteletro.pt/webservice.php?key=42b91123-75ba-11ea-8026-a4bf011b03ee&pass=bWlndWVs");
-            $fp = fopen($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertNovo.csv", 'wb');
-            curl_setopt($ch, CURLOPT_FILE, $fp);
-            curl_setopt($ch, CURLOPT_HEADER, 0);
-            curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,0);
-            curl_setopt($ch,CURLOPT_TIMEOUT,0);
-            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-            if (curl_exec($ch)){
-                print_r("OK\n");
-                curl_close($ch);
-                fclose($fp);
+        
+        if (copy($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertNovo.csv",$this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/OldCsv/ExpertVelho".date("Y-m-d").".csv")){
+            print_r("Copied old Csv\n");
+            print_r("Renaming ExpertNovo to ExpertVelho\n");
+            if (rename($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertNovo.csv",$this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertVelho.csv"))
+            {
+                $this->downloadCsv($logger);
             }else {
-                print_r("Download Error");
-                unlink($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertNovo.csv");
+                $logger->info(Cat::ERROR_RENAMING_CSV);
             }
         }else {
-            $logger->info("Could not Rename file\n");
+            //File not copied download new 
+            $this->downloadCsv($logger);
         }
         
     }
 
+    private function downloadCsv($logger){
+        print_r("ok\nDownloading new Csv\n");
+        $ch = curl_init("https://experteletro.pt/webservice.php?key=42b91123-75ba-11ea-8026-a4bf011b03ee&pass=bWlndWVs");
+        $fp = fopen($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertNovo.csv", 'wb');
+        curl_setopt($ch, CURLOPT_FILE, $fp);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,0);
+        curl_setopt($ch,CURLOPT_TIMEOUT,0);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        if (curl_exec($ch)){
+            print_r("OK\n");
+            curl_close($ch);
+            fclose($fp);
+        }else {
+            print_r("Download Error");
+            $logger->info(Cat::ERROR_DOWNLOAD_CSV);
+            unlink($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertNovo.csv");
+        }
+    }
     private function updateStocks(){
 
     }
