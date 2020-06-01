@@ -18,6 +18,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Mlp\Cli\Helper\imagesHelper as imagesHelper;
+use Mlp\Cli\Helper\CategoriesConstants as Cat;
 /**
  * Class Products
  */
@@ -190,6 +191,10 @@ class Products extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $writer = new \Zend\Log\Writer\Stream($this->directory->getRoot().'/var/log/Mlp_Products.log');
+        $logger = new \Zend\Log\Logger();
+        $logger->addWriter($writer);
+
         $this->state->setAreaCode(\Magento\Framework\App\Area::AREA_GLOBAL);
         $changeManufacturer = $input->getOption(self::CHANGE_MANUFACTURER);
         $oldManufacturer = $input->getArgument('oldManufacturer');
@@ -224,7 +229,8 @@ class Products extends Command
         }
         $addProducts = $input->getOption(self::ADD_PRODUCTS);
         if($addProducts) {
-            $this->addProducts();
+            //$this->addProducts($logger);
+            $this->disableAllProductsSql();
         }
         else {
             throw new \InvalidArgumentException('Option  ELSE');
@@ -233,15 +239,34 @@ class Products extends Command
     }
 
 
-    private function addProducts(){
+    private function addProducts($logger){
         //disable all products
         $searchCriteria = $this->searchCriteriaBuilder->addFilter('status',Status::STATUS_ENABLED)->create();
         $products = $this->productRepository->getList($searchCriteria)->getItems();
         foreach($products as $product){
-            $product->setStatus(Status::STATUS_DISABLED);
-            print_r($product->getSku()."\n");
-            $this->productRepository->save($product);
+            try {
+                $product->setStatus(Status::STATUS_DISABLED);
+                print_r($product->getSku()."\n");
+                $logger->info(Cat::WARN_DISABLING_PRODUCT.$product->getSku());
+                $this->productRepository->save($product);
+            }catch (\Exception $e) {
+                $logger->info(Cat::ERROR_DISABLING_PRODUCT.$product->getSku());
+            }
+            
         }
+    }
+
+    private function disableAllProductsSql(){
+        $sqlStatusAttributeId = 'SELECT attribute_id from eav_attribute where attribute_code like "status"';
+        $connection =  $this->resourceConnection->getConnection();
+        $statusAttributeId = $connection->fetchAll($sqlStatusAttributeId);
+        $sqlUpdateStatus = 'UPDATE catalog_product_entity_int 
+                            SET value = 2
+                            WHERE attribute_id = '.$statusAttributeId[0]["attribute_id"].' AND value';
+        $connection->query($sqlUpdateStatus);
+        
+        
+        
     }
     protected function getAttribute($attCode)
     {
