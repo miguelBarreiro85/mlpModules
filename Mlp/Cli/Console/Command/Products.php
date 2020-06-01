@@ -5,7 +5,10 @@
  */
 namespace Mlp\Cli\Console\Command;
 
+use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Api\ProductRepositoryInterface;
+use Magento\Catalog\Model\Product;
+use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\Framework\Api\FilterBuilder;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Mlp\Cli\Model\ProdutoInterno;
@@ -42,6 +45,7 @@ class Products extends Command
 
     const DISABLE_PRODUCTS_WITHOUT_STOCK = 'disable-products-without-stock';
     const UNIQUE_PRODUCTS_MANUFACTURER_BY_VENDOR = 'list-unique-manufacturers-by-vendor';
+    const ADD_PRODUCTS = 'add-products';
     /**
      * @var ProductRepositoryInterface
      */
@@ -166,6 +170,12 @@ class Products extends Command
                     '-U',
                     InputOption::VALUE_NONE,
                     'SHOW UNIQUE MANUFACTURER BY VENDOR'
+                ),
+                new InputOption(
+                    self::ADD_PRODUCTS,
+                    '-a',
+                    InputOption::VALUE_NONE,
+                    'ADD PRODUTCS'
                 )
             ])
             ->addArgument('oldManufacturer', InputArgument::OPTIONAL, 'oldManufacturer')
@@ -212,6 +222,10 @@ class Products extends Command
         if($uniqueManufacturer) {
             $this->detectUniqueManufaturers();
         }
+        $addProducts = $input->getOption(self::ADD_PRODUCTS);
+        if($addProducts) {
+            $this->addProducts();
+        }
         else {
             throw new \InvalidArgumentException('Option  ELSE');
         }
@@ -219,6 +233,16 @@ class Products extends Command
     }
 
 
+    private function addProducts(){
+        //disable all products
+        $searchCriteria = $this->searchCriteriaBuilder->addFilter('status',Status::STATUS_ENABLED)->create();
+        $products = $this->productRepository->getList($searchCriteria)->getItems();
+        foreach($products as $product){
+            $product->setStatus(Status::STATUS_DISABLED);
+            print_r($product->getSku()."\n");
+            $this->productRepository->save($product);
+        }
+    }
     protected function getAttribute($attCode)
     {
         $attribute = $this->entityAttribute->loadByCode('catalog_product', $attCode);

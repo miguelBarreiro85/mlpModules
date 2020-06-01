@@ -352,12 +352,20 @@ class Expert extends Command
             fclose($handle);
         }
 
-        if (($handle = fopen($fileUrlVelho, "r")) !== FALSE) {
-            while (($data = fgetcsv($handle, 5000, ";")) !== FALSE) {
-                $velhoLines++;
+        try{
+            if (($handle = fopen($fileUrlVelho, "r")) !== FALSE) {
+                while (($data = fgetcsv($handle, 5000, ";")) !== FALSE) {
+                    $velhoLines++;
+                }
+                fclose($handle);
             }
-            fclose($handle);
+        }catch (\Exception $e){
+            //1a vez ainda não há ficheiro
+            print_r("Não abriu o ficheiro velho\n");
+            $logger->info(Cat::ERROR_OPEN_FILE.$e->getMessage());
+            return;
         }
+        
 
         print_r("Numero de linhas Novo: ".$novoLines."\n");
         print_r("Numero de linhas Velho: ".$velhoLines."\n");
