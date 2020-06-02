@@ -181,7 +181,7 @@ class Sorefoz extends Command
                     $price = $this->produtoInterno->getPrice((int)str_replace(".", "", $data[12]));
                     if ($price == 0){
                         print_r(" price 0\n");
-                        $logger->(Cat::ERROR_PRICE_ZERO.$sku);
+                        $logger->info(Cat::ERROR_PRICE_ZERO.$sku);
                         continue;
                     }
                     $this->sqlUpdatePrice($sku,$priceAttributeId[0]["attribute_id"],$price);
