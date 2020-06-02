@@ -136,7 +136,7 @@ class Expert extends Command
                     //Add Product
                     print_r("Not found - Add Product - ");
                     if (!$this->setData($data,$logger)){
-                        print_r("\n");
+                        print_r(" - ERROR WITH DATA\n");
                         continue;
                     }
                     $this->produtoInterno -> add_product($logger, $this->produtoInterno->sku);
@@ -178,7 +178,7 @@ class Expert extends Command
             $this->produtoInterno->stock = 0;
             $this->produtoInterno->status = Status::STATUS_DISABLED;
         }else {
-            $this->produtoInterno->stock = 0;
+            $this->produtoInterno->stock = 1;
             $this->produtoInterno->status = Status::STATUS_ENABLED;
         }
     }
@@ -254,10 +254,11 @@ class Expert extends Command
 
         $this->setStock($data[16]);
         if($this->produtoInterno->price == 0){
-            print_r(" - Out of stock or price 0 - ");
+            print_r(" - price 0 - ");
             $logger->info(Cat::ERROR_PRICE_ZERO.$this->produtoInterno->sku);
             return  0;
         }
+
         if($this->produtoInterno->stock == 0){
             return 0;
         }
