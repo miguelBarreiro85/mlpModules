@@ -3,6 +3,7 @@
 
 namespace Mlp\Cli\Console\Command;
 
+use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use \Mlp\Cli\Helper\Category as CategoryManager;
 use \Mlp\Cli\Helper\Expert\ExpertCategories;
 
@@ -18,29 +19,28 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 use Mlp\Cli\Helper\CategoriesConstants as Cat;
 use Mlp\Cli\Helper\Manufacturer as Manufacturer;
-
+use Mlp\Cli\Helper\SqlHelper as SqlHelper;
 class Expert extends Command
 {
 
     /**
      * Filter Prodcuts
      */
-    const FILTER_PRODUCTS = 'filter-products';
-    const ADD_PRODUCTS = 'add-products';
-    const UPDATE_STOCKS = 'update-stocks';
+    const UPDATE_PRODUCTS = 'update-products';
     const ADD_IMAGES = 'add-images';
-    const UPDATE_REMOVED_PRODUCTS_STOCK = 'update-removed-products-stock';
+    
 
     private $directory;
-    private $categoryManager;
+    
     private $productRepository;
     private $state;
     private $produtoInterno;
     private $loadCsv;
     private $imagesHelper;
+    private $sqlHelper;
 
     public function __construct(DirectoryList $directory,
-                                \Mlp\Cli\Helper\Category $categoryManager,                          
+                                \Mlp\Cli\Helper\SqlHelper $sqlHelper,
                                 \Magento\Framework\App\State $state,
                                 \Mlp\Cli\Model\ProdutoInterno $productoInterno,
                                 \Mlp\Cli\Helper\LoadCsv $loadCsv,
@@ -48,7 +48,7 @@ class Expert extends Command
                                 \Mlp\Cli\Helper\imagesHelper $imagesHelper){
 
         $this->directory = $directory;
-        $this->categoryManager = $categoryManager;
+        $this->sqlHelper = $sqlHelper;
         $this->state = $state;
         $this->produtoInterno = $productoInterno;
         $this->loadCsv = $loadCsv;
@@ -62,35 +62,18 @@ class Expert extends Command
         $this->setName('Mlp:Expert')
             ->setDescription('Manage Expert csv')
             ->setDefinition([
+              
                 new InputOption(
-                    self::FILTER_PRODUCTS,
-                    '-f',
-                    InputOption::VALUE_NONE,
-                    'Filter Expert csv'
-                ),
-                new InputOption(
-                    self::ADD_PRODUCTS,
-                    '-a',
-                    InputOption::VALUE_NONE,
-                    'Add new Products'
-                ),
-                new InputOption(
-                    self::UPDATE_STOCKS,
+                    self::UPDATE_PRODUCTS,
                     '-u',
                     InputOption::VALUE_NONE,
-                    'Update Stocks and State (Active or inactive)'
+                    'Update Products'
                 ),
                 new InputOption(
                     self::ADD_IMAGES,
                     '-i',
                     InputOption::VALUE_NONE,
                     'Add Images'
-                ),
-                new InputOption(
-                    self::UPDATE_REMOVED_PRODUCTS_STOCK,
-                    '-U',
-                    InputOption::VALUE_NONE,
-                    'Update removed products stock'
                 )
             ])->addArgument('categories', InputArgument::OPTIONAL, 'Categories?');
         parent::configure();
@@ -106,105 +89,74 @@ class Expert extends Command
         $logger->addWriter($writer);
 
         $this->state->setAreaCode(\Magento\Framework\App\Area::AREA_GLOBAL);
-        $categories = $input->getArgument('categories');
-
-        $addProducts = $input->getOption(self::ADD_PRODUCTS);
-        if ($addProducts) {
-            $this->addProducts($logger, $categories);
-        }
-        $updateStocks = $input->getOption(self::UPDATE_STOCKS);
-        if ($updateStocks){
-            $this->updateStocks();
+        $categories = $input->getArgument('categories');   
+        $updateProducts = $input->getOption(self::UPDATE_PRODUCTS);
+        if ($updateProducts){
+            $this->updateProducts($logger,$categories);
         }
         $addImages = $input->getOption(self::ADD_IMAGES);
         if ($addImages) {
             $this->addImages($categories);
         }
-        $updateRemovedProductsStock = $input->getOption(self::UPDATE_REMOVED_PRODUCTS_STOCK);
-        if ($updateRemovedProductsStock) {
-            
-        }
-        else {
-            throw new \InvalidArgumentException('Option ' . self::FILTER_PRODUCTS . ' is missing.');
-        }
-    }
-
-
-
-    protected function addProducts($logger, $categoriesFilter = null){
-        print_r("Getting Csv\n");
-        $this->getCsv($logger);
-        $this->disableOldProducts($logger);
-        print_r("Adding Expert products" . "\n");
-        $row = 0;
-        foreach ($this->loadCsv->loadCsv('Expert/ExpertNovo.csv',";") as $data) {
-            $row++;
-            print_r($row." - ");
-            try{
-                if(!$this->setData($data,$logger)){
-                    print_r("\n");
-                    continue;
-                }
-            }catch(\Exception $e){
-                $logger->info("Error setData: ".$row);
-                continue;
-            }
-            if (!is_null($categoriesFilter)){
-                if (strcmp($categoriesFilter,$this->produtoInterno->familia) != 0){
-                    print_r("wrong familie - ");
-                    continue;
-                }
-            }
-            try {
-                $product = $this -> productRepository -> get($this->produtoInterno->sku, true, null, true);
-            } catch (NoSuchEntityException $exception) {
-                
-                $this->produtoInterno->manufacturer =  Manufacturer::getExpertManufacturer($this->produtoInterno->manufacturer);
-                $this->produtoInterno -> add_product($logger, $this->produtoInterno->sku);
-                print_r("\n");
-                //$this -> produtoInterno -> addSpecialAttributesExpert($product, $logger);
-            }
-            if(isset($product)){
-                try {
-                    print_r(" - Setting price: \n");
-                    $this->produtoInterno->updatePrice($logger);
-                } catch (\Exception $ex) {
-                    print_r("Update stock exception - " . $ex -> getMessage() . "\n");
-                }
-            }
-
-        }
-
-
-
-    }
-
-    private function getCsv($logger){
-        try {
-            if (copy($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertNovo.csv",$this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/OldCsv/ExpertVelho".date("Y-m-d").".csv")){
-                print_r("Copied old Csv\n");
-                print_r("Renaming ExpertNovo to ExpertVelho\n");
-                if (rename($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertNovo.csv",$this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertVelho.csv"))
-                {
-                    $this->downloadCsv($logger);
-                }else {
-                    $logger->info(Cat::ERROR_RENAMING_CSV);
-                }
-            }else {
-                //File not copied download new 
-                $this->downloadCsv($logger);
-            }
-        }catch(\Exception $e) {
-            $logger->info(Cat::ERROR_RENAMING_CSV.$e->getMessage()." - Attempting to download new file");
-            $this->downloadCsv($logger);
-        }
         
+        else {
+            throw new \InvalidArgumentException('Option is missing.');
+        }
+    }
+
+
+
+    protected function updateProducts($logger, $categoriesFilter = null){
+        print_r("Getting Csv\n");
+        $this->downloadCsv($logger);
+        print_r("Updating Expert products" . "\n");
+        $row = 0;
+        $statusAttributeId = $this->sqlHelper->sqlGetAttributeId('status');
+        $priceAttributeId = $this->sqlHelper->sqlGetAttributeId('price');
+
+        foreach ($this -> loadCsv -> loadCsv('/Expert/Expert.csv', ";") as $data) {
+            //Update status sql
+            $sku = trim($data[1]);
+            print_r($row++." - ".$sku." - ");
+            if (strlen($sku) > 12) {
+                if ($this->sqlHelper->sqlUpdateStatus($sku,$statusAttributeId[0]["attribute_id"])){
+                    //update price anda stock
+                    $price = $this->produtoInterno->getPrice((int)trim($data[7]));
+                    if ($price == 0){
+                        print_r(" price 0\n");
+                        $logger->info(Cat::ERROR_PRICE_ZERO.$sku);
+                        continue;
+                    }
+                    $this->sqlHelper->sqlUpdatePrice($sku,$priceAttributeId[0]["attribute_id"],$price);
+                    $this->produtoInterno->sku = $sku;
+                    $this->setStock($data[16]);    
+                    $this->produtoInterno->setStock($logger,"sorefoz");
+                    print_r("updated - stock\n");
+                }else {
+                    //Add Product
+                    print_r("Not found - Add Product - ");
+                    if (!$this->setData($data,$logger)){
+                        print_r("\n");
+                        continue;
+                    }
+                    $this->produtoInterno -> add_product($logger, $this->produtoInterno->sku);
+                    print_r("\n");
+                    
+                }
+            } else {
+                print_r("Sku invalido\n");
+                $logger->info(Cat::ERROR_WRONG_SKU.$sku);
+            }
+        }
+
+
+
     }
 
     private function downloadCsv($logger){
         print_r("ok\nDownloading new Csv\n");
         $ch = curl_init("https://experteletro.pt/webservice.php?key=42b91123-75ba-11ea-8026-a4bf011b03ee&pass=bWlndWVs");
-        $fp = fopen($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertNovo.csv", 'wb');
+        $fp = fopen($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/Expert.csv", 'wb');
         curl_setopt($ch, CURLOPT_FILE, $fp);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,0);
@@ -217,12 +169,20 @@ class Expert extends Command
         }else {
             print_r("Download Error");
             $logger->info(Cat::ERROR_DOWNLOAD_CSV);
-            unlink($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertNovo.csv");
+            unlink($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/Expert.csv");
         }
     }
-    private function updateStocks(){
 
+    private function setStock($stock){
+        if (preg_match("/Indisponivel/i",$stock) == 1){
+            $this->produtoInterno->stock = 0;
+            $this->produtoInterno->status = Status::STATUS_DISABLED;
+        }else {
+            $this->produtoInterno->stock = 0;
+            $this->produtoInterno->status = Status::STATUS_ENABLED;
+        }
     }
+
     private function setData($data,$logger)
     {
         /*
@@ -255,14 +215,8 @@ class Expert extends Command
 
         $data = array_map($functionTim,$data);
         
-        if (preg_match("/Indisponivel/i",$data[16]) == 1){
-            $stock = 0;
-            $status = 1;
-        }else {
-            $stock = 1;
-            $status = 1;
-        }
-
+        
+    
         $this->produtoInterno->sku = $data[1];
         
         if (strlen($this->produtoInterno->sku) < 12) {
@@ -295,14 +249,10 @@ class Expert extends Command
         ) {
             return 0;
         }*/
-        $this->produtoInterno->stock = $stock;
-        $this->produtoInterno->status = $status;
-        $this->produtoInterno->price = $this->produtoInterno->getPrice((int)trim($data[7]));
         
-       
-        print_r(" - setting stock ");
-        $this->produtoInterno->setStock($logger,"expert");
+        $this->produtoInterno->price = $this->produtoInterno->getPrice((int)trim($data[7]));
 
+        $this->setStock($data[16]);
         if($this->produtoInterno->price == 0){
             print_r(" - Out of stock or price 0 - ");
             $logger->info(Cat::ERROR_PRICE_ZERO.$this->produtoInterno->sku);
@@ -334,94 +284,6 @@ class Expert extends Command
             return 0;
         }
         return 1;
-    }
-
-    private function disableOldProducts($logger)
-    {
-        // Coloca o stock da expert a 0 dos productos que eles removeram (fora de gama etc...)
-        //Download Csv
-        $novoLines = 0;
-        $velhoLines = 0;
-        $fileUrlNovo = $this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertNovo.csv";
-        $fileUrlVelho = $this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Expert/ExpertVelho.csv";
-      
-        if (($handle = fopen($fileUrlNovo, "r")) !== FALSE) {
-            while (($data = fgetcsv($handle, 5000, ";")) !== FALSE) {
-                $novoLines++;
-            }
-            fclose($handle);
-        }
-
-        try{
-            if (($handle = fopen($fileUrlVelho, "r")) !== FALSE) {
-                while (($data = fgetcsv($handle, 5000, ";")) !== FALSE) {
-                    $velhoLines++;
-                }
-                fclose($handle);
-            }
-        }catch (\Exception $e){
-            //1a vez ainda não há ficheiro
-            print_r("Não abriu o ficheiro velho\n");
-            $logger->info(Cat::ERROR_OPEN_FILE.$e->getMessage());
-            return;
-        }
-        
-
-        print_r("Numero de linhas Novo: ".$novoLines."\n");
-        print_r("Numero de linhas Velho: ".$velhoLines."\n");
-        
-        
-        $linesToRemove = [];
-        $currentLineVelho = 0;
-
-        if (($handleVelho = fopen($fileUrlVelho, "r")) !== FALSE) {
-            //ignorar a 1ª linha,
-            fgetcsv($handleVelho, 5000, ";");
-            while (($velhoData = fgetcsv($handleVelho, 5000, ";")) !== FALSE) {
-                if (strlen(trim($velhoData[1])) != 13) {
-                    $currentLineVelho++;
-                    continue;
-                }
-                $currentLineNovo = 0;
-
-                if (($handleNovo = fopen($fileUrlNovo, "r")) !== FALSE) {
-                    //ignorar a 1ª linha,
-                    fgetcsv($handleNovo, 5000, ";");
-                    while (($novoData = fgetcsv($handleNovo, 5000, ";")) !== FALSE) {
-                        print_r($velhoData[1]." - Line Velho: ".$currentLineVelho." - line: ".$currentLineNovo." - ".$novoData[1]."\n");
-                        if (strcmp($velhoData[1],$novoData[1]) == 0) {
-                            $logger->info(Cat::WARN_FOUND_PRODUCT_SKU.$velhoData[1]);
-                            break;
-                        }
-                        
-                        if ($currentLineNovo == $novoLines){
-                            //last line, not found, Add to array
-                            $logger->info(Cat::ERROR_ADD_EAN_TO_OLD_EANFILE.$velhoData[1]);
-                            $linesToRemove[] = [trim($velhoData[1]),trim($velhoData[5])];
-                        }
-                        $currentLineNovo++;
-                    }
-                    fclose($handleNovo);
-                }
-                $currentLineVelho++;
-            }
-            fclose($handleVelho);
-        }
-
-        print_r($linesToRemove);
-        foreach($linesToRemove as $data){
-            try {
-    
-                print_r($data[0]."\n");
-                $this->produtoInterno->sku = $data[0];
-                $this->produtoInterno->stock = 0;
-                $this->produtoInterno->setStock($logger,'expert');
-                
-                
-            }catch(\Exception $e) {
-                print_r(Cat::ERROR_SET_STOCK_ZERO_TO_REMOVE.$e->getMessage());
-            }
-        }
     }
 
     private function addImages($categoriesFilter) 

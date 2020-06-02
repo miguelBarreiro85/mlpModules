@@ -4,6 +4,7 @@
 namespace Mlp\Cli\Console\Command;
 
 use Mlp\Cli\Helper\CategoriesConstants as Cat;
+use Mlp\Cli\Helper\SqlHelper as SqlHelper;
 use Braintree\Exception;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -12,6 +13,7 @@ use Mlp\Cli\Helper\Manufacturer as Manufacturer;
 use Mlp\Cli\Helper\splitFile;
 use Mlp\Cli\Helper\imagesHelper;
 use Mlp\Cli\Helper\LoadCsv;
+use SqlHelper as GlobalSqlHelper;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
@@ -34,18 +36,19 @@ class Sorefoz extends Command
 
     private $directory;
 
-    private $categoryManager;
+    
     private $productRepository;
     private $state;
     private $produtoInterno;
     private $loadCsv;
     private $imagesHelper;
     private $sorefozCategories;
-    private $resourceConnection;
+    private $sqlHelper;
 
-    public function __construct(\Magento\Framework\App\ResourceConnection $resourceConnection,
+    public function __construct(
+                                
                                 DirectoryList $directory,
-                                \Mlp\Cli\Helper\Category $categoryManager,
+                                \Mlp\Cli\Helper\SqlHelper $sqlHelper,
                                 \Magento\Framework\App\State $state,
                                 \Mlp\Cli\Model\ProdutoInterno $produtoInterno,
                                 \Magento\Catalog\Api\ProductRepositoryInterface $productRepositoryInterface,
@@ -55,14 +58,14 @@ class Sorefoz extends Command
     {
 
         $this -> directory = $directory;
-        $this -> categoryManager = $categoryManager;
+        $this->sqlHelper = $sqlHelper;
         $this -> productRepository = $productRepositoryInterface;
         $this -> state = $state;
         $this -> produtoInterno = $produtoInterno;
         $this->loadCsv = $loadCsv;
         $this->imagesHelper = $imagesHelper;
         $this->sorefozCategories = $sorefozCategories;
-        $this->resourceConnection = $resourceConnection;
+        
 
         parent ::__construct();
     }
@@ -168,15 +171,15 @@ class Sorefoz extends Command
         $this->getCsvFromFTP($logger);
         $row = 0;
 
-        $statusAttributeId = $this->sqlGetAttributeId('status');
-        $priceAttributeId = $this->sqlGetAttributeId('price');
+        $statusAttributeId = $this->sqlHelper->sqlGetAttributeId('status');
+        $priceAttributeId = $this->sqlHelper->sqlGetAttributeId('price');
 
         foreach ($this -> loadCsv -> loadCsv('/Sorefoz/tot_jlcb_utf.csv', ";") as $data) {
             //Update status sql
             $sku = trim($data[18]);
             print_r($row++." - ".$sku." - ");
             if (strlen($sku) > 12) {
-                if ($this->sqlUpdateStatus($sku,$statusAttributeId[0]["attribute_id"])){
+                if ($this->sqlHelper->sqlUpdateStatus($sku,$statusAttributeId[0]["attribute_id"])){
                     //update price anda stock
                     $price = $this->produtoInterno->getPrice((int)str_replace(".", "", $data[12]));
                     if ($price == 0){
@@ -184,7 +187,7 @@ class Sorefoz extends Command
                         $logger->info(Cat::ERROR_PRICE_ZERO.$sku);
                         continue;
                     }
-                    $this->sqlUpdatePrice($sku,$priceAttributeId[0]["attribute_id"],$price);
+                    $this->sqlHelper->sqlUpdatePrice($sku,$priceAttributeId[0]["attribute_id"],$price);
                     $this->produtoInterno->sku = $sku;
                     $stock = $this->getStock($data[29]);    
                     $this->produtoInterno->stock = $stock;
@@ -215,44 +218,7 @@ class Sorefoz extends Command
         }
     }
 
-    private function sqlUpdatePrice($sku,$priceAttributeId,$price){
-        $sqlEntityId = 'SELECT entity_id from catalog_product_entity where sku like "'.$sku.'"';
-        $connection =  $this->resourceConnection->getConnection();
-        $entityId = $connection->fetchAll($sqlEntityId);
-        if (!empty($entityId)) {
-            $sqlUpdateStatus = 'UPDATE catalog_product_entity_decimal 
-                    SET value = '.$price.'
-                    WHERE attribute_id = '.$priceAttributeId.' AND entity_id = '.$entityId[0]["entity_id"];
-            $connection->query($sqlUpdateStatus);
-            print_r("updated price - ");
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    private function sqlGetAttributeId($attribute) {
-        $sqlStatusAttributeId = 'SELECT attribute_id from eav_attribute where attribute_code like "'.$attribute.'"';
-        $connection =  $this->resourceConnection->getConnection();
-        $statusAttributeId = $connection->fetchAll($sqlStatusAttributeId);
-        return $statusAttributeId;
-    }
-
-    private function sqlUpdateStatus($sku,$statusId){
-        $sqlEntityId = 'SELECT entity_id from catalog_product_entity where sku ='.$sku;
-        $connection =  $this->resourceConnection->getConnection();
-        $entityId = $connection->fetchAll($sqlEntityId);
-        if (!empty($entityId)) {
-            $sqlUpdateStatus = 'UPDATE catalog_product_entity_int 
-                    SET value = 1
-                    WHERE attribute_id = '.$statusId.' AND entity_id = '.$entityId[0]["entity_id"];
-            $connection->query($sqlUpdateStatus);
-            print_r("Enabled Product - ");
-            return true;
-        } else {
-            return false;
-        }
-    }
+    
 
 
     public function setSorefozData($data,$logger) {
@@ -271,16 +237,8 @@ class Sorefoz extends Command
         }
         
         $stock = $this->getStock($data[29]);
-
-        if (preg_match("/sim/i",$data[16]) == 1) {
-            $status = 2;
-            print_r("fora gama - ");
-            return 0;
-        }else{
-            $status = 1;
-        }
         
-        $this->produtoInterno->status = $status;
+        $this->produtoInterno->status = Status::STATUS_ENABLED;
         $this->produtoInterno->stock = $stock;
         $this->produtoInterno->price = (int)trim($data[11]);
 
@@ -314,7 +272,6 @@ class Sorefoz extends Command
         $this->produtoInterno->height = (int)$data[22];
         $this->produtoInterno->weight = (int)$data[19];
         $this->produtoInterno->price = $this->produtoInterno->getPrice((int)str_replace(".", "", $data[12]));
-        $this->produtoInterno->status = $status;
         $this->produtoInterno->image = $data[24];
         $this->produtoInterno->classeEnergetica = $data[25];
         $this->produtoInterno->imageEnergetica = $data[28];
