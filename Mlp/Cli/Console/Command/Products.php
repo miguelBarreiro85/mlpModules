@@ -44,7 +44,7 @@ class Products extends Command
 
     const DELETE_PRODUCTS_BY_CATEGORY_ID = 'delete-products-by-category-id';
 
-    const DISABLE_PRODUCTS_WITHOUT_STOCK = 'disable-products-without-stock';
+    const DISABLE_PRODUCTS = 'disable-products';
     const UNIQUE_PRODUCTS_MANUFACTURER_BY_VENDOR = 'list-unique-manufacturers-by-vendor';
     const ADD_PRODUCTS = 'add-products';
     /**
@@ -161,7 +161,7 @@ class Products extends Command
                     'Delete products by category id'
                 ),
                 new InputOption(
-                    self::DISABLE_PRODUCTS_WITHOUT_STOCK,
+                    self::DISABLE_PRODUCTS,
                     '-D',
                     InputOption::VALUE_NONE,
                     'Disable products without stock'
@@ -218,10 +218,10 @@ class Products extends Command
             print_r("delete");
             $this->categoryManager->deleteProductsByCategoryId($oldCat);
         }
-        $disableProductsWithoutStock = $input->getOption(self::DISABLE_PRODUCTS_WITHOUT_STOCK);
+        $disableProductsWithoutStock = $input->getOption(self::DISABLE_PRODUCTS);
         if ($disableProductsWithoutStock) {
             print_r("Disabling products without stock");
-            $this->disableOutOfStockProducts();
+            $this->disableAllProductsSql();
         }
         $uniqueManufacturer = $input->getOption(self::UNIQUE_PRODUCTS_MANUFACTURER_BY_VENDOR);
         if($uniqueManufacturer) {
@@ -262,7 +262,7 @@ class Products extends Command
         $statusAttributeId = $connection->fetchAll($sqlStatusAttributeId);
         $sqlUpdateStatus = 'UPDATE catalog_product_entity_int 
                             SET value = 2
-                            WHERE attribute_id = '.$statusAttributeId[0]["attribute_id"].' AND value';
+                            WHERE attribute_id = '.$statusAttributeId[0]["attribute_id"];
         $connection->query($sqlUpdateStatus);
         
         

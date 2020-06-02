@@ -28,11 +28,9 @@ class Sorefoz extends Command
     /**
      * Filter Prodcuts
      */
-    const FILTER_PRODUCTS = 'filter-products';
     const ADD_PRODUCTS = 'add-products';
     const UPDATE_STOCKS = 'update-stocks';
     const ADD_IMAGES = 'add-images';
-    const DISABLE_PRODUCTS = 'disable-products';
 
     private $directory;
 
@@ -43,8 +41,10 @@ class Sorefoz extends Command
     private $loadCsv;
     private $imagesHelper;
     private $sorefozCategories;
+    private $resourceConnection;
 
-    public function __construct(DirectoryList $directory,
+    public function __construct(\Magento\Framework\App\ResourceConnection $resourceConnection,
+                                DirectoryList $directory,
                                 \Mlp\Cli\Helper\Category $categoryManager,
                                 \Magento\Framework\App\State $state,
                                 \Mlp\Cli\Model\ProdutoInterno $produtoInterno,
@@ -62,6 +62,7 @@ class Sorefoz extends Command
         $this->loadCsv = $loadCsv;
         $this->imagesHelper = $imagesHelper;
         $this->sorefozCategories = $sorefozCategories;
+        $this->resourceConnection = $resourceConnection;
 
         parent ::__construct();
     }
@@ -72,12 +73,6 @@ class Sorefoz extends Command
             -> setDescription('Manage Sorefoz Products')
             -> setDefinition([
                 new InputOption(
-                    self::FILTER_PRODUCTS,
-                    '-f',
-                    InputOption::VALUE_NONE,
-                    'Filter Orima csv'
-                ),
-                new InputOption(
                     self::ADD_PRODUCTS,
                     '-a',
                     InputOption::VALUE_NONE,
@@ -87,19 +82,13 @@ class Sorefoz extends Command
                     self::UPDATE_STOCKS,
                     '-u',
                     InputOption::VALUE_NONE,
-                    'Update Stocks, State and Price'
+                    'Update Sorefoz Products'
                 ),
                 new InputOption(
                     self::ADD_IMAGES,
                     '-i',
                     InputOption::VALUE_NONE,
                     'Add images to products'
-                ),
-                new InputOption(
-                    self::DISABLE_PRODUCTS,
-                    '-d',
-                    InputOption::VALUE_NONE,
-                    'Disable Products'
                 )
             ])->addArgument('categories', InputArgument::OPTIONAL, 'Categories?');
         parent::configure();
@@ -112,25 +101,17 @@ class Sorefoz extends Command
     {
         $this -> state -> setAreaCode(\Magento\Framework\App\Area::AREA_GLOBAL);
         $categories = $input->getArgument('categories');
-        $filterProducts = $input -> getOption(self::FILTER_PRODUCTS);
-        if ($filterProducts) {
-            $this -> filterProducts();
-        }
         $addProducts = $input -> getOption(self::ADD_PRODUCTS);
         if ($addProducts) {
             $this->addSorefozProducts($categories);
         }
         $updateStocks = $input -> getOption(self::UPDATE_STOCKS);
         if ($updateStocks) {
-            $this -> updateStocks();
+            $this -> updateSorefozProducts();
         }
         $addImages = $input->getOption(self::ADD_IMAGES);
         if($addImages) {
             $this->addImages($categories);
-        }
-        $disableProducts = $input->getOption(self::DISABLE_PRODUCTS);
-        if($disableProducts) {
-            $this->disableSorefozProducts();
         }
         else {
             throw new \InvalidArgumentException('Option  is missing.');
@@ -178,94 +159,101 @@ class Sorefoz extends Command
         }
     }
     
-    protected function updateSorefozPrices()
+    protected function updateSorefozProducts()
     {
         $writer = new \Zend\Log\Writer\Stream($this -> directory -> getRoot() . '/var/log/Sorefoz.log');
         $logger = new \Zend\Log\Logger();
         $logger -> addWriter($writer);
-        print_r("Updating Sorefoz prices" . "\n");
+        print_r("Updating Sorefoz products" . "\n");
+        $this->getCsvFromFTP($logger);
+        $row = 0;
 
-        foreach ($this -> loadCsv -> loadCsv('tot_jlcb_utf.csv', ";") as $data) {
-            $this->setSorefozData($data,$logger);
-            $this->produtoInterno->updatePrice($logger);
+        $statusAttributeId = $this->sqlGetAttributeId('status');
+        $priceAttributeId = $this->sqlGetAttributeId('price');
+
+        foreach ($this -> loadCsv -> loadCsv('/Sorefoz/tot_jlcb_utf.csv', ";") as $data) {
+            //Update status sql
+            $sku = trim($data[18]);
+            print_r($row++." - ".$sku." - ");
+            if (strlen($sku) > 12) {
+                if ($this->sqlUpdateStatus($sku,$statusAttributeId[0]["attribute_id"])){
+                    //update price anda stock
+                    $price = $this->produtoInterno->getPrice((int)str_replace(".", "", $data[12]));
+                    if ($price == 0){
+                        print_r(" price 0\n");
+                        $logger->(Cat::ERROR_PRICE_ZERO.$sku);
+                        continue;
+                    }
+                    $this->sqlUpdatePrice($sku,$priceAttributeId[0]["attribute_id"],$price);
+                    $this->produtoInterno->sku = $sku;
+                    $stock = $this->getStock($data[29]);    
+                    $this->produtoInterno->stock = $stock;
+                    $this->produtoInterno->setStock($logger,"sorefoz");
+                    print_r("updated - stock\n");
+                }else {
+                    //Add Product
+                    print_r("Not found - Add Product - ");
+                    if (!$this->setSorefozData($data,$logger)){
+                        print_r("\n");
+                        continue;
+                    }
+                    $this->produtoInterno -> add_product($logger, $this->produtoInterno->sku);
+                    print_r("\n");
+                }
+            } else {
+                print_r("Sku invalido\n");
+                $logger->info(Cat::ERROR_WRONG_SKU.$sku);
+            }
         }
     }
 
-
-    protected function disableSorefozProducts()
-    {
-        $this->state->emulateAreaCode(
-            'adminhtml',
-            function () {
-                $writer = new \Zend\Log\Writer\Stream($this->directory->getRoot().'/var/log/Sorefoz.log');
-                $logger = new \Zend\Log\Logger();
-                $logger->addWriter($writer);
-                print_r("Disable Sorefoz products" . "\n");
-                $row = 0;
-                if (($handle = fopen($this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Sorefoz/tot_jlcb_utf.csv", "r")) !== FALSE) {
-                    print_r("abri ficheiro\n");
-                    fgetcsv($handle, 4000, ";");
-                    while (!feof($handle)) {
-                        if (($data = fgetcsv($handle, 4000, ";")) !== FALSE) {
-                            $row++;
-                            print_r($row);
-                            $sku = trim($data[18]);
-                            if (strlen($sku) == 13) {
-                                if (preg_match("/sim/i",$data[16]) == 1) {
-                                    try {
-                                        print_r(" - ".$sku);
-                                        $product = $this->productRepository->get($sku, true, null, true);
-                                        if ($product->getStatus() != 2) {
-                                            $product->setStatus(Status::STATUS_DISABLED);
-                                            try {
-                                                $this->productRepository->save($product);
-                                                print_r(" - disabled\n");
-                                            } catch (\Exception $ex) {
-                                                print_r("save: " . $ex->getMessage() . "\n");
-                                            }
-                                            continue;
-                                        } else {
-                                            print_r("\n");
-                                            continue;
-                                        }
-                                    } catch (NoSuchEntityException $exception) {
-                                        print_r(" - não existe\n");
-                                        continue;
-                                    }
-                                }else {
-                                    print_r(" - Em Gama\n");
-                                }
-
-                            }
-                            print_r("\n");
-                        }
-                    }
-                }
-            }
-        );
+    private function getStock($stock) {
+        if (preg_match("/sim/i",$stock) == 1){
+            return 1;
+        }else {
+            return 0;
+        }
     }
 
-    protected function updateCategories($categories) {
-        //LoadCSV
-        //Load Produtos
-        //Muda as categorias
-        //Salva os produtos
+    private function sqlUpdatePrice($sku,$priceAttributeId,$price){
+        $sqlEntityId = 'SELECT entity_id from catalog_product_entity where sku like "'.$sku.'"';
+        $connection =  $this->resourceConnection->getConnection();
+        $entityId = $connection->fetchAll($sqlEntityId);
+        if (!empty($entityId)) {
+            $sqlUpdateStatus = 'UPDATE catalog_product_entity_decimal 
+                    SET value = '.$price.'
+                    WHERE attribute_id = '.$priceAttributeId.' AND entity_id = '.$entityId[0]["entity_id"];
+            $connection->query($sqlUpdateStatus);
+            print_r("updated price - ");
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    protected function updateAttributes(){
-        //LoadCSV
-        //Load Produtos
-        //Muda as categorias
-        //Salva os produtos
+    private function sqlGetAttributeId($attribute) {
+        $sqlStatusAttributeId = 'SELECT attribute_id from eav_attribute where attribute_code like "'.$attribute.'"';
+        $connection =  $this->resourceConnection->getConnection();
+        $statusAttributeId = $connection->fetchAll($sqlStatusAttributeId);
+        return $statusAttributeId;
     }
 
-    private function filterProducts()
-    {
+    private function sqlUpdateStatus($sku,$statusId){
+        $sqlEntityId = 'SELECT entity_id from catalog_product_entity where sku ='.$sku;
+        $connection =  $this->resourceConnection->getConnection();
+        $entityId = $connection->fetchAll($sqlEntityId);
+        if (!empty($entityId)) {
+            $sqlUpdateStatus = 'UPDATE catalog_product_entity_int 
+                    SET value = 1
+                    WHERE attribute_id = '.$statusId.' AND entity_id = '.$entityId[0]["entity_id"];
+            $connection->query($sqlUpdateStatus);
+            print_r("Enabled Product - ");
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    private function updateStocks()
-    {
-    }
 
     public function setSorefozData($data,$logger) {
         //Tirar os espaços em branco
@@ -281,12 +269,9 @@ class Sorefoz extends Command
             $logger->info(Cat::ERROR_WRONG_SKU.$this->produtoInterno->sku." - ".$this->produtoInterno->name);
             return 0;
         }
-        print_r($data[29]);
-        if (preg_match("/sim/i",$data[29]) == 1){
-            $stock = 1;
-        }else {
-            $stock = 0;
-        }
+        
+        $stock = $this->getStock($data[29]);
+
         if (preg_match("/sim/i",$data[16]) == 1) {
             $status = 2;
             print_r("fora gama - ");
@@ -300,11 +285,11 @@ class Sorefoz extends Command
         $this->produtoInterno->price = (int)trim($data[11]);
 
         print_r(" - setting stock ");
-        $this->produtoInterno->setStock("sorefoz");
+        $this->produtoInterno->setStock($logger,"sorefoz");
        
         if($this->produtoInterno->price == 0){
             //Se o preço for 0 desativar produto e ver o que se passa
-            $logger->info(Cat::ERROR_PRECO_ZERO.$this->produtoInterno->sku);
+            $logger->info(Cat::ERROR_PRICE_ZERO.$this->produtoInterno->sku);
             $this->produtoInterno->status = 2;
         }
 
