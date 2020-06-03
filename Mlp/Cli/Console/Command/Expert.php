@@ -118,7 +118,7 @@ class Expert extends Command
             //Update status sql
             $sku = trim($data[1]);
             print_r($row++." - ".$sku." - ");
-            if (strlen($sku) < 12) {
+            if (strlen($sku) == 12 || strlen($sku) == 13) {
                 if ($this->sqlHelper->sqlUpdateStatus($sku,$statusAttributeId[0]["attribute_id"])){
                     //update price anda stock
                     $price = $this->produtoInterno->getPrice((int)trim($data[7]));

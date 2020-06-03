@@ -178,7 +178,7 @@ class Sorefoz extends Command
             //Update status sql
             $sku = trim($data[18]);
             print_r($row++." - ".$sku." - ");
-            if (strlen($sku) < 12) {
+            if (strlen($sku) == 12 || strlen($sku) == 13) {
                 if ($this->sqlHelper->sqlUpdateStatus($sku,$statusAttributeId[0]["attribute_id"])){
                     //update price anda stock
                     $price = $this->produtoInterno->getPrice((int)str_replace(".", "", $data[12]));
