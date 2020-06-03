@@ -118,7 +118,7 @@ class Expert extends Command
             //Update status sql
             $sku = trim($data[1]);
             print_r($row++." - ".$sku." - ");
-            if (strlen($sku) > 12) {
+            if (strlen($sku) < 12) {
                 if ($this->sqlHelper->sqlUpdateStatus($sku,$statusAttributeId[0]["attribute_id"])){
                     //update price anda stock
                     $price = $this->produtoInterno->getPrice((int)trim($data[7]));
@@ -219,13 +219,8 @@ class Expert extends Command
     
         $this->produtoInterno->sku = $data[1];
         
-        if (strlen($this->produtoInterno->sku) < 12) {
-            print_r("Wrong sku - ");
-            $logger->info(Cat::ERROR_WRONG_SKU.$this->produtoInterno->sku);
-            return 0;
-        }
         $this->produtoInterno->manufacturer = $data[4];
-        print_r($data[4]);
+        
         /*
         if (
             !preg_match("/MAXELL/i", $data[4]) &&

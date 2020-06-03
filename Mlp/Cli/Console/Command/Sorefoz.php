@@ -178,7 +178,7 @@ class Sorefoz extends Command
             //Update status sql
             $sku = trim($data[18]);
             print_r($row++." - ".$sku." - ");
-            if (strlen($sku) > 12) {
+            if (strlen($sku) < 12) {
                 if ($this->sqlHelper->sqlUpdateStatus($sku,$statusAttributeId[0]["attribute_id"])){
                     //update price anda stock
                     $price = $this->produtoInterno->getPrice((int)str_replace(".", "", $data[12]));
@@ -230,11 +230,6 @@ class Sorefoz extends Command
 
         $this->produtoInterno->sku = $data[18];
         $this->produtoInterno->name = $data[1];
-        if (strlen($this->produtoInterno->sku) < 12) {
-            print_r("Wrong sku - ");
-            $logger->info(Cat::ERROR_WRONG_SKU.$this->produtoInterno->sku." - ".$this->produtoInterno->name);
-            return 0;
-        }
         
         $stock = $this->getStock($data[29]);
         
