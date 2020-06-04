@@ -162,7 +162,7 @@ class ProdutoInterno
                 $optionId = $this->dataAttributeOptions->createOrGetId('manufacturer', strval($this->manufacturer));
                 $product->setCustomAttribute('manufacturer', $optionId);
             }catch (\Exception $e){
-                $logger->info(Cat::ERROR_VERIFICAR_MANUFACTURER.$this->sku." : ".$e->getMessage());
+                $logger->info(Cat::ERROR_VERIFICAR_MANUFACTURER.$this->sku);
             }
         } else {
             $logger->info(Cat::ERROR_VERIFICAR_MANUFACTURER.$this->sku);
@@ -222,11 +222,11 @@ class ProdutoInterno
                     print_r($product->getSku()." - ");
                 }catch (\Exception $e) {
                     print_r("- " . $exception->getMessage() . " Save product exception" . "\n");
-                    $logger->info(Cat::ERROR_SAVE_PRODUCT." - ".$this->sku." - ".$exception->getCode(). " - " .$exception->getMessage());
+                    $logger->info(Cat::ERROR_SAVE_PRODUCT." - ".$this->sku);
                     return null;
                 }
             }else {
-                $logger->info(Cat::ERROR_SAVE_PRODUCT." - ".$this->sku." - ".$exception->getCode(). " - " .$exception->getMessage());
+                $logger->info(Cat::ERROR_SAVE_PRODUCT." - ".$this->sku);
             }
         } 
         //Adicionar opções de garantia e instalação
@@ -312,13 +312,13 @@ class ProdutoInterno
                 $this -> sourceItemSaveI -> execute([$item]);
             } catch (CouldNotSaveException $e) {
                 print_r($e->getMessage());
-                $logger->info(Cat::ERROR_UPDATE_STOCK.$this->sku." : ".$e->getMessage());
+                $logger->info(Cat::ERROR_UPDATE_STOCK.$this->sku);
             } catch (InputException $e) {
                 print_r($e->getMessage());
-                $logger->info(Cat::ERROR_UPDATE_STOCK.$this->sku." : ".$e->getMessage());
+                $logger->info(Cat::ERROR_UPDATE_STOCK.$this->sku);
             } catch (ValidationException $e) {
                 print_r($e->getMessage());
-                $logger->info(Cat::ERROR_UPDATE_STOCK.$this->sku." : ".$e->getMessage());
+                $logger->info(Cat::ERROR_UPDATE_STOCK.$this->sku);
             }
         } else {
             foreach ($sourceItem as $item) {

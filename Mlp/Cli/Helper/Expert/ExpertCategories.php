@@ -531,11 +531,11 @@ class ExpertCategories {
                                 case 'Máquina Lavar Roupa':
                                 case 'Máquinas TwinWash':
                                     $subFamilia = Cat::MAQ_LAVAR_ROUPA_CARGA_FRONTAL;
-                                    $logger->info("Verificar SubFamila: ".$sku);
+                                    $logger->info(Cat::VERIFICAR_CATEGORIAS.$sku);
                                     return [$gama, $familia, $subFamilia];
                                 case 'Máquina Secar Roupa':
                                     $subFamilia = Cat::MAQ_SECAR_ROUPA;
-                                    $logger->info("Ver subfamilia: ".$sku);
+                                    $logger->info(Cat::VERIFICAR_CATEGORIAS.$sku);
                                     return [$gama, $familia, $subFamilia];
                                 case 'Acessórios':
                                 case 'Consumíveis':

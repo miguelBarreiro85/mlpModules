@@ -134,11 +134,12 @@ class Expert extends Command
                     print_r("updated - stock\n");
                 }else {
                     //Add Product
-                    print_r("Not found - Add Product - ");
+                    print_r("Not found - Set data new product - ");
                     if (!$this->setData($data,$logger)){
                         print_r(" - ERROR WITH DATA\n");
                         continue;
                     }
+                    print_r("add product - ");
                     $this->produtoInterno -> add_product($logger, $this->produtoInterno->sku);
                     print_r("\n");
                     

@@ -251,7 +251,7 @@ class Sorefoz extends Command
                 ->getCategories($data[5],$data[7],$data[9],
                                 $logger,$this->produtoInterno->sku,$this->produtoInterno->name);        
         }catch (Exception $e) {
-            $logger->info(Cat::ERROR_GET_CATEGORIAS.$this->produtoInterno->sku." - ".$e->getMessage());
+            $logger->info(Cat::ERROR_GET_CATEGORIAS.$this->produtoInterno->sku);
             return 0;
         }
         
