@@ -664,13 +664,14 @@ class ExpertCategories {
                                     $gama = Cat::GRANDES_DOMESTICOS;
                                     $familia = Cat::TERMOACUMULADORES;
                                     $subFamilia = Cat::TERMOACUMULADORES_ELECTRICOS;
-                                    
+                                    return [$gama, $familia, $subFamilia];
                                 case 'Esquentadores':
                                     $gama = Cat::GRANDES_DOMESTICOS;
                                     $familia = Cat::TERMOACUMULADORES;
                                     $subFamilia = Cat::TERMOACUMULADORES_ELECTRICOS;
+                                    return [$gama, $familia, $subFamilia];
                                 default:
-                                    # code...
+                                    $logger->info(Cat::VERIFICAR_CATEGORIAS.$sku);
                                     break;
                             }
                         case 'Climatização':
@@ -718,11 +719,10 @@ class ExpertCategories {
                                     $logger->info(Cat::VERIFICAR_CATEGORIAS,$sku);
                                     return [$gama,$familia,$subFamilia];
                             }
-                            break;
                         
                         default:
-                            # code...
-                            break;
+                            $logger->info(Cat::VERIFICAR_CATEGORIAS,$sku);
+                            return [$gama,$familia,$subFamilia];
                     }
                 case 'Pequenos Domésticos':
                     $gama = Cat::PEQUENOS_DOMESTICOS;
@@ -923,8 +923,11 @@ class ExpertCategories {
                         default:
                             return [$gama,$familia,$subFamilia];
                     }
+                default:
+                    $logger->info(Cat::VERIFICAR_CATEGORIAS,$sku);
+                    return [$gama, $familia, $subFamilia];
             }
 
-            return [$gama, $familia, $subFamilia];
+            
         }
 }
