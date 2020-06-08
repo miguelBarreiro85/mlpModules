@@ -272,18 +272,17 @@ class Expert extends Command
         $this->produtoInterno->image = $data[13];
         $this->produtoInterno->classeEnergetica = $data[18];
         $this->produtoInterno->imageEnergetica = $data[19];
+
+        if(preg_match("/Expert/i",$data[2])){
+            print_r(" - gama: expert - ");
+            return 0;
+        }
         
         print_r("set gamas - ");
         [$this->produtoInterno->gama,$this->produtoInterno->familia,
             $this->produtoInterno->subFamilia] = ExpertCategories::setExpertCategories($data[2],$logger,
                                                                                 $this->produtoInterno->sku);
-
-        
-        if(preg_match("/Expert/i",$this->produtoInterno->gama)){
-            print_r(" - gama: expert - ");
-            return 0;
-        }
-
+    
         return 1;
     }
 
