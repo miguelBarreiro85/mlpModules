@@ -716,12 +716,12 @@ class ExpertCategories {
                                     $subFamilia = null;
                                     return [$gama,$familia,$subFamilia];
                                 default:
-                                    $logger->info(Cat::VERIFICAR_CATEGORIAS,$sku);
+                                    $logger->info(Cat::VERIFICAR_CATEGORIAS.$sku);
                                     return [$gama,$familia,$subFamilia];
                             }
                         
                         default:
-                            $logger->info(Cat::VERIFICAR_CATEGORIAS,$sku);
+                            $logger->info(Cat::VERIFICAR_CATEGORIAS.$sku);
                             return [$gama,$familia,$subFamilia];
                     }
                 case 'Pequenos Domésticos':
@@ -924,7 +924,7 @@ class ExpertCategories {
                             return [$gama,$familia,$subFamilia];
                     }
                 default:
-                    $logger->info(Cat::VERIFICAR_CATEGORIAS,$sku);
+                    $logger->info(Cat::VERIFICAR_CATEGORIAS.$sku);
                     return [$gama, $familia, $subFamilia];
             }
 

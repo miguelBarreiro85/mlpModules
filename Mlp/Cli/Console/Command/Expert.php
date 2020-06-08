@@ -246,10 +246,10 @@ class Expert extends Command
             return 0;
         }*/
         
-        print_r("set price - ");
+        
         $this->produtoInterno->price = $this->produtoInterno->getPrice((int)trim($data[7]));
 
-        print_r("set stock - ");
+        
         $this->setStock($data[16]);
         if($this->produtoInterno->price == 0){
             print_r(" - price 0 - ");
@@ -278,7 +278,7 @@ class Expert extends Command
             return 0;
         }
         
-        print_r("set gamas - ");
+        
         [$this->produtoInterno->gama,$this->produtoInterno->familia,
             $this->produtoInterno->subFamilia] = ExpertCategories::setExpertCategories($data[2],$logger,
                                                                                 $this->produtoInterno->sku);
