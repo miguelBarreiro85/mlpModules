@@ -153,10 +153,21 @@ class SorefozCategories {
                         $subFamilia = Cat::OUTRO_ENC;
                         return [$gama,$familia,$subFamilia];
                     case 'MAQUINAS LAVAR ROUPA':
-                        $familia = Cat::GRANDES_DOMESTICOS;
+                        $gama = Cat::GRANDES_DOMESTICOS;
                         $familia = Cat::MAQ_ROUPA;
-                        $subFamilia = Cat::MAQ_LAVAR_ROUPA;
-                        return [$gama,$familia,$subFamilia];
+                        switch($subFamilia){
+                            case 'MLR CARGA FRONTAL':
+                                $subFamilia = Cat::MAQ_LAVAR_ROUPA_CARGA_FRONTAL;
+                                return [$gama,$familia,$subFamilia];
+                            case 'MLR CARGA SUPERIOR':
+                                $subFamilia = Cat::MAQ_LAVAR_ROUPA_CARGA_SUPERIOR;
+                                return [$gama,$familia,$subFamilia];
+                            case 'MLR LAVAR E SECAR ROUPA':
+                                $subFamilia = Cat::MAQ_LAVAR_SECAR_ROUPA;
+                                return [$gama,$familia,$subFamilia];
+                            default:
+                                $logger->info(Cat::VERIFICAR_CATEGORIAS.$sku);
+                        }
                     case 'MAQUINAS SECAR ROUPA':
                         $gama = Cat::GRANDES_DOMESTICOS;
                         $familia = Cat::MAQ_ROUPA;
@@ -173,10 +184,6 @@ class SorefozCategories {
                             default:
                                 return [$gama,$familia,$subFamilia];
                             }         
-                    case 'MAQUINAS LAVAR SECAR ROUPA':
-                        $familia = Cat::MAQ_ROUPA;
-                        $subFamilia = Cat::MAQ_LAVAR_SECAR_ROUPA;
-                        return [$gama,$familia,$subFamilia];
                     case 'CONGELADORES':
                         $familia = Cat::FRIO;
                         switch ($subFamilia) {
