@@ -205,7 +205,7 @@ class Sorefoz extends Command
                 }
             } else {
                 print_r("Sku invalido\n");
-                $logger->info(Cat::ERROR_WRONG_SKU.$sku);
+                $logger->info(Cat::ERROR_WRONG_SKU.$sku." - name: ".$data[1]);
             }
         }
     }

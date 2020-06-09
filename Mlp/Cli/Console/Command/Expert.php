@@ -130,7 +130,7 @@ class Expert extends Command
                     $this->sqlHelper->sqlUpdatePrice($sku,$priceAttributeId[0]["attribute_id"],$price);
                     $this->produtoInterno->sku = $sku;
                     $this->setStock($data[16]);    
-                    $this->produtoInterno->setStock($logger,"sorefoz");
+                    $this->produtoInterno->setStock($logger,"expert");
                     print_r("updated - stock\n");
                 }else {
                     //Add Product
@@ -175,12 +175,12 @@ class Expert extends Command
     }
 
     private function setStock($stock){
-        if (preg_match("/Indisponivel/i",$stock) == 1){
-            $this->produtoInterno->stock = 0;
-            $this->produtoInterno->status = Status::STATUS_DISABLED;
-        }else {
+        if (preg_match("/Disponivel/i",$stock) == 1){
             $this->produtoInterno->stock = 1;
             $this->produtoInterno->status = Status::STATUS_ENABLED;
+        }else {
+            $this->produtoInterno->stock = 0;
+            $this->produtoInterno->status = Status::STATUS_DISABLED;
         }
     }
 

@@ -47,8 +47,10 @@ class Auferma extends Command
     private $produtoInterno;
     private $loadCsv;
     private $imagesHelper;
+    private $sqlHelper;
 
     public function __construct(imagesHelper $imagesHelper,
+                                \Mlp\Cli\Helper\SqlHelper $sqlHelper,
                                 DirectoryList $directory,
                                 \Mlp\Cli\Helper\Category $categoryManager,
                                 \Magento\Framework\App\State $state,
@@ -64,6 +66,7 @@ class Auferma extends Command
         $this -> produtoInterno = $productoInterno;
         $this->loadCsv = $loadCsv;
         $this->imagesHelper = $imagesHelper;
+        $this->sqlHelper = $sqlHelper;
 
         parent ::__construct();
     }
@@ -138,42 +141,41 @@ class Auferma extends Command
     }
 
     protected function addAufermaProducts($logger,$categoriesFilter) {
-
+        print_r("Updating Expert products" . "\n");
         $row = 0;
+        $statusAttributeId = $this->sqlHelper->sqlGetAttributeId('status');
+        $priceAttributeId = $this->sqlHelper->sqlGetAttributeId('price');
+        
         foreach ($this->loadCsv->loadCsv('/Auferma/aufermaInterno.csv',",") as $data) {
             $row++;
+            $sku = trim($data[0]);
             print_r($row." - ");
-            if($this->setAufermaData($data,$logger)){
-                if (!is_null($categoriesFilter)){
-                    if (strcmp($categoriesFilter,$this->produtoInterno->subFamilia) != 0){
-                        print_r("\n");
-                        continue;
-                    }
-                }
-                try {
-                    $product = $this -> productRepository -> get($this->produtoInterno->sku, true, null, true);
-                } catch (NoSuchEntityException $exception) {
-                    [$this->produtoInterno->image, $this->produtoInterno->imageEnergetica, 
-                        $this->produtoInterno->height, $this->produtoInterno->width, $this->produtoInterno->length, 
-                        $this->produtoInterno->weight, $this->produtoInterno->classeEnergetica] = $this->getProductInfo($logger,trim($data[1]));                
-                    
-                    $this->produtoInterno -> add_product($logger, $this->produtoInterno->sku);
-                    $this->produtoInterno->setStock($logger, 'auferma');
-                    print_r("\n");
+            if ($this->sqlHelper->sqlUpdateStatus($sku,$statusAttributeId[0]["attribute_id"])){
+                //update price anda stock
+                $price = (int)trim($data[3]);
+                if ($price == 0){
+                    print_r(" price 0\n");
+                    $logger->info(Cat::ERROR_PRICE_ZERO.$sku);
                     continue;
                 }
-                if(isset($product)){
-                    try {
-                        print_r(" - Setting stock: " . $this->produtoInterno->stock . "\n");
-                        $this->produtoInterno->setStock($logger, 'auferma');
-                        $this->produtoInterno->updatePrice($logger);
-                    } catch (\Exception $ex) {
-                        print_r("Update stock exception - " . $ex -> getMessage() . "\n");
-                    }
-                }
+                $this->sqlHelper->sqlUpdatePrice($sku,$priceAttributeId[0]["attribute_id"],$price);
+                $this->produtoInterno->sku = $sku;
+                $this->setStock(trim($data[11]));    
+                $this->produtoInterno->setStock($logger,"auferma");
+                print_r("updated - stock\n");
             }else {
+            //Add product
+                if(!$this->setAufermaData($data,$logger)){
+                    continue;
+                }                
+                [$this->produtoInterno->image, $this->produtoInterno->imageEnergetica, 
+                    $this->produtoInterno->height, $this->produtoInterno->width, $this->produtoInterno->length, 
+                    $this->produtoInterno->weight, $this->produtoInterno->classeEnergetica] = $this->getProductInfo($logger,trim($data[1]));                
+                
+                $this->produtoInterno -> add_product($logger, $this->produtoInterno->sku);
+                $this->produtoInterno->setStock($logger, 'auferma');
                 print_r("\n");
-            }
+            }        
         }
     }
 
@@ -286,6 +288,16 @@ class Auferma extends Command
     }
 
 
+    private function setStock($stock){
+        if (preg_match("/sim/i",$stock) == 1){
+            $this->produtoInterno->stock = 1;
+            $this->produtoInterno->status = 1;
+        }else {
+            $this->produtoInterno->stock = 0;
+            $this->produtoInterno->status = 2;
+        }
+    }
+
     private function setAufermaData($data,$logger) {
         /*
         0 codigo
@@ -307,13 +319,9 @@ class Auferma extends Command
 
         $data = array_map($functionTrim,$data);
 
-        if (preg_match("/sim/i",$data[11]) == 1){
-            $stock = 1;
-            $status = 1;
-        }else {
-            $stock = 0;
-            $status = 1;
-        }
+
+        $this->setStock($data[11]);
+        
 
         $this->produtoInterno->sku = $data[0];
         $this->produtoInterno->manufacturer = $data[5];
@@ -346,12 +354,7 @@ class Auferma extends Command
         $this->produtoInterno->height = null;
         $this->produtoInterno->classeEnergetica = null;
         $this->produtoInterno->weight = null;
-        
-        $this->produtoInterno->status = $status;
-        $this->produtoInterno->stock = $stock;
         return 1;
-
-
     }
 
     private function getProductInfo($logger, $name) {
