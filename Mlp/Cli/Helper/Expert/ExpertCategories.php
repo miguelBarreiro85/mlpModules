@@ -516,7 +516,8 @@ class ExpertCategories {
                             switch ($subFamilia) {
                                 case 'Acessórios':
                                 case 'Consumíveis':
-                                    $subFamilia = Cat::ACESSORIOS_MLL;
+                                    $familia = Cat::ACESSORIOS_GRANDES_DOMESTICOS;
+                                    $subFamilia = null;
                                     return [$gama, $familia, $subFamilia];
                                 default:
                                     $familia = Cat::MAQ_DE_LOUCA;

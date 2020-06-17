@@ -140,7 +140,7 @@ class Auferma extends Command
         }
     }
 
-    protected function addAufermaProducts($logger,$categoriesFilter) {
+    protected function addAufermaProducts($logger,$categoriesFilter = null) {
         print_r("Updating Expert products" . "\n");
         $row = 0;
         $statusAttributeId = $this->sqlHelper->sqlGetAttributeId('status');
