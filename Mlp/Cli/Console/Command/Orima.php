@@ -148,12 +148,10 @@ class Orima extends Command
                     print_r("\n");
                     continue;
                 }
-                try {
-                    $this->setOrimaCategories($logger);
-                    $this->produtoInterno -> add_product($logger, $this->produtoInterno->sku);
-                    print_r("\n");
-                    continue;
-                }
+                $this->setOrimaCategories($logger);
+                $this->produtoInterno -> add_product($logger, $this->produtoInterno->sku);
+                print_r("\n");
+                continue;
             }
         }
     }
