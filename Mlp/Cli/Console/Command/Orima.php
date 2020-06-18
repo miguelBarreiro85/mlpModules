@@ -120,7 +120,7 @@ class Orima extends Command
         $statusAttributeId = $this->sqlHelper->sqlGetAttributeId('status');
         $priceAttributeId = $this->sqlHelper->sqlGetAttributeId('price');
 
-        foreach ($this->loadCsv->loadCsv('/Orima/OrimaInterno.csv',";") as $data) {
+        foreach ($this->loadCsv->loadCsv('/Orima/Orima.csv',";") as $data) {
             $row++;
             $sku = trim($data[8]);
             print_r($row." - ");
