@@ -202,35 +202,42 @@ class Products extends Command
         if ($changeManufacturer) {
             $this->changeManufacturer($oldManufacturer,$newManufacturer);
             $output->writeln('<info>ACabei</info>');
+            return true;
         }
         $addSorefozImages = $input->getOption(self::ADD_SOREFOZ_IMAGES);
         if($addSorefozImages) {
             $this->addImages(null);
+            return true;
         }
         $changeCat = $input->getOption(self::CHANGE_PRODUCTS_CATEGORIES);
         $oldCat = $input->getArgument('oldCat');
         $newCat = $input->getArgument('newCat');
         if($changeCat){
             $this->changeCategories($oldCat,$newCat);
+            return true;
         }
         $deleteProductsByCategoryId = $input->getOption(self::DELETE_PRODUCTS_BY_CATEGORY_ID);
         if($deleteProductsByCategoryId) {
             print_r("delete");
             $this->categoryManager->deleteProductsByCategoryId($oldCat);
+            return true;
         }
         $disableProductsWithoutStock = $input->getOption(self::DISABLE_PRODUCTS);
         if ($disableProductsWithoutStock) {
             print_r("Disabling products without stock");
             $this->disableAllProductsSql();
+            return true;
         }
         $uniqueManufacturer = $input->getOption(self::UNIQUE_PRODUCTS_MANUFACTURER_BY_VENDOR);
         if($uniqueManufacturer) {
             $this->detectUniqueManufaturers();
+            return true;
         }
         $addProducts = $input->getOption(self::ADD_PRODUCTS);
         if($addProducts) {
             //$this->addProducts($logger);
             $this->disableAllProductsSql();
+            return true;
         }
         else {
             throw new \InvalidArgumentException('Option  ELSE');

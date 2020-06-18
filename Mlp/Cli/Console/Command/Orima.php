@@ -35,8 +35,10 @@ class Orima extends Command
     private $produtoInterno;
     private $loadCsv;
     private $registry;
+    private $sqlHelper;
 
-    public function __construct(\Magento\Framework\Registry $registry,
+    public function __construct(\Mlp\Cli\Helper\SqlHelper $sqlHelper,
+                                \Magento\Framework\Registry $registry,
                                 DirectoryList $directory,
                                 \Mlp\Cli\Helper\Category $categoryManager,                          
                                 \Magento\Framework\App\State $state,
@@ -51,6 +53,7 @@ class Orima extends Command
         $this->loadCsv = $loadCsv;
         $this->productRepository = $productRepository;
         $this->registry = $registry;
+        $this->sqlHelper= $sqlHelper;
 
         parent::__construct();
     }
@@ -99,11 +102,7 @@ class Orima extends Command
         }
         $addProducts = $input->getOption(self::ADD_PRODUCTS);
         if ($addProducts) {
-            $this->addProducts($logger, $categories);
-        }
-        $updateStocks = $input->getOption(self::UPDATE_INTERNO);
-        if ($updateStocks){
-            $this->updateInterno($logger);
+            $this->updateProducts($logger, $categories);
         }
         else {
             throw new \InvalidArgumentException('Option ' . self::FILTER_PRODUCTS . ' is missing.');
@@ -114,123 +113,49 @@ class Orima extends Command
     {
     }
 
-    protected function addProducts($logger, $categoriesFilter = null){    
-        print_r("Adding Orima products" . "\n");
+    protected function updateProducts($logger, $categoriesFilter = null){    
+        print_r("Updating Orima products" . "\n");
+        
         $row = 0;
+        $statusAttributeId = $this->sqlHelper->sqlGetAttributeId('status');
+        $priceAttributeId = $this->sqlHelper->sqlGetAttributeId('price');
+
         foreach ($this->loadCsv->loadCsv('/Orima/OrimaInterno.csv',";") as $data) {
             $row++;
+            $sku = trim($data[8]);
             print_r($row." - ");
-            try{
-                if (!$this->setOrimaData($data,$logger)){
+            if ($this->sqlHelper->sqlUpdateStatus($sku,$statusAttributeId[0]["attribute_id"])){
+                //update price anda stock
+                $price = $this->produtoInterno->getPrice((int)$data[2]);
+                if ($price == 0){
+                    print_r(" price 0\n");
+                    $logger->info(Cat::ERROR_PRICE_ZERO.$sku);
+                    continue;
+                }
+                $this->sqlHelper->sqlUpdatePrice($sku,$priceAttributeId[0]["attribute_id"],$price);
+                $this->produtoInterno->sku = $sku;
+                $this->produtoInterno->stock = (int)filter_var($data[3], FILTER_SANITIZE_NUMBER_INT);  
+                $this->produtoInterno->setStock($logger,"orima");
+                print_r("updated - stock\n");
+            }else {
+                try{
+                    if (!$this->setOrimaData($data,$logger)){
+                        print_r("\n");
+                        continue;
+                    };
+                }catch(\Exception $e){
+                    $logger->info(Cat::ERROR_SET_PRODUCT_DATA.$row);
                     print_r("\n");
                     continue;
-                };
-            }catch(\Exception $e){
-                $logger->info(Cat::ERROR_SET_PRODUCT_DATA.$row);
-                continue;
-            }
-            if (!is_null($categoriesFilter)){
-                if (strcmp($categoriesFilter,$this->produtoInterno->subFamilia) != 0){
-                    print_r("wrong familie - ");
+                }
+                try {
+                    $this->setOrimaCategories($logger);
+                    $this->produtoInterno -> add_product($logger, $this->produtoInterno->sku);
+                    print_r("\n");
                     continue;
                 }
             }
-            try {
-                print_r("getting product");
-                $product = $this ->productRepository -> get($this->produtoInterno->sku, true, null, true);
-            } catch (NoSuchEntityException $exception) {
-                $this->setOrimaCategories($logger);
-                $this->produtoInterno->manufacturer =  Manufacturer::getOrimaManufacturer($this->produtoInterno->manufacturer);
-                $this->produtoInterno -> add_product($logger, $this->produtoInterno->sku);
-                print_r("\n");
-                continue;
-                //$this -> produtoInterno -> addSpecialAttributesOrima($product, $logger);
-            }
-            if(isset($product)){
-                print_r(" - Setting price: \n");
-                $this->produtoInterno->updatePrice($logger);
-            }
-
         }
-    }
-
-    private function updateInterno($logger)
-    {
-        $orimaLines = 0;
-        $internoLines = 0;
-        $fileUrlOrima = $this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Orima/Orima.csv";
-        $fileUrlInterno = $this->directory->getRoot()."/app/code/Mlp/Cli/Csv/Orima/OrimaInterno.csv";
-      
-        if (($handle = fopen($fileUrlOrima, "r")) !== FALSE) {
-            while (($data = fgetcsv($handle, 5000, ";")) !== FALSE) {
-                $orimaLines++;
-            }
-            fclose($handle);
-        }
-
-        if (($handle = fopen($fileUrlInterno, "r")) !== FALSE) {
-            while (($data = fgetcsv($handle, 5000, ";")) !== FALSE) {
-                $internoLines++;
-            }
-            fclose($handle);
-        }
-
-        print_r("Numero de linhas Orima: ".$orimaLines."\n");
-        print_r("Numero de linhas Interno: ".$internoLines."\n");
-        
-        
-        $linesToRemove = [];
-        $currentLineInterno = 0;
-
-        if (($handleInterno = fopen($fileUrlInterno, "r")) !== FALSE) {
-            //ignora a 1ª linha
-            fgetcsv($handleInterno, 5000, ";");
-            while (($internoData = fgetcsv($handleInterno, 5000, ";")) !== FALSE) {
-                if (strlen(trim($internoData[8])) != 13) {
-                    continue;
-                }
-                $currentLineOrima = 1;
-                if (($handleOrima = fopen($fileUrlOrima, "r")) !== FALSE) {
-                    fgetcsv($handleOrima, 5000, ";");
-                    while (($orimaData = fgetcsv($handleOrima, 5000, ";")) !== FALSE) {
-                        print_r($internoData[8]." - Line interno: ".$currentLineInterno." - line: ".$currentLineOrima." - ".$orimaData[8]."\n");
-                        if (strcmp($internoData[8],$orimaData[8]) == 0) {
-                            $logger->info(Cat::WARN_FOUND_PRODUCT_SKU.$internoData[8]);
-                            break;
-                        }
-                        
-                        if ($currentLineOrima == $orimaLines){
-                            //last line, not found, Add to array
-                            $logger->info(Cat::ERROR_ADD_EAN_TO_OLD_EANFILE.$internoData[8]);
-                            $linesToRemove[] = [trim($internoData[8]),trim($internoData[0])];
-                        }
-                        $currentLineOrima++;
-                    }
-                    fclose($handleOrima);
-                }
-                $currentLineInterno++;
-            }
-            fclose($handleInterno);
-        }
-
-        print_r($linesToRemove);
-        foreach($linesToRemove as $data){
-            try {
-                //Vamos por o produto com stock Orima a 0, se tiver a 0 em todos os fornecedores podemos apagar (Cron Semanal por exemplo)
-                print_r($data[0]."\n");
-                $this->produtoInterno->sku = $data[0];
-                $this->produtoInterno->stock = 0;
-                $this->produtoInterno->setStock($logger,'orima');
-                //$logger->info(Cat::WARN_OLD_PRODUCT.$this->produtoInterno->sku);
-            }catch(\Exception $e) {
-                print_r(Cat::ERROR_SET_STOCK_ZERO_TO_REMOVE.$e->getMessage());
-            }
-        }
-    }
-
-    private function setOrimaStock($stock)
-    {
-        return (int)filter_var($stock, FILTER_SANITIZE_NUMBER_INT);;
     }
 
     private function setOrimaData($data,$logger)
@@ -267,12 +192,7 @@ class Orima extends Command
         }
         
         $this->produtoInterno->manufacturer = Manufacturer::getOrimaManufacturer($data[7]);
-        /*
-        if (!preg_match("/ORIMA/i", $this->produtoInterno->manufacturer)) {
-            print_r($data[7]);
-            return 0;
-        }*/
-        
+    
         $this->produtoInterno->price = $this->produtoInterno->getPrice((int)$data[2]);
         $this->produtoInterno->stock = (int)filter_var($data[3], FILTER_SANITIZE_NUMBER_INT);
        
