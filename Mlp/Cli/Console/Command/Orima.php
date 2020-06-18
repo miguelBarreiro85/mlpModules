@@ -24,9 +24,8 @@ class Orima extends Command
     /**
      * Filter Prodcuts
      */
-    const FILTER_PRODUCTS = 'filter-products';
     const ADD_PRODUCTS = 'add-products';
-    const UPDATE_INTERNO = 'update-interno';
+
 
     private $directory;
     private $categoryManager;
@@ -64,22 +63,10 @@ class Orima extends Command
             ->setDescription('Manage Orima csv')
             ->setDefinition([
                 new InputOption(
-                    self::FILTER_PRODUCTS,
-                    '-f',
-                    InputOption::VALUE_NONE,
-                    'Filter Orima csv'
-                ),
-                new InputOption(
                     self::ADD_PRODUCTS,
                     '-a',
                     InputOption::VALUE_NONE,
                     'Add new Products'
-                ),
-                new InputOption(
-                    self::UPDATE_INTERNO,
-                    '-u',
-                    InputOption::VALUE_NONE,
-                    'Update Stocks and State (Active or inactive)'
                 )
             ])->addArgument('categories', InputArgument::OPTIONAL, 'Categories?');
         parent::configure();
