@@ -184,7 +184,7 @@ class ProdutoInterno
         $product->setCreatedAt(date("Y/m/d"));
         $product->setCustomAttribute('news_from_date', date("Y/m/d"));
 
-        $this->setCategories($product, $this->gama, $this->familia, $this->subFamilia);
+        $this->setCategories($product, $logger, $this->gama, $this->familia, $this->subFamilia);
         $this->imagesHelper->getImages($this->sku,$this->image,$this->imageEnergetica);
         $this->imagesHelper->setImages($product, $logger, $imgName . "_e.jpeg");
         $this->imagesHelper->setImages($product, $logger, $imgName . ".jpeg");
@@ -249,7 +249,7 @@ class ProdutoInterno
 
 
 
-    private function setCategories(\Magento\Catalog\Model\Product $product, $pGama, $pFamilia, $pSubFamilia)
+    private function setCategories(\Magento\Catalog\Model\Product $product, $logger, $pGama, $pFamilia, $pSubFamilia)
     {
         
         $categories = $this->categoryManager->getCategoriesArray();
@@ -281,6 +281,7 @@ class ProdutoInterno
                 }
             }catch(\Exception $e){
                 print_r(" - Erro ao atribuir categoria: ".$e->getMessage());
+                $logger(Cat::VERIFICAR_CATEGORIAS.$product->getSku().$e->getMessage());
             }
 
         }
