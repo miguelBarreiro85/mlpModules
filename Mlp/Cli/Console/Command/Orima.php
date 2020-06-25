@@ -25,6 +25,7 @@ class Orima extends Command
      * Filter Prodcuts
      */
     const ADD_PRODUCTS = 'add-products';
+    const FILTER_PRODUCTS = 'filter-products';
 
 
     private $directory;
@@ -67,6 +68,12 @@ class Orima extends Command
                     '-a',
                     InputOption::VALUE_NONE,
                     'Add new Products'
+                ),
+                new InputOption(
+                    self::FILTER_PRODUCTS,
+                    '-f',
+                    InputOption::VALUE_NONE,
+                    'Filter Products'
                 )
             ])->addArgument('categories', InputArgument::OPTIONAL, 'Categories?');
         parent::configure();
@@ -91,6 +98,10 @@ class Orima extends Command
         if ($addProducts) {
             $this->updateProducts($logger, $categories);
         }
+        $filterProducts = $input->getOption(self::FILTER_PRODUCTS);
+        if ($filterProducts) {
+            $this->filterProducts();
+        }
         else {
             throw new \InvalidArgumentException('Option ' . self::FILTER_PRODUCTS . ' is missing.');
         }
@@ -98,6 +109,7 @@ class Orima extends Command
 
     private function filterProducts()
     {
+        print_r(phpinfo());
     }
 
     protected function updateProducts($logger, $categoriesFilter = null){    
