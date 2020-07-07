@@ -40,7 +40,7 @@ class SqlHelper {
 
     public function sqlUpdateStatus($sku,$statusId){
         try {
-            $sqlEntityId = 'SELECT entity_id from catalog_product_entity where sku like '.$sku;
+            $sqlEntityId = 'SELECT entity_id from catalog_product_entity where sku = \''.$sku.'\'';
             $connection =  $this->resourceConnection->getConnection();
             $entityId = $connection->fetchAll($sqlEntityId);
             if (!empty($entityId)) {
